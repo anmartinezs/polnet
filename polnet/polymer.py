@@ -6,6 +6,10 @@ A polymer is a linear sequence of monomers
 __author__ = 'Antonio Martinez-Sanchez'
 
 import copy
+import math
+
+import numpy as np
+
 from .utils import *
 from .affine import *
 from abc import ABC, abstractmethod
@@ -295,10 +299,18 @@ class Polymer(ABC):
         for mmer in self.__m:
             mmer.insert_density_svol(m_svol, tomo, v_size, merge=merge)
 
+    @abstractmethod
+    def set_reference(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def gen_new_monomer(self):
+        raise NotImplementedError
+
 
 class SAWLC(Polymer):
     """
-    Class for fibers following the model Self-Avoiding Worm-Like Chain (SAWLC)
+    Class for fibers following model Self-Avoiding Worm-Like Chain (SAWLC)
     """
 
     def __init__(self, l_length, m_surf, p0=(0, 0, 0)):
@@ -313,7 +325,7 @@ class SAWLC(Polymer):
         self.__l = l_length
         self.set_reference(p0)
 
-    def set_reference(self, p0):
+    def set_reference(self, p0=(0., 0., 0)):
         """
         Initializes the chain with the specified point input point, if points were introduced before the are forgotten
         :param p0: starting point
@@ -321,7 +333,7 @@ class SAWLC(Polymer):
         """
         assert hasattr(p0, '__len__') and (len(p0) == 3)
         self.__p = np.asarray(p0)
-        hold_monomer = Monomer(self.__m_surf, self.__m_diam)
+        hold_monomer = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
         hold_q = gen_rand_unit_quaternion()
         # hold_q = np.asarray((1, 0., 0., 1.), dtype=np.float32)
         hold_monomer.rotate_q(hold_q)
@@ -330,8 +342,8 @@ class SAWLC(Polymer):
 
     def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1):
         """
-        Generates a new monomer for the polymer according to specified model
-        TODO: According to current implementation only tangential and axial rotation angles are chosen from a unifrom
+        Generates a new monomer for the polymer according to the specified random model
+        TODO: According to current implementation only tangential and axial rotation angles are chosen from a uniform
               random distribution
         :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0)
         :param voi: VOI to define forbidden regions (default None, not applied)
@@ -397,26 +409,51 @@ class SAWLC(Polymer):
 
 class HelixFiber(Polymer):
     """
-    Class for modelling a helical flexible fiber
+    Class for modelling a random helical flexible fiber
     """
 
-    def __init__(self, l_length, m_surf, p_length, z_length_f=0, z_ang=0, p0=(0, 0, 0), vz=(0, 0, 1)):
+    def __init__(self, l_length, m_surf, p_length, hp_length, mz_length, z_length_f=0, z_ang=0, p0=(0, 0, 0), vz=(0, 0, 1)):
         """
         Constructor
         :param l_length: link length
         :param m_surf: monomer surface (as vtkPolyData object)
         :param p_length: persistence length
+        :param hp_length: helix period length (distance required by azimuthal angle to cover 360deg)
+        :param z_length_f: monomer z-length
         :param z_length_f: z-length or helix elevation
-        :param z_ang: azimutal (around reference z-axis) angle (default 0)
+        :param z_ang: azimuthal (around reference z-axis) angle (default 0)
         :param p0: starting point (default origin (0,0,0))
         :param vz: reference vector for z-axis (default (0, 0, 1)
         """
         super(HelixFiber, self).__init__(m_surf)
-        assert (l_length > 0) and (p_length > 0) and (z_length_f >= 0)
+        assert (l_length > 0) and (p_length > 0) and (z_length_f >= 0) and (hp_length > 0) and (mz_length > 0)
         self.__l, self.__lp, self.__lz = l_length, p_length, l_length * z_length_f
-        assert z_ang >=0
+        self.__hp, self.__mz_length = hp_length, mz_length
+        self.__hp_astep = 360. * (self.__hp / self.__mz_length)
+        assert z_ang >= 0
         self.__compute_helical_parameters()
-        self.set_reference(p0, vz)
+        assert hasattr(vz, '__len__') and (len(vz) == 3)
+        self.__vz = np.asarray(vz, dtype=np.float)
+        # Curve state member variables
+        self.__ct, self.__za = 0., 0. # z-aligned curve time (considering speed 1)
+        self.set_reference(p0)
+
+    def set_reference(self, p0=(0., 0., 0.), vz=(0., 0., 1.)):
+        """
+        Initializes the chain with the specified point input point, if points were introduced before the are forgotten
+        :param p0: starting point
+        :param vz: z-axis reference vector for helicoidal parametrization
+        :return:
+        """
+        assert hasattr(p0, '__len__') and (len(p0) == 3)
+        self.__p = np.asarray(p0)
+        hold_monomer = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
+        hold_q = gen_rand_unit_quaternion()
+        # hold_q = np.asarray((0., 0., 0., 1.), dtype=np.float32)
+        hold_monomer.rotate_q(hold_q)
+        hold_monomer.translate(p0)
+        vzr = rot_vect_quat(self.__compute_tangent(self.__ct), hold_q) * self.__mz_length
+        self.add_monomer(p0, vzr, hold_q, hold_monomer)
 
     def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1):
         """
@@ -429,12 +466,15 @@ class HelixFiber(Polymer):
         """
 
         # Translation
-        t = gen_uni_s2_sample(np.asarray((0., 0., 0.)), self.__l)
-        r = self._Polymer__r[-1] + t
+        hold_r = self._Polymer__[-1]
+        hold_ct = self.__ct + hold_r
+        t = self.__compute_tangent(hold_ct) * self.__mz_length
+        r = hold_r + t
 
         # Rotation
-        q = gen_rand_unit_quaternion()
-        # q = np.asarray((1, 0, 0, 1), dtype=np.float32)
+        tn = t / vector_module(t)
+        hold_za = self.__za + self.__hp_astep
+        q = np.asarray((hold_za, tn[0], tn[1], t[2]))
 
         # Monomer
         # hold_m = self._Polymer__m[-1].get_copy()
@@ -448,6 +488,9 @@ class HelixFiber(Polymer):
         elif voi is not None:
             if hold_m.overlap_voi(voi, v_size):
                 return None
+
+        # Update class helix curve state
+        self.__ct, self.__za = hold_ct, hold_za
 
         return r, t, q, hold_m
 
@@ -467,4 +510,15 @@ class HelixFiber(Polymer):
         # Compute helix a parameter from k and b
         self.__a = (1 + math.sqrt(1-4.*k*self.__b*self.__b)) / (2. * k)
         assert self.__a > 0
+
+    def __compute_tangent(self, t):
+        """
+        Computes curve (z-aligned axis) normalized tangent vector
+        :param t: input parameter, time assuming that speed is 1
+        :return: returns the normalized tangent vector (3 elements array)
+        """
+        sq = math.sqrt(self.__a * self.__a + self.__b * self.__b)
+        s = sq * t
+        return (1. / sq) * np.asarray((-self.__a * math.sin(s / sq), self.__a * math.cos(s / sq), self.__b))
+
 
