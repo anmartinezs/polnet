@@ -5,10 +5,12 @@ A networks is a combination of a polymer in a volume
 
 __author__ = 'Antonio Martinez-Sanchez'
 
-from .utils import *
-from .affine import *
-from .polymer import SAWLC
-from .lrandom import PGen
+import math
+
+from polnet.utils import *
+from polnet.affine import *
+from polnet.polymer import SAWLC, HelixFiber
+from polnet.lrandom import PGen
 from abc import ABC, abstractmethod
 
 
@@ -129,7 +131,7 @@ class NetSAWLC(Network):
 
     def build_network(self):
         """
-        Add polymers following SAWLC model un an occupancy limit is passed
+        Add polymers following SAWLC model until an occupancy limit is passed
         :return:
         """
 
@@ -141,7 +143,7 @@ class NetSAWLC(Network):
                              self._Network__voi.shape[1] * self._Network__v_size * random.random(),
                              self._Network__voi.shape[2] * self._Network__v_size * random.random()))
             max_length = self.__gen_pol_lengths.gen_next_length()
-            hold_polymer = SAWLC(self.__l_length, self.__m_surf, p0)
+            hold_polymer = (self.__l_length, self.__m_surf, p0)
 
             # Polymer loop
             not_finished = True
@@ -162,3 +164,82 @@ class NetSAWLC(Network):
             print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
                   ' and length ' + str(hold_polymer.get_total_len()))
 
+
+class NetHelixFiber(Network):
+    """
+    Class for generating a network of isolated helix fibers, unconnected and randomly distributed
+    """
+
+    def __init__(self, voi, v_size, l_length, m_surf, gen_hfib_params, occ, min_p_len, hp_len, mz_len, mz_len_f,
+                 over_tolerance=0):
+        """
+        Construction
+        :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers
+        :param v_size: voxel size (default 1)
+        :param l_length: polymer link length
+        :param m_surf: monomer surf
+        :param gen_hfib_params: a instance of a random generation model (random.PGen) to obtain random fiber
+        parametrization
+        :param min_p_len: minimum persistence length
+        :param hp_len: helix period length
+        :param mz_len: monomer length is z-axis
+        :param mz_len_f: maximum length factor in z-axis
+        :param occ: occupancy threshold in percentage [0, 100]%
+        :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0, in range [0,1))
+        """
+
+        # Initialize abstract variables
+        super(NetHelixFiber, self).__init__(voi, v_size)
+
+        # Input parsing
+        assert l_length > 0
+        assert isinstance(m_surf, vtk.vtkPolyData)
+        assert issubclass(gen_hfib_params.__class__, PGen)
+        assert (occ >= 0) and (occ <= 100)
+        assert (over_tolerance >= 0) and (over_tolerance <= 100)
+        assert (min_p_len > 0) and (hp_len > 0) and (mz_len > 0) and (mz_len_f >= 0)
+
+        # Variables assignment
+        self.__l_length, self.__m_surf = l_length, m_surf
+        self.__gen_hfib_params = gen_hfib_params
+        self.__occ, self.__over_tolerance = occ, over_tolerance
+        self.__min_p_len, self.__hp_len = min_p_len, hp_len
+        self.__mz_len, self.__mz_len_f = mz_len, mz_len_f
+
+    def build_network(self):
+        """
+        Add helix fibres until an occupancy limit is passed
+        :return:
+        """
+
+        # Network loop
+        while self._Network__pl_occ < self.__occ:
+
+            # Polymer initialization
+            p0 = np.asarray((self._Network__voi.shape[0] * self._Network__v_size * random.random(),
+                             self._Network__voi.shape[1] * self._Network__v_size * random.random(),
+                             self._Network__voi.shape[2] * self._Network__v_size * random.random()))
+            max_length = math.sqrt(self._Network__voi.shape[0]**2 + self._Network__voi.shape[1]**2
+                                  + self._Network__voi.shape[2]**2)
+            p_len = self.__gen_hfib_params.gen_persistence_length(self.__min_p_len)
+            z_len_f = self.__gen_hfib_params.gen_zf_length(self.__mz_len_f)
+            hold_polymer = HelixFiber(self.__l_length, self.__m_surf, p_len, self.__hp_len, self.__mz_len, z_len_f, p0)
+
+            # Polymer loop
+            not_finished = True
+            while (hold_polymer.get_total_len() < max_length) and not_finished:
+                monomer_data = hold_polymer.gen_new_monomer(self.__over_tolerance, self._Network__voi,
+                                                            self._Network__v_size)
+                if monomer_data is None:
+                    not_finished = False
+                else:
+                    new_len = points_distance(monomer_data[0], hold_polymer.get_tail_point())
+                    if hold_polymer.get_total_len() + new_len < max_length:
+                        hold_polymer.add_monomer(monomer_data[0], monomer_data[1], monomer_data[2], monomer_data[3])
+                    else:
+                        not_finished = False
+
+            # Updating polymer
+            self.add_polymer(hold_polymer)
+            print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
+                  ' and length ' + str(hold_polymer.get_total_len()) + ': occupancy ' + str(self._Network__pl_occ))

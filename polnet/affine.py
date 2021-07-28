@@ -9,10 +9,12 @@ import math
 import random
 import numpy as np
 from scipy import ndimage as spnd
+from polnet.utils import wrap_angle
 
 # CONSTANTS
 
 PI_2 = 2 * np.pi
+LOW_VALUE = 0.000001
 
 # FUNCTIONS
 
@@ -95,8 +97,8 @@ def gen_rand_unit_quaternion():
     sigma_1, sigma_2 = math.sqrt(1 - s), math.sqrt(s)
     theta_1, theta_2 = PI_2 * random.random(), PI_2 * random.random()
     w = math.cos(theta_2) * sigma_2
-    x = math.sin(theta_2) * sigma_1
-    y = math.cos(theta_2) * sigma_1
+    x = math.sin(theta_1) * sigma_1
+    y = math.cos(theta_1) * sigma_1
     z = math.sin(theta_2) * sigma_2
     return np.asarray((w, x, y, z))
 
@@ -115,11 +117,30 @@ def quat_to_angle_axis(qw, qx, qy, qz, deg=True):
     norm = vector_module(x)
     if deg:
         ang_rad = (2. * math.atan2(norm, qw))
-        ang = (180./np.pi) * ang_rad
+        ang = math.degrees(ang_rad)
         return ang, x / math.sin(.5 * ang_rad)
     else:
         ang = 2. *  math.atan2(norm, qw)
         return ang, x / math.sin(.5 * ang)
+
+
+def angle_axis_to_quat(ang, x, y, z, deg=True):
+    """
+    Given a angle and axis [x, y, z] computes its corresponding unit quaternion
+    :param ang: angle
+    :param x: axis x value
+    :param y: axis y value
+    :param z: axis z value
+    :param deg: if True (default) the input angle is given in degrees, otherwise in radians
+    :return: a unit quaternion (4-array)
+    """
+    ax = np.asarray((x, y, z), dtype=np.float)
+    ax /= vector_module(ax)
+    hold_ang = .5 * wrap_angle(ang, deg=deg)
+    if deg:
+        hold_ang = math.radians(hold_ang)
+    ca, sa = math.cos(hold_ang), math.sin(hold_ang)
+    return np.asarray((ca, ax[0]*sa, ax[1]*sa, ax[2]*sa), dtype=np.float)
 
 
 def rot_vect_quat(v, q):
@@ -130,15 +151,18 @@ def rot_vect_quat(v, q):
     :return: output rotated vector
     """
 
+    # Get axis angle representation
+    ang, ax = quat_to_angle_axis(q[0], q[1], q[2], q[3])
+
     # Make sure axis is a unit vector
-    k = np.asarray((q[1], q[2], q[3]))
+    k = np.asarray((ax[0], ax[1], ax[2]))
     mod_k = math.sqrt((k * k).sum())
     assert mod_k > 0
     k /= mod_k
     vc = np.asarray(v)
 
     # Rodrigues formula
-    cos_ang, sin_ang = math.cos(q[0]), math.sin(q[0])
+    cos_ang, sin_ang = math.cos(ang), math.sin(ang)
     return vc * cos_ang + np.cross(k, vc) * sin_ang + k * np.dot(k, vc) * (1.-cos_ang)
 
 
@@ -224,4 +248,65 @@ def tomo_rotate(tomo, q, center=None, active=True, order=3, mode='constant', cva
 
     return tomo_r.reshape(tomo.shape)
 
+
+def quat_mult(q1, q2):
+    """
+    Multiply two quaternions
+    :param q1: first input quaternion
+    :param q2: second input quaternion
+    """
+    w0, x0, y0, z0 = q1
+    w1, x1, y1, z1 = q2
+    hold_q = np.array([-x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0,
+                       x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
+                       -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
+                       x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0], dtype=np.float64)
+    return hold_q
+
+
+def quat_two_vectors(a, b):
+    """
+    Computes the quaternion to rotate from one vector to another
+    :param a: origin vector
+    :param b: destination vector
+    :return: the quaternion thar rotates vector a to be aligned with b
+    """
+    u, v = a / vector_module(a), b / vector_module(b)
+    if vector_module(u - v) < LOW_VALUE:
+        ax = ortho_vector(u)
+        return np.asarray(0, ax / vector_module(ax))
+    else:
+        half = u + v
+        half /= vector_module(half)
+        ang, ax = np.dot(u, v), np.cross(u, v)
+        return np.asarray((ang, ax[0], ax[1], ax[2]))
+
+
+def ortho_vector(v):
+    """
+    Computes any orthogonal vector to an input. This implementation uses the cross product with the most orthogonal
+    basis vector.
+    :param v: input vector
+    :return: output orthogonal vector
+    """
+    # Handle input is a basis
+    if (v[0] < LOW_VALUE) and (v[1] < LOW_VALUE):
+        return np.asarray((1., 0., 0.))
+    elif (v[0] < LOW_VALUE) and (v[2] < LOW_VALUE):
+        return np.asarray((1., 0., 0.))
+    elif (v[1] < LOW_VALUE) and (v[2] < LOW_VALUE):
+        return np.asarray((0., 1., 0.))
+    # Search for the most orthogonal basis vector
+    v_abs = np.abs(v)
+    if v_abs[0] < v_abs[1]:
+        if v_abs[0] < v_abs[2]:
+            other = np.asarray((1., 0., 0.))
+        else:
+            other = np.asarray((0., 0., 1.))
+    else:
+        if v_abs[1] < v_abs[2]:
+            other = np.asarray((0., 1., 0.))
+        else:
+            other = np.asarray((0., 0., 1.))
+    return np.cross(v, other)
 

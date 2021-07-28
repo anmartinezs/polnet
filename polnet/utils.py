@@ -302,3 +302,37 @@ def insert_svol_tomo(svol, tomo, sub_pt, merge='max'):
         tomo[off_l_x:off_h_x, off_l_y:off_h_y, off_l_z:off_h_z] = np.maximum(svol[dif_l_x:dif_h_x, dif_l_y:dif_h_y,
                                                                   dif_l_z:dif_h_z], tomo[off_l_x:off_h_x,
                                                                   off_l_y:off_h_y, off_l_z:off_h_z])
+
+
+# Applies a linear mapping to the input array for getting an array in the specified range
+def lin_map(array, lb=0, ub=1):
+    """
+    Applies a linear mapping to the input array for getting an array in the specified range
+    :param array: input array to remap
+    :param lb: lower output bound for gray values (default 0)
+    :param ub: upper output bound for gray values (default 1)
+    :return: the remapped array with gray values in range lb and ub
+    """
+    a = np.max(array)
+    i = np.min(array)
+    den = a - i
+    if den == 0:
+        return array
+    m = (ub - lb) / den
+    c = ub - m*a
+    return m*array + c
+
+
+def wrap_angle(ang, deg=True):
+    """
+    Wrap an angle to be expressed in range (-pi, pi] or (-180, 180]
+    :param ang: input angle to wrap, it may also be an array
+    :param deg: if True (default) the input angle is degrees, otherwise in radians
+    :return: the angle value (or values) in the proper range
+    """
+    if deg:
+        phase = ((-ang + 180.) % (2.0 * 180.) - 180.) * -1.0
+    else:
+        phase = ((-ang + np.pi) % (2.0 * np.pi) - np.pi) * -1.0
+    return phase
+

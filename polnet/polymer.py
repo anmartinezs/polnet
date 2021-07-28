@@ -7,6 +7,7 @@ __author__ = 'Antonio Martinez-Sanchez'
 
 import copy
 import math
+import random
 
 import numpy as np
 
@@ -36,9 +37,7 @@ class Monomer:
         self.compute_bounds()
         # Ordered transformation queue, each entry is a 2-tuple
         # (str in ['t', 'r'], transform value in [vector, quaternion])
-        self.__trans_q = dict()
-        self.__trans_q['t'] = list()
-        self.__trans_q['r'] = list()
+        self.__trans = list()
 
     def get_vtp(self):
         return self.__m_surf
@@ -72,7 +71,7 @@ class Monomer:
         w, v_axis = quat_to_angle_axis(q[0], q[1], q[2], q[3])
         self.__m_surf = poly_rotate_wxyz(self.__m_surf, w, v_axis[0], v_axis[1], v_axis[2])
         self.compute_bounds()
-        self.__trans_q['r'].append(q)
+        self.__trans.append(('r', q))
 
     def translate(self, t_v):
         """
@@ -82,7 +81,7 @@ class Monomer:
         """
         self.__m_surf = poly_translate(self.__m_surf, t_v)
         self.compute_bounds()
-        self.__trans_q['t'].append(t_v)
+        self.__trans.append(('t', t_v))
 
     def point_in_bounds(self, point):
         x_over, y_over, z_over = True, True, True
@@ -164,9 +163,12 @@ class Monomer:
         """
         v_size_i = 1. / v_size
         tot_v = np.asarray((0., 0., 0.))
-        for i in range(len(self.__trans_q['t'])):
-            tot_v += (self.__trans_q['t'][i] * v_size_i)
-            hold_svol = tomo_rotate(m_svol, self.__trans_q['r'][i])
+        hold_svol = m_svol
+        for trans in self.__trans:
+            if trans[0] == 't':
+                tot_v += (trans[1] * v_size_i)
+            elif trans[0] == 'r':
+                hold_svol = tomo_rotate(hold_svol, trans[1])
         insert_svol_tomo(hold_svol, tomo, tot_v, merge=merge)
 
 
@@ -412,16 +414,15 @@ class HelixFiber(Polymer):
     Class for modelling a random helical flexible fiber
     """
 
-    def __init__(self, l_length, m_surf, p_length, hp_length, mz_length, z_length_f=0, z_ang=0, p0=(0, 0, 0), vz=(0, 0, 1)):
+    def __init__(self, l_length, m_surf, p_length, hp_length, mz_length, z_length_f=0, p0=(0, 0, 0), vz=(0, 0, 1)):
         """
         Constructor
         :param l_length: link length
         :param m_surf: monomer surface (as vtkPolyData object)
         :param p_length: persistence length
         :param hp_length: helix period length (distance required by azimuthal angle to cover 360deg)
-        :param z_length_f: monomer z-length
+        :param mz_length: monomer z-length
         :param z_length_f: z-length or helix elevation
-        :param z_ang: azimuthal (around reference z-axis) angle (default 0)
         :param p0: starting point (default origin (0,0,0))
         :param vz: reference vector for z-axis (default (0, 0, 1)
         """
@@ -429,14 +430,13 @@ class HelixFiber(Polymer):
         assert (l_length > 0) and (p_length > 0) and (z_length_f >= 0) and (hp_length > 0) and (mz_length > 0)
         self.__l, self.__lp, self.__lz = l_length, p_length, l_length * z_length_f
         self.__hp, self.__mz_length = hp_length, mz_length
-        self.__hp_astep = 360. * (self.__hp / self.__mz_length)
-        assert z_ang >= 0
+        self.__hp_astep = (360. * self.__mz_length) / self.__hp
         self.__compute_helical_parameters()
         assert hasattr(vz, '__len__') and (len(vz) == 3)
-        self.__vz = np.asarray(vz, dtype=np.float)
+        self.__vz = np.asarray(vz, dtype=float)
         # Curve state member variables
         self.__ct, self.__za = 0., 0. # z-aligned curve time (considering speed 1)
-        self.set_reference(p0)
+        self.set_reference(p0, vz)
 
     def set_reference(self, p0=(0., 0., 0.), vz=(0., 0., 1.)):
         """
@@ -449,10 +449,14 @@ class HelixFiber(Polymer):
         self.__p = np.asarray(p0)
         hold_monomer = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
         hold_q = gen_rand_unit_quaternion()
+        # hold_v = gen_uni_s2_sample(np.asarray((0., 0., 0.)), 1.)
+        # hold_v = np.asarray((1., 0., 0.))
+        # hold_q = quat_two_vectors(np.asarray((0., 0., 1.)), hold_v)
         # hold_q = np.asarray((0., 0., 0., 1.), dtype=np.float32)
+        # vzr = rot_vect_quat(self.__compute_tangent(self.__ct), hold_q) * self.__mz_length
+        vzr = rot_vect_quat(vz, hold_q) * self.__mz_length
         hold_monomer.rotate_q(hold_q)
         hold_monomer.translate(p0)
-        vzr = rot_vect_quat(self.__compute_tangent(self.__ct), hold_q) * self.__mz_length
         self.add_monomer(p0, vzr, hold_q, hold_monomer)
 
     def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1):
@@ -465,32 +469,28 @@ class HelixFiber(Polymer):
                  return None in case the generation has failed
         """
 
-        # Translation
-        hold_r = self._Polymer__[-1]
-        hold_ct = self.__ct + hold_r
-        t = self.__compute_tangent(hold_ct) * self.__mz_length
-        r = hold_r + t
+        hold_m = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
 
         # Rotation
-        tn = t / vector_module(t)
-        hold_za = self.__za + self.__hp_astep
-        q = np.asarray((hold_za, tn[0], tn[1], t[2]))
+        t = rot_vect_quat(self.__compute_tangent(self.__ct), self._Polymer__q[0]) * self.__mz_length
+        q = self._Polymer__q[-1]
+        ang, ax = quat_to_angle_axis(q[0], q[1], q[2], q[3], deg=True)
+        self.__za = wrap_angle(self.__za + self.__hp_astep)
+        q1 = angle_axis_to_quat(self.__za, t[0], t[1], t[2])
+        # hold_m.rotate_q(q1)
+        # hold_m.rotate_q(q)
+        hold_m.rotate_q(quat_mult(q, q1))
 
-        # Monomer
-        # hold_m = self._Polymer__m[-1].get_copy()
-        hold_m = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
-        hold_m.rotate_q(q)
+        # Translation
+        hold_r = self._Polymer__r[-1]
+        self.__ct += self.__l
+        r = hold_r + t
         hold_m.translate(r)
 
         # Check self-avoiding and forbidden regions
-        if self.overlap_polymer(hold_m, over_tolerance=over_tolerance):
-            return None
-        elif voi is not None:
+        if voi is not None:
             if hold_m.overlap_voi(voi, v_size):
                 return None
-
-        # Update class helix curve state
-        self.__ct, self.__za = hold_ct, hold_za
 
         return r, t, q, hold_m
 
@@ -518,7 +518,85 @@ class HelixFiber(Polymer):
         :return: returns the normalized tangent vector (3 elements array)
         """
         sq = math.sqrt(self.__a * self.__a + self.__b * self.__b)
-        s = sq * t
+        # s = sq * t
+        s = t
         return (1. / sq) * np.asarray((-self.__a * math.sin(s / sq), self.__a * math.cos(s / sq), self.__b))
+
+
+class FiberUnit(ABC):
+    """
+    Abstract class to generate fiber unit (set of monomers)
+    """
+
+    @abstractmethod
+    def get_vtp(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_tomo(self):
+        raise NotImplementedError
+
+
+class FiberUnitSDimer(FiberUnit):
+    """
+    Class for modeling a fiber unit as dimer of two spheres
+    """
+
+    def __init__(self, sph_rad, v_size=1):
+        """
+        Constructor
+        :param sph_rad: radius for spheres
+        :param v_size: voxel size (default 1)
+        """
+        assert (sph_rad > 0) and (v_size > 0)
+        self.__sph_rad, self.__v_size = float(sph_rad), float(v_size)
+        self.__size = int(math.ceil(6. * (sph_rad / v_size)))
+        if self.__size%2 != 0:
+            self.__size += 1
+        self.__tomo, self.__surf = None, None
+        self.__gen_sdimer()
+
+    def get_vtp(self):
+        return self.__surf
+
+    def get_tomo(self):
+        return self.__tomo
+
+    def __gen_sdimer(self):
+        """
+        Contains the procedure to generate the Dimer of spheres with the specified size by using logistic functions
+        """
+
+        # Input parsing
+        sph_rad_v = self.__sph_rad / self.__v_size
+
+        # Generating the grid
+        self.__tomo = np.zeros(shape=(self.__size, self.__size, self.__size), dtype=np.float32)
+        dx, dy, dz = float(self.__tomo.shape[0]), float(self.__tomo.shape[1]), float(self.__tomo.shape[2])
+        dx2, dy2, dz2 = math.floor(.5 * dx), math.floor(.5 * dy), math.floor(.5 * dz)
+        x_l, y_l, z_l = -dx2, -dy2, -dz2
+        x_h, y_h, z_h = -dx2 + dx, -dy2 + dy, -dz2 + dz
+        X, Y, Z = np.meshgrid(np.arange(x_l, x_h), np.arange(y_l, y_h), np.arange(z_l, z_h), indexing='xy')
+        X += .5
+        Y += .5
+        Z += .5
+        # X, Y, Z = X.astype(np.float16), Y.astype(np.float16), X.astype(np.float16)
+
+        # Generate the first unit
+        Yh = Y + sph_rad_v
+        R = np.abs(X * X + Yh * Yh + Z * Z)
+        self.__tomo += 1. / (1. + np.exp(-R))
+
+        # Generate the second unit
+        Yh = Y - sph_rad_v
+        R = np.abs(X * X + Yh * Yh + Z * Z)
+        self.__tomo += 1. / (1. + np.exp(-R))
+
+        # Generating the surfaces
+        self.__tomo = lin_map(self.__tomo, lb=0, ub=1)
+        self.__surf = iso_surface(self.__tomo, .75)
+        self.__surf = poly_scale(self.__surf, self.__v_size)
+        self.__surf = poly_translate(self.__surf, -.5 * self.__v_size * (np.asarray(self.__tomo.shape)-.5))
+
 
 
