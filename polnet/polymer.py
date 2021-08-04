@@ -435,7 +435,7 @@ class HelixFiber(Polymer):
         assert hasattr(vz, '__len__') and (len(vz) == 3)
         self.__vz = np.asarray(vz, dtype=float)
         # Curve state member variables
-        self.__ct, self.__za = 0., 0. # z-aligned curve time (considering speed 1)
+        self.__ct, self.__za, self.__rq = 0., 0., np.asarray((1., 0., 0., 0.)) # z-aligned curve time (considering speed 1)
         self.set_reference(p0, vz)
 
     def set_reference(self, p0=(0., 0., 0.), vz=(0., 0., 1.)):
@@ -447,14 +447,13 @@ class HelixFiber(Polymer):
         """
         assert hasattr(p0, '__len__') and (len(p0) == 3)
         self.__p = np.asarray(p0)
+        self.__rq = gen_rand_unit_quaternion()
         hold_monomer = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
-        hold_q = gen_rand_unit_quaternion()
-        # hold_v = gen_uni_s2_sample(np.asarray((0., 0., 0.)), 1.)
-        # hold_v = np.asarray((1., 0., 0.))
-        # hold_q = quat_two_vectors(np.asarray((0., 0., 1.)), hold_v)
-        # hold_q = np.asarray((0., 0., 0., 1.), dtype=np.float32)
-        # vzr = rot_vect_quat(self.__compute_tangent(self.__ct), hold_q) * self.__mz_length
-        vzr = rot_vect_quat(vz, hold_q) * self.__mz_length
+        vzr = gen_uni_s2_sample(np.asarray((0., 0., 0.)), 1.)
+        M = vect_to_zmat(vzr, mode='passive')
+        hold_q = rot_to_quat(M)
+        vzr /= vector_module(vzr)
+        vzr *= self.__mz_length
         hold_monomer.rotate_q(hold_q)
         hold_monomer.translate(p0)
         self.add_monomer(p0, vzr, hold_q, hold_monomer)
@@ -472,13 +471,12 @@ class HelixFiber(Polymer):
         hold_m = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
 
         # Rotation
-        t = rot_vect_quat(self.__compute_tangent(self.__ct), self._Polymer__q[0]) * self.__mz_length
-        q = self._Polymer__q[-1]
-        ang, ax = quat_to_angle_axis(q[0], q[1], q[2], q[3], deg=True)
+        t = self._Polymer__t[-1] + self.__compute_tangent(self.__ct)
+        t = t * (self.__mz_length / vector_module(t))
         self.__za = wrap_angle(self.__za + self.__hp_astep)
         q1 = angle_axis_to_quat(self.__za, t[0], t[1], t[2])
-        # hold_m.rotate_q(q1)
-        # hold_m.rotate_q(q)
+        M = vect_to_zmat(t, mode='passive')
+        q = rot_to_quat(M)
         hold_m.rotate_q(quat_mult(q, q1))
 
         # Translation
@@ -520,7 +518,8 @@ class HelixFiber(Polymer):
         sq = math.sqrt(self.__a * self.__a + self.__b * self.__b)
         # s = sq * t
         s = t
-        return (1. / sq) * np.asarray((-self.__a * math.sin(s / sq), self.__a * math.cos(s / sq), self.__b))
+        t = (1. / sq) * np.asarray((self.__b, -self.__a * math.sin(s / sq), self.__a * math.cos(s / sq)))
+        return rot_vect_quat(t, self.__rq)
 
 
 class FiberUnit(ABC):
@@ -597,6 +596,73 @@ class FiberUnitSDimer(FiberUnit):
         self.__surf = iso_surface(self.__tomo, .75)
         self.__surf = poly_scale(self.__surf, self.__v_size)
         self.__surf = poly_translate(self.__surf, -.5 * self.__v_size * (np.asarray(self.__tomo.shape)-.5))
+
+
+class MTUnit(FiberUnit):
+    """
+    Class for modelling a fiber unit for microtubules (MTs)
+    """
+
+    def __init__(self, sph_rad=40, mt_rad=100.5, n_units=13, v_size=1):
+        """
+        Constructor
+        :param sph_rad: radius for spheres (default 40, approximate tubulin radius in A)
+        :param mt_rad: microtubule radius (default 100.5, approximate microtubule radius in A)
+        :param n_units: number of units (default 13, number of protofilaments that compund a MT)
+        :param v_size: voxel size (default 1)
+        """
+        assert (sph_rad > 0) and (mt_rad > 0) and (n_units > 0) and (v_size > 0)
+        self.__sph_rad, self.__mt_rad, self.__n_units, self.__v_size = float(sph_rad), float(mt_rad), int(n_units),\
+                                                                       float(v_size)
+        self.__size = int(math.ceil(6. * (sph_rad / v_size)))
+        if self.__size % 2 != 0:
+            self.__size += 1
+        self.__tomo, self.__surf = None, None
+        self.__gen_sdimer()
+
+    def get_vtp(self):
+        return self.__surf
+
+    def get_tomo(self):
+        return self.__tomo
+
+    def __gen_sdimer(self):
+        """
+        Contains the procedure to generate the Dimer of spheres with the specified size by using logistic functions
+        """
+
+        # Input parsing
+        sph_rad_v, mt_rad_v = self.__sph_rad / self.__v_size, self.__mt_rad / self.__v_size
+
+        # Generating the grid
+        self.__tomo = np.zeros(shape=(self.__size, self.__size, self.__size), dtype=np.float32)
+        dx, dy, dz = float(self.__tomo.shape[0]), float(self.__tomo.shape[1]), float(self.__tomo.shape[2])
+        dx2, dy2, dz2 = math.floor(.5 * dx), math.floor(.5 * dy), math.floor(.5 * dz)
+        x_l, y_l, z_l = -dx2, -dy2, -dz2
+        x_h, y_h, z_h = -dx2 + dx, -dy2 + dy, -dz2 + dz
+        X, Y, Z = np.meshgrid(np.arange(x_l, x_h), np.arange(y_l, y_h), np.arange(z_l, z_h), indexing='xy')
+        X += .5
+        Y += .5
+        Z += .5
+        # X, Y, Z = X.astype(np.float16), Y.astype(np.float16), X.astype(np.float16)
+
+        # Loop for generate the units
+        Z2 = Z * Z
+        ang_step = 2. * np.pi / self.__n_units
+        ang = ang_step
+        while ang <= 2. * np.pi:
+            # Generate the unit
+            x, y = mt_rad_v * math.cos(ang), mt_rad_v * math.sin(ang)
+            Xh, Yh = X + x, Y + y
+            R = np.abs(Xh * Xh + Yh * Yh + Z2)
+            self.__tomo += 1. / (1. + np.exp(-R))
+            ang += ang_step
+
+        # Generating the surfaces
+        self.__tomo = lin_map(self.__tomo, lb=0, ub=1)
+        self.__surf = iso_surface(self.__tomo, .75)
+        self.__surf = poly_scale(self.__surf, self.__v_size)
+        self.__surf = poly_translate(self.__surf, -.5 * self.__v_size * (np.asarray(self.__tomo.shape) - .5))
 
 
 

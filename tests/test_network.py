@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from polnet.network import NetSAWLC, NetHelixFiber
 from polnet.lrandom import PGenUniformInRange, PGenHelixFiber
-from polnet.polymer import FiberUnitSDimer
+from polnet.polymer import FiberUnitSDimer, MTUnit
 from polnet.lio import *
 from polnet.utils import *
 from polnet.affine import *
@@ -27,7 +27,7 @@ NET_TOMO_OUT = './out/sawlc_net_tomo.mrc'
 # NetHelixFiber settings
 A_MMER_RAD = 25 # A
 A_PMER_OCC = 0.1 # 5 # %
-A_MIN_P_LEN = 17.7e4 # 5200e4 # Actin filament 17.7um and MT 5200um according to 10.1083/jcb.130.4.909
+A_MIN_P_LEN = 17.7e4 # 5200e4 # Actin filament 17.7um according to 10.1083/jcb.130.4.909
 A_HP_LEN = 720 # A
 A_MZ_LEN = 50 # A
 A_MZ_LEN_F = 0.2
@@ -36,6 +36,21 @@ A_UNIT_TOMO_OUT = './out/helix_unit.mrc'
 A_NET_OUT = './out/helix_net.vtp'
 A_NET_SKEL_OUT = './out/helix_net_skel.vtp'
 A_NET_TOMO_OUT = './out/helix_net_tomo.mrc'
+
+# NetHelixFiber for MT settings
+MT_MMER_RAD = 40 # A according to http://web.physics.ucsb.edu/~jennyr/research1.html
+MT_RAD = 100.5 # A according to http://web.physics.ucsb.edu/~jennyr/research1.html
+MT_NUNITS = 13
+MT_PMER_OCC = 0.1 # 5 # %
+MT_MIN_P_LEN = 5200e4 # MT 5200um according to 10.1083/jcb.130.4.909
+MT_HP_LEN = 216000 # A
+MT_MZ_LEN = 50 # 80 # A
+MT_MZ_LEN_F = 0.4
+MT_UNIT_OUT = './out/mt_unit.vtp'
+MT_UNIT_TOMO_OUT = './out/mt_unit.mrc'
+MT_NET_OUT = './out/mt_net.vtp'
+MT_NET_SKEL_OUT = './out/mt_net_skel.vtp'
+MT_NET_TOMO_OUT = './out/mt_net_tomo.mrc'
 
 
 class TestNetSAWLC(TestCase):
@@ -102,3 +117,32 @@ class TestNetHelixFiber(TestCase):
         save_vtp(net_helix.get_vtp(), A_NET_OUT)
         save_vtp(net_helix.get_skel(), A_NET_SKEL_OUT)
         write_mrc(tomo, A_NET_TOMO_OUT, v_size=VOI_VSIZE)
+
+    def test_build_network_mt(self):
+
+        # Generate the VOI
+        voi = np.ones(shape=VOI_SHAPE, dtype=bool)
+        voi[VOI_OFF:VOI_SHAPE[0]-VOI_OFF, VOI_OFF:VOI_SHAPE[1]-VOI_OFF, VOI_OFF:VOI_SHAPE[2]-VOI_OFF] = True
+
+        # Fiber unit generation
+        funit = MTUnit(MT_MMER_RAD, MT_RAD, MT_NUNITS, VOI_VSIZE)
+        model_svol, model_surf = funit.get_tomo(), funit.get_vtp()
+        save_vtp(model_surf, MT_UNIT_OUT)
+        write_mrc(model_svol, MT_UNIT_TOMO_OUT)
+
+        # Helix Fiber parameters model
+        pol_generator = PGenHelixFiber()
+
+        # Network generation
+        net_helix = NetHelixFiber(voi, VOI_VSIZE, PMER_L*MT_MMER_RAD*2, model_surf, pol_generator, MT_PMER_OCC,
+                                  MT_MIN_P_LEN, MT_HP_LEN, MT_MZ_LEN, MT_MZ_LEN_F, PMER_OVER_TOL)
+        net_helix.build_network()
+
+        # Density tomogram generation
+        tomo = np.zeros(shape=net_helix.get_voi().shape, dtype=np.float32)
+        net_helix.insert_density_svol(model_svol, tomo, VOI_VSIZE, merge='max')
+
+        # Save the results
+        save_vtp(net_helix.get_vtp(), MT_NET_OUT)
+        save_vtp(net_helix.get_skel(), MT_NET_SKEL_OUT)
+        write_mrc(tomo, MT_NET_TOMO_OUT, v_size=VOI_VSIZE)

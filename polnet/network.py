@@ -220,7 +220,7 @@ class NetHelixFiber(Network):
                              self._Network__voi.shape[1] * self._Network__v_size * random.random(),
                              self._Network__voi.shape[2] * self._Network__v_size * random.random()))
             max_length = math.sqrt(self._Network__voi.shape[0]**2 + self._Network__voi.shape[1]**2
-                                  + self._Network__voi.shape[2]**2)
+                                  + self._Network__voi.shape[2]**2) * self._Network__v_size
             p_len = self.__gen_hfib_params.gen_persistence_length(self.__min_p_len)
             z_len_f = self.__gen_hfib_params.gen_zf_length(self.__mz_len_f)
             hold_polymer = HelixFiber(self.__l_length, self.__m_surf, p_len, self.__hp_len, self.__mz_len, z_len_f, p0)

@@ -115,6 +115,8 @@ def quat_to_angle_axis(qw, qx, qy, qz, deg=True):
     """
     x = np.asarray((qx, qy, qz))
     norm = vector_module(x)
+    if norm <= 0:
+        return 0, np.asarray((0., 0., 0.))
     if deg:
         ang_rad = (2. * math.atan2(norm, qw))
         ang = math.degrees(ang_rad)
@@ -157,13 +159,15 @@ def rot_vect_quat(v, q):
     # Make sure axis is a unit vector
     k = np.asarray((ax[0], ax[1], ax[2]))
     mod_k = math.sqrt((k * k).sum())
-    assert mod_k > 0
-    k /= mod_k
-    vc = np.asarray(v)
+    if mod_k > 0:
+        k /= mod_k
+        vc = np.asarray(v)
 
-    # Rodrigues formula
-    cos_ang, sin_ang = math.cos(ang), math.sin(ang)
-    return vc * cos_ang + np.cross(k, vc) * sin_ang + k * np.dot(k, vc) * (1.-cos_ang)
+        # Rodrigues formula
+        cos_ang, sin_ang = math.cos(ang), math.sin(ang)
+        return vc * cos_ang + np.cross(k, vc) * sin_ang + k * np.dot(k, vc) * (1.-cos_ang)
+    else:
+        return v
 
 
 def quat_to_mat(q):
@@ -310,3 +314,134 @@ def ortho_vector(v):
             other = np.asarray((0., 0., 1.))
     return np.cross(v, other)
 
+
+def vect_to_zmat(v_in, mode='active'):
+    """
+    Computes the matrix to rotate unit Z-axis vector to a given vector
+    :param v_in: input vector
+    :param mode: either 'active' (default) or 'pasive'
+    :returns: a rotation matrix as numpy ndarray (shape=3x3)
+    """
+
+    # Normalization
+    n = v_in / vector_module(v_in)
+
+
+    # Computing angles in Extrinsic ZYZ system
+    alpha = np.arccos(n[2])
+    beta = np.arctan2(n[1], n[0])
+
+    # Transform to Relion system (intrinsic ZY'Z'' where rho is free)
+    rot, tilt, psi = 0., wrap_angle(math.degrees(alpha), deg=True), \
+                     wrap_angle(180.-math.degrees(beta), deg=True)
+
+    # Matrix computation
+    M = rot_mat_zyz(rot, tilt, psi, deg=True)
+
+    # By default is active, invert if passive
+    if mode == 'passive':
+        M = M.T
+
+    return M
+
+
+def rot_mat_zyz(rot, tilt, psi, deg=True):
+    """
+    Creates 3D rotation matrix according to ZY'Z'' Euler angles convention (Relion and Xmipp compatible)
+    This is a direct translation from code https://github.com/jjcorreao/relion/blob/master/relion-1.3/src/euler.cpp
+    :param rot: first input Euler angle (Z)
+    :param tilt: second input Euler angle (X')
+    :paramn psi: third input Euler angle (Z'')
+    :param deg: if True (default) angles are computed in degrees, otherwise radians
+    :return:  a rotation matrix as numpy ndarray (shape=3x3)
+    """
+
+    # XMIPP doc
+    if deg:
+        rot, tilt, psi = math.radians(rot), math.radians(tilt), math.radians(psi)
+    mt = np.zeros(shape=(3, 3), dtype=np.float32)
+    ca, sa = math.cos(rot), math.sin(rot)
+    cb, sb = math.cos(tilt), math.sin(tilt)
+    cg, sg = math.cos(psi), math.sin(psi)
+    cc, cs = cb*ca, cb*sa
+    sc, ss = sb*ca, sb*sa
+
+    # XMIPP doc inverted
+    mt[0][0] = cg*cc - sg*sa
+    mt[1][0] = cg*cs + sg*ca
+    mt[2][0] = -cg*sb
+    mt[0][1] = -sg*cc - cg*sa
+    mt[1][1] = -sg*cs + cg*ca
+    mt[2][1] = sg*sb
+    mt[0][2] = sc
+    mt[1][2] = ss
+    mt[2][2] = cb
+
+    return np.mat(mt)
+
+
+# Computes quaternion from an input rotation matrix
+# Code extracted: from http://www.lfd.uci.edu/~gohlke/code/transformations.py.html
+# rot: rotation numpy matrix
+# is_prec: if True (default False) the input matrix is assumed to be a precise rotation
+#          matrix and a faster algorithm is used.
+def rot_to_quat(rot, is_prec=False):
+    """
+    Computes quaternion from an input rotation matrix
+    Code extracted: from http://www.lfd.uci.edu/~gohlke/code/transformations.py.html
+    :param rot: rotation numpy matrix
+    :return: a quaternion as 4 dirmension array (real part, 3-tuple imaginary part)
+    """
+
+    from scipy.spatial.transform import Rotation as spR
+    r = spR.from_matrix(rot)
+    hold_q = r.as_quat()
+    return np.asarray((hold_q[3], hold_q[0], hold_q[1], hold_q[2]), dtype=np.float)
+
+    # M = np.array(rot, dtype=np.float64, copy=False)[:4, :4]
+    #
+    # if is_prec:
+    #     q = np.empty((4, ))
+    #     t = np.trace(M)
+    #     if t > M[3, 3]:
+    #         q[0] = t
+    #         q[3] = M[1, 0] - M[0, 1]
+    #         q[2] = M[0, 2] - M[2, 0]
+    #         q[1] = M[2, 1] - M[1, 2]
+    #     else:
+    #         i, j, k = 1, 2, 3
+    #         if M[1, 1] > M[0, 0]:
+    #             i, j, k = 2, 3, 1
+    #         if M[2, 2] > M[i, i]:
+    #             i, j, k = 3, 1, 2
+    #         t = M[i, i] - (M[j, j] + M[k, k]) + M[3, 3]
+    #         q[i] = t
+    #         q[j] = M[i, j] + M[j, i]
+    #         q[k] = M[k, i] + M[i, k]
+    #         q[3] = M[k, j] - M[j, k]
+    #     q *= 0.5 / math.sqrt(t * M[3, 3])
+    #
+    # else:
+    #     m00 = M[0, 0]
+    #     m01 = M[0, 1]
+    #     m02 = M[0, 2]
+    #     m10 = M[1, 0]
+    #     m11 = M[1, 1]
+    #     m12 = M[1, 2]
+    #     m20 = M[2, 0]
+    #     m21 = M[2, 1]
+    #     m22 = M[2, 2]
+    #     # symmetric matrix K
+    #     K = np.array([[m00-m11-m22, 0.0,         0.0,         0.0],
+    #                      [m01+m10,     m11-m00-m22, 0.0,         0.0],
+    #                      [m02+m20,     m12+m21,     m22-m00-m11, 0.0],
+    #                      [m21-m12,     m02-m20,     m10-m01,     m00+m11+m22]])
+    #     K /= 3.0
+    #     # quaternion is eigenvector of K that corresponds to largest eigenvalue
+    #     w, V = np.linalg.eigh(K)
+    #     q = V[[3, 0, 1, 2], np.argmax(w)]
+    #
+    # if q[0] < 0.0:
+    #     np.negative(q, q)
+    #
+    # return q
