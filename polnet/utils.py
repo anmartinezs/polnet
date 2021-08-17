@@ -336,3 +336,27 @@ def wrap_angle(ang, deg=True):
         phase = ((-ang + np.pi) % (2.0 * np.pi) - np.pi) * -1.0
     return phase
 
+
+def point_to_poly(point, normal=None, n_name='n_normal'):
+    """
+    Converts a point into a poly
+    :param point: 3-tuple with point coordinates
+    :param normal: 3-tuple with the normal to be associated as property (default None)
+    :param n_name: name for the normal (default 'normal')
+    :return: a vtpPolyData object
+    """
+    poly = vtk.vtkPolyData()
+    p_points = vtk.vtkPoints()
+    p_cells = vtk.vtkCellArray()
+    p_points.InsertNextPoint(point)
+    p_cells.InsertNextCell(1)
+    p_cells.InsertCellPoint(0)
+    poly.SetPoints(p_points)
+    poly.SetVerts(p_cells)
+    if normal is not None:
+        p_norm = vtk.vtkFloatArray()
+        p_norm.SetName(n_name)
+        p_norm.SetNumberOfComponents(3)
+        p_norm.InsertTuple(0, normal)
+        poly.GetPointData().AddArray(p_norm)
+    return poly

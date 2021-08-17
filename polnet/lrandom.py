@@ -65,3 +65,20 @@ class PGenHelixFiber(PGen):
         assert (min_zf >= 0) and (max_zf <= 1)
         return (max_zf - min_zf) * random.random() + min_zf
 
+
+class PGenHelixFiberB(PGenHelixFiber):
+    """
+    Class to model random distribution for helix fiber parameters with branches
+    """
+
+    def gen_branch(self, b_prob=0.5):
+        """
+        Generates a boolean that is True (branching) with some input probability
+        :param b_prob: branching probability [0, 1) (default 0.5)
+        :return: a boolean
+        """
+        if random.random() <= b_prob:
+            return True
+        else:
+            return False
+

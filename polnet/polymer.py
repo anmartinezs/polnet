@@ -152,7 +152,7 @@ class Monomer:
         """
         return Monomer(self.__m_surf, self.__diam)
 
-    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max'):
+    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='min'):
         """
         Insert a monomer subvolume into a tomogram
         :param m_svol: input monomer sub-volume
@@ -168,8 +168,60 @@ class Monomer:
             if trans[0] == 't':
                 tot_v += (trans[1] * v_size_i)
             elif trans[0] == 'r':
-                hold_svol = tomo_rotate(hold_svol, trans[1])
+                hold_svol = tomo_rotate(hold_svol, trans[1], mode='constant', cval=hold_svol.max())
         insert_svol_tomo(hold_svol, tomo, tot_v, merge=merge)
+
+    def overlap_mmer(self, mmer, over_tolerance=0):
+        """
+        Determines if the monomer overlaps with another
+        :param mmer: input monomer to check overlap with self
+        :return: True if overlapping, otherwise False
+        """
+        # Initialization
+        selector = vtk.vtkSelectEnclosedPoints()
+        selector.SetTolerance(VTK_RAY_TOLERANCE)
+        selector.Initialize(self.get_vtp())
+
+        dist = points_distance(self.get_center_mass(), mmer.get_center_mass())
+        if dist <= self.get_diameter():
+            poly_b = mmer.get_vtp()
+            count, n_points = 0., poly_b.GetNumberOfPoints()
+            n_points_if = 1. / float(n_points)
+            for i in range(n_points):
+                if selector.IsInsideSurface(poly_b.GetPoint(i)) > 0:
+                    count += 1
+                    over = count * n_points_if
+                    if over > over_tolerance:
+                        return True
+
+        return False
+
+    def overlap_net(self, net, over_tolerance=0):
+        """
+        Determines if the monomer overlaps with another momonmer in a network
+        :param mmer: input monomer to check overlap with self
+        :return: True if overlapping, otherwise False
+        """
+        # Initialization
+        selector = vtk.vtkSelectEnclosedPoints()
+        selector.SetTolerance(VTK_RAY_TOLERANCE)
+        selector.Initialize(self.get_vtp())
+
+        for pmer in net.get_pmers_list():
+            for mmer in pmer.get_mmers_list():
+                dist = points_distance(self.get_center_mass(), mmer.get_center_mass())
+                if dist <= self.get_diameter():
+                    poly_b = mmer.get_vtp()
+                    count, n_points = 0., poly_b.GetNumberOfPoints()
+                    n_points_if = 1. / float(n_points)
+                    for i in range(n_points):
+                        if selector.IsInsideSurface(poly_b.GetPoint(i)) > 0:
+                            count += 1
+                            over = count * n_points_if
+                            if over > over_tolerance:
+                                return True
+
+        return False
 
 
 class Polymer(ABC):
@@ -289,7 +341,7 @@ class Polymer(ABC):
         else:
             self.__t_length += points_distance(self.__r[-1], self.__r[-2])
 
-    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max'):
+    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='min'):
         """
         Insert a polymer as set of subvolumes into a tomogram
         :param m_svol: input monomer sub-volume reference
@@ -308,6 +360,37 @@ class Polymer(ABC):
     @abstractmethod
     def gen_new_monomer(self):
         raise NotImplementedError
+
+    def overlap_polymer(self, monomer, over_tolerance=0):
+        """
+        Determines if a monomer overlaps with other polymer's monomers
+        :param monomer: input monomer
+        :param over_tolerance: fraction of overlapping tolerance (default 0)
+        :return: True if there is an overlapping and False otherwise
+        """
+
+        # Initialization
+        selector = vtk.vtkSelectEnclosedPoints()
+        selector.SetTolerance(VTK_RAY_TOLERANCE)
+        selector.Initialize(monomer.get_vtp())
+
+        # Polymer loop, no need to process monomer beyond diameter distance
+        diam, center = monomer.get_diameter(), monomer.get_center_mass()
+        for i in range(len(self.__m) - 1, 0, -1):
+            hold_monomer = self.__m[i]
+            dist = points_distance(center, hold_monomer.get_center_mass())
+            if dist <= diam:
+                poly_b = hold_monomer.get_vtp()
+                count, n_points = 0., poly_b.GetNumberOfPoints()
+                n_points_if = 1. / float(n_points)
+                for i in range(n_points):
+                    if selector.IsInsideSurface(poly_b.GetPoint(i)) > 0:
+                        count += 1
+                        over = count * n_points_if
+                        if over > over_tolerance:
+                            return True
+
+        return False
 
 
 class SAWLC(Polymer):
@@ -377,37 +460,6 @@ class SAWLC(Polymer):
 
         return r, t, q, hold_m
 
-    def overlap_polymer(self, monomer, over_tolerance=0):
-        """
-        Determines if a monomer overlaps with polymer
-        :param monomer: input monomer
-        :param over_tolerance: fraction of overlapping tolerance (default 0)
-        :return: True if there is an overlapping and False otherwise
-        """
-
-        # Initialization
-        selector = vtk.vtkSelectEnclosedPoints()
-        selector.SetTolerance(VTK_RAY_TOLERANCE)
-        selector.Initialize(monomer.get_vtp())
-
-        # Polymer loop, no need to process monomer beyond diameter distance
-        diam, center = monomer.get_diameter(), monomer.get_center_mass()
-        for i in range(len(self._Polymer__m) - 1, 0, -1):
-            hold_monomer = self._Polymer__m[i]
-            dist = points_distance(center, hold_monomer.get_center_mass())
-            if dist <= diam:
-                poly_b = hold_monomer.get_vtp()
-                count, n_points = 0., poly_b.GetNumberOfPoints()
-                n_points_if = 1. / float(n_points)
-                for i in range(n_points):
-                    if selector.IsInsideSurface(poly_b.GetPoint(i)) > 0:
-                        count += 1
-                        over = count * n_points_if
-                        if over > over_tolerance:
-                            return True
-
-        return False
-
 
 class HelixFiber(Polymer):
     """
@@ -458,12 +510,15 @@ class HelixFiber(Polymer):
         hold_monomer.translate(p0)
         self.add_monomer(p0, vzr, hold_q, hold_monomer)
 
-    def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1):
+    def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1, net=None, branch=None):
         """
         Generates a new monomer according the flexible fiber model
         :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0)
         :param voi: VOI to define forbidden regions (default None, not applied)
         :param v_size: VOI voxel size, it must be greater than 0 (default 1)
+        :param net: if not None (default) it contain a network of polymer that must be avoided
+        :param branch: input branch from where the current mmer starts, is avoid network avoiding at the branch,
+                       only valid in net is not None (default None).
         :return: a 4-tuple with monomer center point, associated tangent vector, rotated quaternion and monomer,
                  return None in case the generation has failed
         """
@@ -485,10 +540,25 @@ class HelixFiber(Polymer):
         r = hold_r + t
         hold_m.translate(r)
 
-        # Check self-avoiding and forbidden regions
+        # Avoid forbidden regions
         if voi is not None:
             if hold_m.overlap_voi(voi, v_size):
                 return None
+        # Self-avoiding and network avoiding
+        if branch is None:
+            if self.overlap_polymer(hold_m, over_tolerance=over_tolerance):
+                return None
+            if net is not None:
+                if hold_m.overlap_net(net, over_tolerance=over_tolerance):
+                    return None
+        else:
+            branch_dst = points_distance(branch.get_point(), hold_m.get_center_mass())
+            if branch_dst > hold_m.get_diameter():
+                if self.overlap_polymer(hold_m, over_tolerance=over_tolerance):
+                    return None
+                if net is not None:
+                    if hold_m.overlap_net(net, over_tolerance=over_tolerance):
+                        return None
 
         return r, t, q, hold_m
 

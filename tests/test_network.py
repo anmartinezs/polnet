@@ -1,7 +1,9 @@
 from unittest import TestCase
 
-from polnet.network import NetSAWLC, NetHelixFiber
-from polnet.lrandom import PGenUniformInRange, PGenHelixFiber
+import numpy as np
+
+from polnet.network import NetSAWLC, NetHelixFiber, NetHelixFiberB
+from polnet.lrandom import PGenUniformInRange, PGenHelixFiber, PGenHelixFiberB
 from polnet.polymer import FiberUnitSDimer, MTUnit
 from polnet.lio import *
 from polnet.utils import *
@@ -31,6 +33,8 @@ A_MIN_P_LEN = 17.7e4 # 5200e4 # Actin filament 17.7um according to 10.1083/jcb.1
 A_HP_LEN = 720 # A
 A_MZ_LEN = 50 # A
 A_MZ_LEN_F = 0.2
+A_BPROP = 1 / 2
+A_MAX_P_BRANCH = 2
 A_UNIT_OUT = './out/helix_unit.vtp'
 A_UNIT_TOMO_OUT = './out/helix_unit.mrc'
 A_NET_OUT = './out/helix_net.vtp'
@@ -57,6 +61,8 @@ class TestNetSAWLC(TestCase):
 
     def test_build_network(self):
 
+        # return
+
         # Generate the VOI
         voi = np.ones(shape=VOI_SHAPE, dtype=bool)
         voi[VOI_OFF:VOI_SHAPE[0]-VOI_OFF, VOI_OFF:VOI_SHAPE[1]-VOI_OFF, VOI_OFF:VOI_SHAPE[2]-VOI_OFF] = True
@@ -78,8 +84,8 @@ class TestNetSAWLC(TestCase):
         net_sawlc.build_network()
 
         # Density tomogram generation
-        tomo = np.zeros(shape=net_sawlc.get_voi().shape, dtype=np.float32)
-        net_sawlc.insert_density_svol(model, tomo, VOI_VSIZE, merge='max')
+        tomo = np.ones(shape=net_sawlc.get_voi().shape, dtype=np.float32)
+        net_sawlc.insert_density_svol(model, tomo, VOI_VSIZE, merge='min')
 
         # Save the results
         save_vtp(net_sawlc.get_vtp(), NET_OUT)
@@ -102,16 +108,16 @@ class TestNetHelixFiber(TestCase):
         write_mrc(model_svol, A_UNIT_TOMO_OUT)
 
         # Helix Fiber parameters model
-        pol_generator = PGenHelixFiber()
+        pol_generator = PGenHelixFiberB()
 
         # Network generation
-        net_helix = NetHelixFiber(voi, VOI_VSIZE, PMER_L*A_MMER_RAD*2, model_surf, pol_generator, A_PMER_OCC,
-                                  A_MIN_P_LEN, A_HP_LEN, A_MZ_LEN, A_MZ_LEN_F, PMER_OVER_TOL)
+        net_helix = NetHelixFiberB(voi, VOI_VSIZE, PMER_L*A_MMER_RAD*2, model_surf, pol_generator, A_PMER_OCC,
+                                  A_MIN_P_LEN, A_HP_LEN, A_MZ_LEN, A_MZ_LEN_F, A_BPROP, A_MAX_P_BRANCH, PMER_OVER_TOL)
         net_helix.build_network()
 
         # Density tomogram generation
-        tomo = np.zeros(shape=net_helix.get_voi().shape, dtype=np.float32)
-        net_helix.insert_density_svol(model_svol, tomo, VOI_VSIZE, merge='max')
+        tomo = np.ones(shape=net_helix.get_voi().shape, dtype=np.float32)
+        net_helix.insert_density_svol(model_svol, tomo, VOI_VSIZE, merge='min')
 
         # Save the results
         save_vtp(net_helix.get_vtp(), A_NET_OUT)
@@ -119,6 +125,8 @@ class TestNetHelixFiber(TestCase):
         write_mrc(tomo, A_NET_TOMO_OUT, v_size=VOI_VSIZE)
 
     def test_build_network_mt(self):
+
+        # return
 
         # Generate the VOI
         voi = np.ones(shape=VOI_SHAPE, dtype=bool)
@@ -139,8 +147,8 @@ class TestNetHelixFiber(TestCase):
         net_helix.build_network()
 
         # Density tomogram generation
-        tomo = np.zeros(shape=net_helix.get_voi().shape, dtype=np.float32)
-        net_helix.insert_density_svol(model_svol, tomo, VOI_VSIZE, merge='max')
+        tomo = np.ones(shape=net_helix.get_voi().shape, dtype=np.float32)
+        net_helix.insert_density_svol(model_svol, tomo, VOI_VSIZE, merge='min')
 
         # Save the results
         save_vtp(net_helix.get_vtp(), MT_NET_OUT)

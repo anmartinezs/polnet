@@ -136,13 +136,13 @@ def angle_axis_to_quat(ang, x, y, z, deg=True):
     :param deg: if True (default) the input angle is given in degrees, otherwise in radians
     :return: a unit quaternion (4-array)
     """
-    ax = np.asarray((x, y, z), dtype=np.float)
+    ax = np.asarray((x, y, z), dtype=float)
     ax /= vector_module(ax)
     hold_ang = .5 * wrap_angle(ang, deg=deg)
     if deg:
         hold_ang = math.radians(hold_ang)
     ca, sa = math.cos(hold_ang), math.sin(hold_ang)
-    return np.asarray((ca, ax[0]*sa, ax[1]*sa, ax[2]*sa), dtype=np.float)
+    return np.asarray((ca, ax[0]*sa, ax[1]*sa, ax[2]*sa), dtype=float)
 
 
 def rot_vect_quat(v, q):
@@ -396,7 +396,7 @@ def rot_to_quat(rot, is_prec=False):
     from scipy.spatial.transform import Rotation as spR
     r = spR.from_matrix(rot)
     hold_q = r.as_quat()
-    return np.asarray((hold_q[3], hold_q[0], hold_q[1], hold_q[2]), dtype=np.float)
+    return np.asarray((hold_q[3], hold_q[0], hold_q[1], hold_q[2]), dtype=float)
 
     # M = np.array(rot, dtype=np.float64, copy=False)[:4, :4]
     #
