@@ -6,7 +6,6 @@ __author__ = 'Antonio Martinez-Sanchez'
 
 import vtk
 import math
-import random
 import numpy as np
 
 from vtkmodules.util import numpy_support
@@ -302,6 +301,10 @@ def insert_svol_tomo(svol, tomo, sub_pt, merge='max'):
         tomo[off_l_x:off_h_x, off_l_y:off_h_y, off_l_z:off_h_z] = np.maximum(svol[dif_l_x:dif_h_x, dif_l_y:dif_h_y,
                                                                   dif_l_z:dif_h_z], tomo[off_l_x:off_h_x,
                                                                   off_l_y:off_h_y, off_l_z:off_h_z])
+    elif merge == 'and':
+        tomo[off_l_x:off_h_x, off_l_y:off_h_y, off_l_z:off_h_z] = np.logical_and(svol[dif_l_x:dif_h_x, dif_l_y:dif_h_y,
+                                                                             dif_l_z:dif_h_z], tomo[off_l_x:off_h_x,
+                                                                             off_l_y:off_h_y, off_l_z:off_h_z])
 
 
 # Applies a linear mapping to the input array for getting an array in the specified range

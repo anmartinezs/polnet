@@ -5,12 +5,6 @@ A networks is a combination of a polymer in a volume
 
 __author__ = 'Antonio Martinez-Sanchez'
 
-import math
-import random
-
-import numpy as np
-import vtkmodules.vtkFiltersCore
-
 from polnet.utils import *
 from polnet.affine import *
 from polnet.polymer import SAWLC, HelixFiber
@@ -41,7 +35,7 @@ class Network(ABC):
 
     def add_polymer(self, polymer):
         self.__pl.append(polymer)
-        self.__pl_occ += 100. * (polymer.get_vol() / self._Network__vol)
+        self.__pl_occ += 100. * (polymer.get_vol() / self.__vol)
 
     @abstractmethod
     def build_network(self):
@@ -88,13 +82,13 @@ class Network(ABC):
         app_flt.Update()
         return app_flt.GetOutput()
 
-    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max'):
+    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='min'):
         """
         Insert a polymer network as set of subvolumes into a tomogram
         :param m_svol: input monomer sub-volume reference
         :param tomo: tomogram where m_svol is added
         :param v_size: tomogram voxel size (default 1)
-        :param merge: merging mode, valid: 'max' (default), 'min', 'sum' and 'insert'
+        :param merge: merging mode, valid: 'min' (default), 'max', 'sum' and 'insert'
         :return:
         """
         for pl in self.__pl:
@@ -487,3 +481,5 @@ class Branch:
 
     def get_vtp(self):
         return point_to_poly(self.get_point())
+
+

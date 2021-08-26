@@ -10,9 +10,9 @@ import numpy as np
 from abc import ABC, abstractmethod
 
 
-class PGen:
+class PGen(ABC):
     """
-    Abstract class for random models
+    Abstract class for random polymer models
     """
 
     @abstractmethod
@@ -82,3 +82,19 @@ class PGenHelixFiberB(PGenHelixFiber):
         else:
             return False
 
+
+class EllipGen:
+    """
+    Class for model the paramaters for modelling an Ellipsoid
+    """
+
+    def gen_parameters(self, radius_rg):
+        """
+        Generates randomly the three semi-axis parameters
+        :param radius_rg: ranges for semi-axis parameters
+        :return: a 3-tuple of floats
+        """
+        assert hasattr(radius_rg, '__len__') and (len(radius_rg) == 2) and (radius_rg[0] <= radius_rg[1])
+        return random.uniform(radius_rg[0], radius_rg[1]), \
+               random.uniform(radius_rg[0], radius_rg[1]), \
+               random.uniform(radius_rg[0], radius_rg[1])

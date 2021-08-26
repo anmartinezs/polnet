@@ -1,18 +1,12 @@
 """
 Classes for modeling Self-Avoiding Worm-Like Chain (SAWLC) polymers.
-A polymer is a linear sequence of monomers
+A polymer is a linear sequence of monomers.
 """
 
 __author__ = 'Antonio Martinez-Sanchez'
 
-import copy
-import math
-import random
-
-import numpy as np
-
-from .utils import *
-from .affine import *
+from polnet.utils import *
+from polnet.affine import *
 from abc import ABC, abstractmethod
 
 
@@ -158,7 +152,7 @@ class Monomer:
         :param m_svol: input monomer sub-volume
         :param tomo: tomogram where m_svol is added
         :param v_size: tomogram voxel size (default 1)
-        :param merge: merging mode, valid: 'max' (default), 'min', 'sum' and 'insert'
+        :param merge: merging mode, valid: 'min' (default), 'max', 'sum' and 'insert'
         :return:
         """
         v_size_i = 1. / v_size
@@ -347,7 +341,7 @@ class Polymer(ABC):
         :param m_svol: input monomer sub-volume reference
         :param tomo: tomogram where m_svol is added
         :param v_size: tomogram voxel size (default 1)
-        :param merge: merging mode, valid: 'max' (default), 'min', 'sum' and 'insert'
+        :param merge: merging mode, valid: 'min' (default), 'max', 'sum' and 'insert'
         :return:
         """
         for mmer in self.__m:
