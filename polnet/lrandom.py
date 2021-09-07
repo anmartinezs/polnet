@@ -5,9 +5,12 @@ A networks is a combination of a polymer in a volume
 
 __author__ = 'Antonio Martinez-Sanchez'
 
+import math
 import random
 import numpy as np
 from abc import ABC, abstractmethod
+
+MAX_TRIES_ELLIP = 1e6
 
 
 class PGen(ABC):
@@ -83,18 +86,87 @@ class PGenHelixFiberB(PGenHelixFiber):
             return False
 
 
-class EllipGen:
+class SurfGen(ABC):
+    """
+    Abstract class for modeling 3D parametric surface random parameter generators
+    """
+
+    @abstractmethod
+    def gen_parameters(self):
+        raise NotImplemented
+
+
+class EllipGen(SurfGen):
     """
     Class for model the paramaters for modelling an Ellipsoid
     """
 
-    def gen_parameters(self, radius_rg):
+    def __init__(self, radius_rg, max_ecc=1, max_tries=int(1e6)):
         """
-        Generates randomly the three semi-axis parameters
+        Constructor
         :param radius_rg: ranges for semi-axis parameters
-        :return: a 3-tuple of floats
+        :param max_ecc: maximum eccentricity for both planes (default 1), in range [0, 1]
+        :param max_tries: raises an RuntimeError exception if there is no proper settings are found before trying
+                 'max_tries' times
         """
         assert hasattr(radius_rg, '__len__') and (len(radius_rg) == 2) and (radius_rg[0] <= radius_rg[1])
-        return random.uniform(radius_rg[0], radius_rg[1]), \
-               random.uniform(radius_rg[0], radius_rg[1]), \
-               random.uniform(radius_rg[0], radius_rg[1])
+        assert (max_ecc >= 0) and (max_ecc <= 1)
+        assert isinstance(max_tries, int) and (max_tries > 0)
+        self.__radius_rg, self.__max_ecc, self.__max_tries = radius_rg, max_ecc, max_tries
+
+    def gen_parameters(self):
+        """
+        Generates randomly the three semi-axes parameters
+        :return: an array with the three semi-axes sorted in descending order
+        """
+        for i in range(self.__max_tries):
+            axes = np.sort(np.asarray((random.uniform(self.__radius_rg[0], self.__radius_rg[1]),
+                                       random.uniform(self.__radius_rg[0], self.__radius_rg[1]),
+                                       random.uniform(self.__radius_rg[0], self.__radius_rg[1]))))[::-1]
+            ecc1, ecc2 = math.sqrt(1 - (axes[2] / axes[0])**2), math.sqrt(1 - (axes[2] / axes[1])**2)
+            if (ecc1 <= self.__max_ecc) and (ecc2 <= self.__max_ecc):
+                return axes
+        raise RuntimeError
+
+
+class SphGen(SurfGen):
+    """
+    Class for model the parameters for modelling an Sphere
+    """
+
+    def __init__(self, radius_rg):
+        """
+        Constructor
+        :param radius_rg: ranges for radius
+        """
+        assert hasattr(radius_rg, '__len__') and (len(radius_rg) == 2) and (radius_rg[0] <= radius_rg[1])
+        self.__radius_rg = radius_rg
+
+    def gen_parameters(self):
+        """
+        Generates randomly sphere radii
+        :return: a float with the radius value
+        """
+        return random.uniform(self.__radius_rg[0], self.__radius_rg[1])
+
+
+class TorGen(SurfGen):
+    """
+    Class for model the paramaters for modelling a Torus
+    """
+
+    def __init__(self, radius_rg):
+        """
+        Constructor
+        :param radius_rg: ranges for radii parameters
+        """
+        assert hasattr(radius_rg, '__len__') and (len(radius_rg) == 2) and (radius_rg[0] <= radius_rg[1])
+        self.__radius_rg = radius_rg
+
+    def gen_parameters(self):
+        """
+        Generates randomly the two Torus radii
+        :return: a array with the two radii ('a' torus radius, and 'b' tube radius, where a > b)
+        """
+        return np.sort(np.asarray((random.uniform(self.__radius_rg[0], self.__radius_rg[1]),
+                                   random.uniform(self.__radius_rg[0], self.__radius_rg[1]))))[::-1]

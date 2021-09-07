@@ -222,7 +222,7 @@ def tomo_rotate(tomo, q, center=None, active=True, order=3, mode='constant', cva
         # center = np.round(.5 * np.asarray(tomo.shape, dtype=np.float32))
         center = .5 * np.asarray(tomo.shape, dtype=np.float32)
     else:
-        assert isinstance(tomo, np.ndarray) and (len(center.shape) == 3)
+        assert isinstance(tomo, np.ndarray) and (len(center) == 3)
 
     # Getting rotation matrix
     q /= vector_module(q)
@@ -390,3 +390,41 @@ def rot_to_quat(rot):
     r = spR.from_matrix(rot)
     hold_q = r.as_quat()
     return np.asarray((hold_q[3], hold_q[0], hold_q[1], hold_q[2]), dtype=float)
+
+
+def tomo_shift(tomo, shift):
+    """
+    Tomogram shift in Fourier space
+    :param tomo: the tomo numpy.ndarray (it must be 3D) to shift
+    :param shift: 3-tuple with the shifting for every dimension
+    """
+
+    # Input parsing
+    assert isinstance(tomo, np.ndarray) and (len(tomo.shape) == 3)
+    assert hasattr(shift, '__len__') and (len(shift) == 3)
+    dx, dy, dz = float(tomo.shape[0]), float(tomo.shape[1]), float(tomo.shape[2])
+    dx2, dy2, dz2 = math.floor(.5*dx), math.floor(.5*dy), math.floor(.5*dz)
+    if isinstance(shift, np.ndarray):
+        delta = np.copy(shift)
+    else:
+        delta = np.asarray(shift, dtype=np.float32)
+    dim = np.asarray((dx, dy, dz), dtype=np.float32)
+
+    # Generating the grid
+    x_l, y_l, z_l = -dx2, -dy2, -dz2
+    x_h, y_h, z_h = -dx2+dx, -dy2+dy, -dz2+dz
+    X, Y, Z = np.meshgrid(np.arange(x_l, x_h), np.arange(y_l, y_h), np.arange(z_l, z_h), indexing='xy')
+
+    # Check for trivial dimensions
+    ids = np.where(dim <= 1)[0]
+    delta[ids] = 0
+
+    # Shift grid in Fourier space
+    delta[0], delta[1], delta[2] = delta[0]/dx, delta[1]/dy, delta[2]/dz
+    X = np.fft.ifftshift(delta[0]*X + delta[1]*Y + delta[2]*Z)
+    del Y, Z
+
+    # Tomogram shifting in Fourier space
+    j = np.complex(0, 1)
+    img = np.fft.fftn(tomo)
+    return np.real(np.fft.ifftn(img * np.exp(-2.*np.pi*j*X)))

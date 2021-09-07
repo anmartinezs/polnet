@@ -5,23 +5,24 @@ A membrane is modelled as two parallel surfaces with Gaussian profile
 
 __author__ = 'Antonio Martinez-Sanchez'
 
+import numpy as np
+
 from polnet.utils import *
 from polnet.affine import *
-from polnet.lrandom import EllipGen
+from polnet.lrandom import *
 from abc import ABC, abstractmethod
 
+MAX_TRIES_MB = 10
 
-class MbEllipsoid:
+
+class Mb(ABC):
     """
-    Class for generating a membrane with Ellipsoid shape
+    Abstract class to model membranes with different geometries
     """
 
-    def __init__(self, a, b, c, tomo_shape, v_size=1, center=(0, 0, 0), rot_q=(1, 0, 0, 0), thick=1, layer_s=1):
+    def __init__(self, tomo_shape, v_size=1, center=(0, 0, 0), rot_q=(1, 0, 0, 0), thick=1, layer_s=1):
         """
         Constructor
-        :param a: semi axis length in X axis (before rotation)
-        :param b: semi axis length in Y axis (before rotation)
-        :param c: semi axis length in Z axis (before rotation)
         :param tomo_shape: reference tomogram shape (X, Y and Z dimensions)
         :param v_size: reference tomogram voxel size (default 1)
         :param center: ellipsoid center (VERY IMPORTANT: coordinates are not in voxels)
@@ -31,16 +32,27 @@ class MbEllipsoid:
         """
         assert hasattr(tomo_shape, '__len__') and (len(tomo_shape) == 3)
         assert v_size > 0
-        assert (a > 0) and (b > 0) and (c > 0)
+        assert (thick > 0) and (layer_s > 0)
         assert hasattr(center, '__len__') and (len(center) == 3)
         assert hasattr(rot_q, '__len__') and (len(rot_q) == 4)
-        assert (thick > 0) and (layer_s > 0)
         self.__tomo_shape, self.__v_size = tomo_shape, v_size
-        self.__a, self.__b, self.__c = float(a), float(b), float(c)
         self.__center, self.__rot_q = np.asarray(center, dtype=float), np.asarray(rot_q, dtype=float)
-        self.__thick, self.__layer_s = thick, layer_s
+        self.__thick, self.__layer_s = float(thick), float(layer_s)
         self.__tomos, self.__mask = None, None
-        self.__build_tomos()
+
+    def get_thick(self):
+        """
+        Get membrane thickness, bilayer gap
+        :return: thickness as a float
+        """
+        return self.__thick
+
+    def get_layer_s(self):
+        """
+        Get Gaussian sigma for each layer
+        :return: layer sigma as a float
+        """
+        return self.__layer_s
 
     def get_vol(self):
         """
@@ -69,43 +81,7 @@ class MbEllipsoid:
         Get the membrane as an VTK surface
         :return: a vtkPolyData object
         """
-        return iso_surface(self.__mask.astype(np.float), .5)
-
-    def __build_tomos(self):
-        """
-        Generates a tomogram that encloses the membrane
-        :return: the generated tomogram and its binary mask
-        """
-
-        # Input parsing
-        t_v, s_v = .5 * (self.__thick / self.__v_size), self.__layer_s / self.__v_size
-        a_v, b_v, c_v = self.__a / self.__v_size, self.__b / self.__v_size, self.__c / self.__v_size
-        ao_v, bo_v, co_v = a_v + t_v, b_v + t_v, c_v + t_v
-        ai_v, bi_v, ci_v = a_v - t_v, b_v - t_v, c_v - t_v
-        g_cte = 2 * s_v * s_v
-
-        # Generating the bilayer
-        dx, dy, dz = float(self.__tomo_shape[0]), float(self.__tomo_shape[1]), float(self.__tomo_shape[2])
-        dx2, dy2, dz2 = math.floor(.5 * dx), math.floor(.5 * dy), math.floor(.5 * dz)
-        x_l, y_l, z_l = -dx2, -dy2, -dz2
-        x_h, y_h, z_h = -dx2 + dx, -dy2 + dy, -dz2 + dz
-        X, Y, Z = np.meshgrid(np.arange(x_l, x_h), np.arange(y_l, y_h), np.arange(z_l, z_h), indexing='xy')
-        # X, Y, Z = X.astype(np.float16), Y.astype(np.float16), X.astype(np.float16)
-        X *= self.__v_size
-        Y *= self.__v_size
-        Z *= self.__v_size
-        R_o = np.sqrt(X**2/ao_v**2 + Y**2/bo_v**2 + Z**2/co_v**2)
-        G_o = np.exp(-(R_o - 1) ** 2 / g_cte)
-        R_i = np.sqrt(X ** 2 / ai_v ** 2 + Y ** 2 / bi_v ** 2 + Z ** 2 / ci_v ** 2)
-        G_i = np.exp(-(R_o - 1) ** 2 / g_cte)
-
-        # Tomogram and binary mask
-        self.__tomo = np.asarray(G_i + G_o, dtype=float)
-        self.__mask = (R_i >= 1) + (R_o <= 1)
-
-        # Tomograms rotation
-        self.__tomo = tomo_rotate(self.__tomo, self.__rot_q)
-        self.__mask = tomo_rotate(self.__mask, self.__rot_q, order=1)
+        return iso_surface(self.__mask.astype(float), .5)
 
     def insert_density_svol(self, tomo, merge='min'):
         """
@@ -116,35 +92,274 @@ class MbEllipsoid:
         """
         insert_svol_tomo(self.get_tomo(), tomo, self.__center / self.__v_size, merge=merge)
 
+    @abstractmethod
+    def __build_tomos(self):
+        """
+        Generates the membrane within a tomogram
+        :return: the generated tomogram and its binary mask
+        """
+        raise NotImplemented
 
-class SetMembranes(ABC):
+
+class MbEllipsoid(ABC):
+    """
+    Class for generating a membrane with Ellipsoid shape
+    """
+
+    def __init__(self, tomo_shape, v_size=1, center=(0, 0, 0), rot_q=(1, 0, 0, 0), thick=1, layer_s=1, a=1, b=1, c=1):
+        """
+        Constructor
+        :param tomo_shape: reference tomogram shape (X, Y and Z dimensions)
+        :param v_size: reference tomogram voxel size (default 1)
+        :param center: ellipsoid center (VERY IMPORTANT: coordinates are not in voxels)
+        :param rot_q: rotation expressed as quaternion with respect ellipsoid center (default [1, 0, 0, 0] no rotation)
+        :param thick: membrane thickness (default 1)
+        :param layer_s: Gaussian sigma for each layer
+        :param a: (default 1) semi axis length in X axis (before rotation)
+        :param b: (default 1) semi axis length in Y axis (before rotation)
+        :param c: (default 1) semi axis length in Z axis (before rotation)
+        """
+        super(MbEllipsoid, self).__init__(tomo_shape, v_size, center, rot_q, thick, layer_s)
+        assert (a > 0) and (b > 0) and (c > 0)
+        self.__a, self.__b, self.__c = float(a), float(b), float(c)
+        self.__build_tomos()
+
+    def __build_tomos(self):
+
+        # Input parsing
+        t_v, s_v = .5 * (self._Mb__thick / self._Mb__v_size), self._Mb__layer_s / self._Mb__v_size
+        a_v, b_v, c_v = self.__a / self._Mb__v_size, self.__b / self._Mb__v_size, self.__c / self._Mb__v_size
+        ao_v, bo_v, co_v = a_v + t_v, b_v + t_v, c_v + t_v
+        ai_v, bi_v, ci_v = a_v - t_v, b_v - t_v, c_v - t_v
+        g_cte = 2 * s_v * s_v
+        p0_v = self._Mb__center / self._Mb__v_size
+
+        # Generating the bilayer
+        dx, dy, dz = float(self._Mb__tomo_shape[0]), float(self._Mb__tomo_shape[1]), float(self._Mb__tomo_shape[2])
+        dx2, dy2, dz2 = math.floor(.5 * dx), math.floor(.5 * dy), math.floor(.5 * dz)
+        p0_v[0] -= dx2
+        p0_v[1] -= dy2
+        p0_v[2] -= dz2
+        x_l, y_l, z_l = -dx2, -dy2, -dz2
+        x_h, y_h, z_h = -dx2 + dx, -dy2 + dy, -dz2 + dz
+        X, Y, Z = np.meshgrid(np.arange(x_l, x_h), np.arange(y_l, y_h), np.arange(z_l, z_h), indexing='xy')
+        X, Y, Z = tomo_rotate(X, self._Mb__rot_q), tomo_rotate(Y, self._Mb__rot_q), tomo_rotate(Z, self._Mb__rot_q)
+        R_o = (X-p0_v[0])**2/ao_v**2 + (Y-p0_v[1])**2/bo_v**2 + (Z-p0_v[2])**2/co_v**2
+        G_o = np.exp(-(R_o - 1) ** 2 / g_cte)
+        R_i = (X-p0_v[0])**2/ai_v**2 + (Y-p0_v[1])**2/bi_v**2 + (Z-p0_v[2])**2/ci_v**2
+        G_i = np.exp(-(R_i - 1) ** 2 / g_cte)
+
+        # Tomogram and binary mask
+        self.__tomo = lin_map(density_norm(np.asarray(G_i + G_o, dtype=float), inv=True), ub=-1, lb=1)
+        self.__mask = np.logical_and(R_i >= 1, R_o <= 1)
+
+
+class MbSphere(Mb):
+    """
+    Class for generating a membrane with Spherical shape
+    """
+
+    def __init__(self, tomo_shape, v_size=1, center=(0, 0, 0), rot_q=(1, 0, 0, 0), thick=1, layer_s=1, rad=1):
+        """
+        Constructor
+        :param tomo_shape: reference tomogram shape (X, Y and Z dimensions)
+        :param v_size: reference tomogram voxel size (default 1)
+        :param center: ellipsoid center (VERY IMPORTANT: coordinates are not in voxels)
+        :param rot_q: rotation expressed as quaternion with respect ellipsoid center (default [1, 0, 0, 0] no rotation)
+        :param thick: membrane thickness (default 1)
+        :param layer_s: Gaussian sigma for each layer
+        :param rad: (default 1) sphere radius
+        """
+        super(MbSphere, self).__init__(tomo_shape, v_size, center, rot_q, thick, layer_s)
+        assert (rad > 0)
+        self.__rad = float(rad)
+        self.__build_tomos()
+
+    def __build_tomos(self):
+
+        # Input parsing
+        t_v, s_v = .5 * (self._Mb__thick / self._Mb__v_size), self._Mb__layer_s / self._Mb__v_size
+        rad_v = self.__rad / self._Mb__v_size
+        ao_v = rad_v + t_v
+        ai_v = rad_v - t_v
+        g_cte = 2 * s_v * s_v
+        p0_v = self._Mb__center / self._Mb__v_size
+
+        # Generating the bilayer
+        dx, dy, dz = float(self._Mb__tomo_shape[0]), float(self._Mb__tomo_shape[1]), float(self._Mb__tomo_shape[2])
+        dx2, dy2, dz2 = math.floor(.5 * dx), math.floor(.5 * dy), math.floor(.5 * dz)
+        p0_v[0] -= dx2
+        p0_v[1] -= dy2
+        p0_v[2] -= dz2
+        x_l, y_l, z_l = -dx2, -dy2, -dz2
+        x_h, y_h, z_h = -dx2 + dx, -dy2 + dy, -dz2 + dz
+        X, Y, Z = np.meshgrid(np.arange(x_l, x_h), np.arange(y_l, y_h), np.arange(z_l, z_h), indexing='xy')
+        X, Y, Z = tomo_rotate(X, self._Mb__rot_q), tomo_rotate(Y, self._Mb__rot_q), tomo_rotate(Z, self._Mb__rot_q)
+        R_o = (X - p0_v[0]) ** 2 / ao_v ** 2 + (Y - p0_v[1]) ** 2 / ao_v ** 2 + (Z - p0_v[2]) ** 2 / ao_v ** 2
+        G_o = np.exp(-(R_o - 1) ** 2 / g_cte)
+        R_i = (X - p0_v[0]) ** 2 / ai_v ** 2 + (Y - p0_v[1]) ** 2 / ai_v ** 2 + (Z - p0_v[2]) ** 2 / ai_v ** 2
+        G_i = np.exp(-(R_i - 1) ** 2 / g_cte)
+
+        # Tomogram and binary mask
+        self.__tomo = lin_map(density_norm(np.asarray(G_i + G_o, dtype=float), inv=True), ub=-1, lb=1)
+        self.__mask = np.logical_and(R_i >= 1, R_o <= 1)
+
+
+class MbTorus(Mb):
+    """
+    Class for generating a membrane with Toroidal shape
+    """
+
+    def __init__(self, tomo_shape, v_size=1, center=(0, 0, 0), rot_q=(1, 0, 0, 0), thick=1, layer_s=1, rad_a=1, rad_b=1):
+        """
+        Constructor
+        :param tomo_shape: reference tomogram shape (X, Y and Z dimensions)
+        :param v_size: reference tomogram voxel size (default 1)
+        :param center: ellipsoid center (VERY IMPORTANT: coordinates are not in voxels)
+        :param rot_q: rotation expressed as quaternion with respect ellipsoid center (default [1, 0, 0, 0] no rotation)
+        :param thick: membrane thickness (default 1)
+        :param layer_s: Gaussian sigma for each layer
+        :param rad_a: (default 1) torus radius
+        :param rad_b: (default 1) torus tube radius
+        """
+        super(MbSphere, self).__init__(tomo_shape, v_size, center, rot_q, thick, layer_s)
+        assert (rad_a > 0) and (rad_b > 0)
+        self.__rad_a, self.__rad_b = float(rad_a), float(rad_b)
+        self.__build_tomos()
+
+    def __build_tomos(self):
+
+        # Input parsing
+        t_v, s_v = .5 * (self._Mb__thick / self._Mb__v_size), self._Mb__layer_s / self._Mb__v_size
+        rad_a_v, rad_b_v = self.__rad_a / self._Mb__v_size, self.__rad_b / self._Mb__v_size
+        bo_v, bi_v = rad_b_v + t_v, rad_b_v - t_v
+        g_cte = 2 * s_v * s_v
+        p0_v = self._Mb__center / self._Mb__v_size
+
+        # Generating the bilayer
+        dx, dy, dz = float(self._Mb__tomo_shape[0]), float(self._Mb__tomo_shape[1]), float(self._Mb__tomo_shape[2])
+        dx2, dy2, dz2 = math.floor(.5 * dx), math.floor(.5 * dy), math.floor(.5 * dz)
+        p0_v[0] -= dx2
+        p0_v[1] -= dy2
+        p0_v[2] -= dz2
+        x_l, y_l, z_l = -dx2, -dy2, -dz2
+        x_h, y_h, z_h = -dx2 + dx, -dy2 + dy, -dz2 + dz
+        X, Y, Z = np.meshgrid(np.arange(x_l, x_h), np.arange(y_l, y_h), np.arange(z_l, z_h), indexing='xy')
+        X, Y, Z = tomo_rotate(X, self._Mb__rot_q), tomo_rotate(Y, self._Mb__rot_q), tomo_rotate(Z, self._Mb__rot_q)
+        R_o = (rad_a_v - np.sqrt(X*X + Y*Y))**2 - Z*Z - bo_v
+        G_o = np.exp(-(R_o - 1) ** 2 / g_cte)
+        R_i = (rad_a_v - np.sqrt(X*X + Y*Y))**2 - Z*Z - bi_v
+        G_i = np.exp(-(R_i - 1) ** 2 / g_cte)
+
+        # Tomogram and binary mask
+        self.__tomo = lin_map(density_norm(np.asarray(G_i + G_o, dtype=float), inv=True), ub=-1, lb=1)
+        self.__mask = np.logical_and(R_i >= 1, R_o <= 1)
+
+
+class SetMembranes:
     """
     Class for modelling a set of membranes within a tomogram
     """
 
-    def __init__(self, voi, v_size):
+    def __init__(self, voi, v_size, gen_rnd_surfs, param_rg, thick_rg, layer_rg, occ, over_tolerance=0):
         """
         Construction
         :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for membranes
         :param v_size: voxel size
+        :param gen_rnd_surf: an of object that inherits from lrandom.SurfGen class to generate random instances with
+                             membrane surface parameters, therefore the objects class determine the shape of the membranes
+                             generated
+        :param thick_rg: membrane thickness range (2-tuple)
+        :param layer_s: lipid layer range (2-tuple)
+        :param occ: occupancy threshold in percentage [0, 100]%
+        :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0, in range [0,1))
         """
+
+        # Input parsing
         assert isinstance(voi, np.ndarray)
+        assert issubclass(gen_rnd_surfs.__class__, SurfGen)
+        assert hasattr(param_rg, '__len__') and (len(param_rg) == 3) and (param_rg[0] <= param_rg[1])
+        assert hasattr(thick_rg, '__len__') and (len(thick_rg) == 2) and (thick_rg[0] <= thick_rg[1])
+        assert hasattr(layer_rg, '__len__') and (len(layer_rg) == 2) and (layer_rg[0] <= layer_rg[1])
+        assert (occ >= 0) and (occ <= 100)
+        assert (over_tolerance >= 0) and (over_tolerance <= 100)
+
+        # Variables assignment
         self.__voi = voi
         self.__vol = (self.__voi > 0).sum() * v_size * v_size * v_size
         self.__v_size = v_size
         self.__tomo, self.__gtruth = np.zeros(shape=voi.shape, dtype=np.float16), \
                                      np.zeros(shape=voi.shape, dtype=bool)
         self.__surfs, self.__app_vtp = vtk.vtkPolyData(), vtk.vtkAppendPolyData()
+        self.__count_mbs = 0
+        self.__gen_rnd_surfs = gen_rnd_surfs
+        self.__param_rg, self.__thick_rg, self.__layer_rg = param_rg, thick_rg, layer_rg
+        self.__occ, self.__over_tolerance = occ, over_tolerance
+
+    def get_vol(self):
+        return self.__vol
 
     def get_mb_occupancy(self):
         return self.__gtruth.sum() / np.prod(np.asarray(self.__voi.shape, dtype=float))
 
-    @abstractmethod
     def build_set(self):
         """
-        Builds an instance of the network
-        :return: None        """
-        raise NotImplemented
+        Build a set of ellipsoid membranes and insert them in a tomogram and a vtkPolyData object
+        :return:
+        """
+
+        # Initialization
+        cont_mb = 1
+
+        # Network loop
+        while self.get_mb_occupancy() < self.__occ:
+
+            # Polymer initialization
+            p0 = np.asarray((self.__voi.shape[0] * self.__v_size * random.random(),
+                             self.__voi.shape[1] * self.__v_size * random.random(),
+                             self.__voi.shape[2] * self.__v_size * random.random()))
+            thick, layer_s = random.uniform(self.__thick_rg[0], self.__thick_rg[1]), \
+                             random.uniform(self.__layer_rg[0], self.__layer_rg[1])
+            rot_q = gen_rand_unit_quaternion()
+
+            # Membrane generation according the predefined surface model
+            if isinstance(self.__gen_rnd_surfs, EllipGen):
+                ellip_axes = self.__gen_rnd_surfs.gen_parameters()
+                hold_mb = MbEllipsoid(self.__voi.shape, v_size=self.__v_size,
+                                      center=p0, rot_q=rot_q, thick=thick, layer_s=layer_s,
+                                      a=ellip_axes[0], b=ellip_axes[1], c=ellip_axes[2])
+            elif isinstance(self.__gen_rnd_surfs, SphGen):
+                rad = self.__gen_rnd_surfs.gen_parameters()
+                hold_mb = MbSphere(self.__voi.shape, v_size=self.__v_size,
+                                   center=p0, rot_q=rot_q, thick=thick, layer_s=layer_s, rad=rad)
+            elif isinstance(self.__gen_rnd_surfs, TorGen):
+                tor_axes = self.__gen_rnd_surfs.gen_parameters()
+                hold_mb = MbTorus(self.__voi.shape, v_size=self.__v_size,
+                                  center=p0, rot_q=rot_q, thick=thick, layer_s=layer_s,
+                                  rad_a=tor_axes[0], rad_b=tor_axes[1])
+            else:
+                print('ERROR: not valid random surface parameters generator: ' + str(self.__gen_rnd_surfs.__class__))
+                raise RuntimeError
+
+            # Insert membrane
+            try:
+                self.insert_mb(hold_mb, merge='min', over_tolerance=self.__over_tolerance)
+                # from polnet import lio
+                # lio.write_mrc(hold_mb.get_tomo(), './out/hold/tomo_' + str(self._SetMembranes__count_mbs) + '.mrc',
+                #              v_size=self._SetMembranes__v_size, dtype=np.float32)
+                # lio.write_mrc(hold_mb.get_mask(), './out/hold/mask_' + str(self._SetMembranes__count_mbs) + '.mrc',
+                #               v_size=self._SetMembranes__v_size, dtype=np.int8)
+                count_exp = 0
+                # print('Membrane ' + str(cont_mb) + ', total occupancy: ' + str(self.get_mb_occupancy()) +
+                #       ', volume: ' + str(hold_mb.get_vol()) + ', thickness: ' + str(hold_mb.get_thick()) +
+                #       ', layer_s: ' + str(hold_mb.get_layer_s()))
+                cont_mb += 1
+            except ValueError:
+                count_exp += 1
+                # print('Count: ' + str(count_exp))
+                if count_exp == MAX_TRIES_MB:
+                    print('WARNING: more than ' + str(MAX_TRIES_MB) + ' tries failed to insert a membrane!')
+                    break
 
     def get_voi(self):
         """
@@ -188,16 +403,6 @@ class SetMembranes(ABC):
             return True
         return False
 
-    def check_overlap(self, mb, over_tolerance):
-        """
-        Determines if the membrane overlaps with any within the membranes set
-        :param mb: input Membrane to check for the overlapping
-        :param over_tolerance: overlapping tolerance (percentage of membrane voxel overlapping)
-        """
-        if self.compute_overlap(mb) > over_tolerance:
-            return True
-        return False
-
     def compute_overlap(self, mb):
         """
         Computes membrane overlapping with the set
@@ -227,6 +432,7 @@ class SetMembranes(ABC):
             self.__app_vtp.AddInputData(mb.get_vtp())
             self.__app_vtp.Update()
             self.__surfs = self.__app_vtp.GetOutput()
+            self.__count_mbs += 1
         else:
             raise ValueError
 
@@ -243,7 +449,7 @@ class SetEllipMembranes(SetMembranes):
         :param v_size: voxel size (default 1)
         :param gen_ellip_mbs: a instance of a random generation model (random.MbGen) to determine the geometrical
         paramters of a membrane
-        :param param_rg: ragen for the ellipsoid parameters (the three radii)
+        :param param_rg: range for the ellipsoid parameters (the three radii)
         :param thick_rg: membrane thickness range (2-tuple)
         :param layer_s: lipid layer range (2-tuple)
         :param occ: occupancy threshold in percentage [0, 100]%
@@ -255,7 +461,7 @@ class SetEllipMembranes(SetMembranes):
 
         # Input parsing
         assert issubclass(gen_ellip_mbs.__class__, EllipGen)
-        assert hasattr(param_rg, '__len__') and (len(param_rg) == 2) and (param_rg[0] <= param_rg[1])
+        assert hasattr(param_rg, '__len__') and (len(param_rg) == 3) and (param_rg[0] <= param_rg[1])
         assert hasattr(thick_rg, '__len__') and (len(thick_rg) == 2) and (thick_rg[0] <= thick_rg[1])
         assert hasattr(layer_rg, '__len__') and (len(layer_rg) == 2) and (layer_rg[0] <= layer_rg[1])
         assert (occ >= 0) and (occ <= 100)
@@ -282,18 +488,31 @@ class SetEllipMembranes(SetMembranes):
             p0 = np.asarray((self._SetMembranes__voi.shape[0] * self._SetMembranes__v_size * random.random(),
                              self._SetMembranes__voi.shape[1] * self._SetMembranes__v_size * random.random(),
                              self._SetMembranes__voi.shape[2] * self._SetMembranes__v_size * random.random()))
-            a, b, c = self.__gen_ellip_mbs.gen_parameters(self.__param_rg)
+            ellip_axes = self.__gen_ellip_mbs.gen_parameters(self.__param_rg[:2], max_ecc=self.__param_rg[2])
+            a, b, c = ellip_axes[0], ellip_axes[1], ellip_axes[2]
             thick, layer_s = random.uniform(self.__thick_rg[0], self.__thick_rg[1]), \
                              random.uniform(self.__layer_rg[0], self.__layer_rg[1])
             rot_q = gen_rand_unit_quaternion()
-            max_a = max((2. * a + 3. * (thick + layer_s), self._SetMembranes__voi.shape[0]))
-            max_b = max((2. * b + 3. * (thick + layer_s), self._SetMembranes__voi.shape[1]))
-            max_c = max((2. * c + 3. * (thick + layer_s), self._SetMembranes__voi.shape[2]))
-            hold_mb = MbEllipsoid(max_a, max_b, max_c, self._SetMembranes__voi.shape, v_size=self._SetMembranes__v_size,
-                                  center=p0, rot_q=rot_q, thick=thick, layer_s=layer_s)
+            hold_mb = MbEllipsoid(self._SetMembranes__voi.shape, v_size=self._SetMembranes__v_size,
+                                  center=p0, rot_q=rot_q, thick=thick, layer_s=layer_s, a=a, b=b, c=c)
 
             # Insert membrane
-            self.insert_mb(hold_mb, merge='min', over_tolerance=self.__over_tolerance)
+            try:
+                self.insert_mb(hold_mb, merge='min', over_tolerance=self.__over_tolerance)
+                # from polnet import lio
+                # lio.write_mrc(hold_mb.get_tomo(), './out/hold/tomo_' + str(self._SetMembranes__count_mbs) + '.mrc',
+                #              v_size=self._SetMembranes__v_size, dtype=np.float32)
+                # lio.write_mrc(hold_mb.get_mask(), './out/hold/mask_' + str(self._SetMembranes__count_mbs) + '.mrc',
+                #               v_size=self._SetMembranes__v_size, dtype=np.int8)
+                count_exp = 0
+                # print('Membrane ' + str(cont_mb) + ', total occupancy: ' + str(self.get_mb_occupancy()) +
+                #       ', volume: ' + str(hold_mb.get_vol()) + ', thickness: ' + str(hold_mb.get_thick()) +
+                #       ', layer_s: ' + str(hold_mb.get_layer_s()))
+                cont_mb += 1
+            except ValueError:
+                count_exp += 1
+                # print('Count: ' + str(count_exp))
+                if count_exp == MAX_TRIES_MB:
+                    print('WARNING: more than ' + str(MAX_TRIES_MB) + ' tries failed to insert a membrane!')
+                    break
 
-            print('Membrane ' + str(cont_mb) + ', total occupancy: ' + self.get_mb_occupancy())
-            cont_mb += 1
