@@ -11,6 +11,35 @@ import numpy as np
 from abc import ABC, abstractmethod
 
 MAX_TRIES_ELLIP = 1e6
+MAX_TRIES_EXP = 1e6
+
+#############################################
+# Functions
+#############################################
+
+
+def gen_bounded_exp(mean, lb, ub):
+    """
+    Generates a random number following a 'bounded exponential distribution'
+    Get random exponential numbers until falls into bounded range
+    :param mean: mean for the exponential distribution (1/lambda)
+    :param lb: lower bound
+    :param hb: higher bound
+    :return: a real number within the range, raises RuntimeError if no number found within range after MAX_TRIES_EXP
+    """
+    hold = np.random.exponential(scale=mean)
+    count = 1
+    while ((hold < lb) or (hold > ub)) and (count < MAX_TRIES_EXP):
+        hold = np.random.exponential(scale=mean)
+        count += 1
+    if count >= MAX_TRIES_EXP:
+        raise RuntimeError
+    else:
+        return hold
+
+#############################################
+# Classes
+#############################################
 
 
 class PGen(ABC):
@@ -116,13 +145,27 @@ class EllipGen(SurfGen):
 
     def gen_parameters(self):
         """
-        Generates randomly the three semi-axes parameters
+        Generates randomly the three semi-axes parameters following a uniform distribution
         :return: an array with the three semi-axes sorted in descending order
         """
         for i in range(self.__max_tries):
             axes = np.sort(np.asarray((random.uniform(self.__radius_rg[0], self.__radius_rg[1]),
                                        random.uniform(self.__radius_rg[0], self.__radius_rg[1]),
                                        random.uniform(self.__radius_rg[0], self.__radius_rg[1]))))[::-1]
+            ecc1, ecc2 = math.sqrt(1 - (axes[2] / axes[0])**2), math.sqrt(1 - (axes[2] / axes[1])**2)
+            if (ecc1 <= self.__max_ecc) and (ecc2 <= self.__max_ecc):
+                return axes
+        raise RuntimeError
+
+    def gen_parameters_exp(self):
+        """
+        Generates randomly the three semi-axes parameters following a bounded exponential distribution
+        :return: an array with the three semi-axes sorted in descending order
+        """
+        for i in range(self.__max_tries):
+            axes = np.sort(np.asarray((gen_bounded_exp(8.*self.__radius_rg[0], self.__radius_rg[0], self.__radius_rg[1]),
+                                       gen_bounded_exp(8.*self.__radius_rg[0], self.__radius_rg[0], self.__radius_rg[1]),
+                                       gen_bounded_exp(8.*self.__radius_rg[0], self.__radius_rg[0], self.__radius_rg[1]))))[::-1]
             ecc1, ecc2 = math.sqrt(1 - (axes[2] / axes[0])**2), math.sqrt(1 - (axes[2] / axes[1])**2)
             if (ecc1 <= self.__max_ecc) and (ecc2 <= self.__max_ecc):
                 return axes

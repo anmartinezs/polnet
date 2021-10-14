@@ -376,7 +376,7 @@ def density_norm(tomo, mask=None, inv=True):
 
     # Input parsing
     if mask is None:
-        mask = np.ones(shape=tomo.shape, dtype=np.bool)
+        mask = np.ones(shape=tomo.shape, dtype=bool)
 
     # Inversion
     if inv:
