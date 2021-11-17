@@ -52,33 +52,30 @@ class PGen(ABC):
         raise NotImplemented
 
 
-class PGenUniformInRange(PGen):
+class PGenHelixFiber(ABC):
     """
-    Class to model polymer with uniform random length with a range
+    Abstract class for random polymer models
     """
 
-    def __init__(self, min_l, max_l):
-        """
-        Constructor
-        :param min_l: minimum length
-        :param max_l: maximum length
-        """
-        assert (min_l > 0) and (max_l > min_l)
-        self.__min_l, self.__max_l = min_l, max_l
-        self.__step = self.__max_l - self.__min_l
-
+    @abstractmethod
     def gen_next_length(self):
-        """
-        Generate a new length
-        :return: a random float value
-        """
-        return self.__step * random.random() + self.__min_l
+        raise NotImplemented
 
 
-class PGenHelixFiber(PGen):
+class PGenHelixFiber(ABC):
     """
     Class to model random distribution for helix fiber parameters
     """
+
+    def gen_length(self, min_l, max_l):
+        """
+        Generate a length with a range following a uniform distribution
+        :param min_l: minimum length
+        :param max_l: maximum length
+        :return:
+        """
+        assert (min_l >= 0) and (min_l <= max_l)
+        return (max_l - min_l) * random.random() + min_l
 
     def gen_persistence_length(self, min_p):
         """

@@ -159,32 +159,20 @@ class MbEllipsoid(Mb):
         # Mask generation
         R_o = ((X - p0_v[0]) / ao_v) ** 2 + ((Y - p0_v[1]) / bo_v) ** 2 + ((Z - p0_v[2]) / co_v) ** 2
         R_i = ((X - p0_v[0]) / ai_v) ** 2 + ((Y - p0_v[1]) / bi_v) ** 2 + ((Z - p0_v[2]) / ci_v) ** 2
-        self._Mb__mask = tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0, mode='reflect')
+        self._Mb__mask = tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0)
 
         # Outer layer
         R_o = ((X - p0_v[0]) / ao_v_p1) ** 2 + ((Y - p0_v[1]) / bo_v_p1) ** 2 + ((Z - p0_v[2]) / co_v_p1) ** 2
         R_i = ((X - p0_v[0]) / ao_v_m1) ** 2 + ((Y - p0_v[1]) / bo_v_m1) ** 2 + ((Z - p0_v[2]) / co_v_m1) ** 2
-        G = tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0, mode='reflect')
+        G = tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0)
 
         # Inner layer
         R_o = ((X - p0_v[0]) / ai_v_p1) ** 2 + ((Y - p0_v[1]) / bi_v_p1) ** 2 + ((Z - p0_v[2]) / ci_v_p1) ** 2
         R_i = ((X - p0_v[0]) / ai_v_m1) ** 2 + ((Y - p0_v[1]) / bi_v_m1) ** 2 + ((Z - p0_v[2]) / ci_v_m1) ** 2
-        G += tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0, mode='reflect')
+        G += tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0)
 
         # Smoothing
         self._Mb__tomo = lin_map(density_norm(sp.ndimage.gaussian_filter(G.astype(float), s_v), inv=True), ub=1, lb=-1)
-
-        # g_cte = 2 * s_v * s_v
-        # R_o = (((X-p0_v[0])/ao_v)**2 + ((Y-p0_v[1])/bo_v)**2 + ((Z-p0_v[2])/co_v)**2)
-        # G_o = np.exp(-(R_o - 1)**2 / g_cte)
-        # R_i = (((X-p0_v[0])/ai_v)**2 + ((Y-p0_v[1])/bi_v)**2 + ((Z-p0_v[2])/ci_v)**2)
-        # G_i = np.exp(-(R_i - 1)**2 / g_cte)
-        #
-        # # Tomogram and binary mask
-        # G_i = G_i + G_o
-        # del G_o
-        # self._Mb__tomo = lin_map(density_norm(tomo_rotate(G_i, self._Mb__rot_q, cval=0), inv=True), ub=1, lb=-1)
-        # self._Mb__mask = tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0, cval=0)
 
 
 class MbSphere(Mb):
@@ -234,33 +222,20 @@ class MbSphere(Mb):
         # Mask generation
         R_o = ((X - p0_v[0]) / ao_v) ** 2 + ((Y - p0_v[1]) / ao_v) ** 2 + ((Z - p0_v[2]) / ao_v) ** 2
         R_i = ((X - p0_v[0]) / ai_v) ** 2 + ((Y - p0_v[1]) / ai_v) ** 2 + ((Z - p0_v[2]) / ai_v) ** 2
-        self._Mb__mask = tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0, mode='reflect')
+        self._Mb__mask = tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0)
 
         # Outer layer
         R_o = ((X - p0_v[0]) / ao_v_p1) ** 2 + ((Y - p0_v[1]) / ao_v_p1) ** 2 + ((Z - p0_v[2]) / ao_v_p1) ** 2
         R_i = ((X - p0_v[0]) / ao_v_m1) ** 2 + ((Y - p0_v[1]) / ao_v_m1) ** 2 + ((Z - p0_v[2]) / ao_v_m1) ** 2
-        G = tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0, mode='reflect')
+        G = tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0)
 
         # Inner layer
         R_o = ((X - p0_v[0]) / ai_v_p1) ** 2 + ((Y - p0_v[1]) / ai_v_p1) ** 2 + ((Z - p0_v[2]) / ai_v_p1) ** 2
         R_i = ((X - p0_v[0]) / ai_v_m1) ** 2 + ((Y - p0_v[1]) / ai_v_m1) ** 2 + ((Z - p0_v[2]) / ai_v_m1) ** 2
-        G += tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0, mode='reflect')
+        G += tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0)
 
         # Smoothing
         self._Mb__tomo = lin_map(density_norm(sp.ndimage.gaussian_filter(G.astype(float), s_v), inv=True), ub=1, lb=-1)
-
-        # R_o = ((X - p0_v[0]) / ao_v) ** 2 + ((Y - p0_v[1]) / ao_v) ** 2 + ((Z - p0_v[2]) / ao_v) ** 2
-        # G_o = np.exp(-(R_o - 1) ** 2 / g_cte)
-        # R_i = ((X - p0_v[0]) / ai_v) ** 2 + ((Y - p0_v[1]) / ai_v) ** 2 + ((Z - p0_v[2]) / ai_v) ** 2
-        # G_i = np.exp(-(R_i - 1) ** 2 / g_cte)
-        # G_o, G_i = tomo_rotate(G_o, self._Mb__rot_q, mode='reflect'), tomo_rotate(G_i, self._Mb__rot_q, mode='reflect')
-
-        # # Tomogram and binary mask
-        # self._Mb__tomo = lin_map(density_norm(np.asarray(G_i + G_o, dtype=float), inv=True), ub=1, lb=-1)
-        # del G_i
-        # del G_o
-        # R_o, R_i = tomo_rotate(R_o, self._Mb__rot_q), tomo_rotate(R_i, self._Mb__rot_q)
-        # self._Mb__mask = np.logical_and(R_i >= 1, R_o <= 1)
 
 
 class MbTorus(Mb):
@@ -304,36 +279,25 @@ class MbTorus(Mb):
         x_l, y_l, z_l = -dx2, -dy2, -dz2
         x_h, y_h, z_h = -dx2 + dx, -dy2 + dy, -dz2 + dz
         X, Y, Z = np.meshgrid(np.arange(x_l, x_h), np.arange(y_l, y_h), np.arange(z_l, z_h), indexing='xy')
-        # X, Y, Z = tomo_rotate(X, self._Mb__rot_q), tomo_rotate(Y, self._Mb__rot_q), tomo_rotate(Z, self._Mb__rot_q)
 
         # Mask generation
         from polnet import lio
-        R_o = ((rad_a_v - np.sqrt(X*X + Y*Y))**2 + Z*Z - bo_v*bo_v) <= 1
-        R_i = ((rad_a_v - np.sqrt(X*X + Y*Y))**2 + Z*Z - bi_v*bi_v) >= 1
-        self._Mb__mask = tomo_rotate(np.logical_and(R_i, R_o), self._Mb__rot_q, order=0, mode='reflect')
+        R_o = ((rad_a_v - np.sqrt((X-p0_v[0])**2 + (Y-p0_v[1])**2))**2 + (Z-p0_v[2])**2 - bo_v*bo_v) <= 1
+        R_i = ((rad_a_v - np.sqrt((X-p0_v[0])**2 + (Y-p0_v[1])**2))**2 + (Z-p0_v[2])**2 - bi_v*bi_v) >= 1
+        self._Mb__mask = tomo_rotate(np.logical_and(R_i, R_o), self._Mb__rot_q, order=0)
 
         # Outer layer
-        R_o = ((rad_a_v - np.sqrt(X*X + Y*Y))**2 + Z*Z - bo_v_p1*bo_v_p1) <= 1
-        R_i = ((rad_a_v - np.sqrt(X*X + Y*Y))**2 + Z*Z - bo_v_m1*bo_v_m1) >= 1
-        G = tomo_rotate(np.logical_and(R_i, R_o), self._Mb__rot_q, order=0, mode='reflect')
+        R_o = ((rad_a_v - np.sqrt((X-p0_v[0])**2 + (Y-p0_v[1])**2))**2 + (Z-p0_v[2])**2 - bo_v_p1*bo_v_p1) <= 1
+        R_i = ((rad_a_v - np.sqrt((X-p0_v[0])**2 + (Y-p0_v[1])**2))**2 + (Z-p0_v[2])**2 - bo_v_m1*bo_v_m1) >= 1
+        G = tomo_rotate(np.logical_and(R_i, R_o), self._Mb__rot_q, order=0)
 
         # Inner layer
-        R_o = ((rad_a_v - np.sqrt(X * X + Y * Y)) ** 2 + Z * Z - bi_v_p1 * bi_v_p1) <= 1
-        R_i = ((rad_a_v - np.sqrt(X * X + Y * Y)) ** 2 + Z * Z - bi_v_m1 * bi_v_m1) >= 1
-        G += tomo_rotate(np.logical_and(R_i, R_o), self._Mb__rot_q, order=0, mode='reflect')
-        # lio.write_mrc(G, './out/hold/ri.mrc', v_size=self._Mb__v_size, dtype=np.float32)
+        R_o = ((rad_a_v - np.sqrt((X-p0_v[0])**2 + (Y-p0_v[1])**2))**2 + (Z-p0_v[2])**2 - bi_v_p1 * bi_v_p1) <= 1
+        R_i = ((rad_a_v - np.sqrt((X-p0_v[0])**2 + (Y-p0_v[1])**2))**2 + (Z-p0_v[2])**2 - bi_v_m1 * bi_v_m1) >= 1
+        G += tomo_rotate(np.logical_and(R_i, R_o), self._Mb__rot_q, order=0)
 
         # Smoothing
         self._Mb__tomo = lin_map(density_norm(sp.ndimage.gaussian_filter(G.astype(float), s_v), inv=True), ub=1, lb=-1)
-
-        # R_o = (rad_a_v - np.sqrt(X*X + Y*Y))**2 - Z*Z - bo_v
-        # G_o = np.exp(-(R_o - 1) ** 2 / g_cte)
-        # R_i = (rad_a_v - np.sqrt(X*X + Y*Y))**2 - Z*Z - bi_v
-        # G_i = np.exp(-(R_i - 1) ** 2 / g_cte)
-        #
-        # # Tomogram and binary mask
-        # self._Mb__tomo = lin_map(density_norm(np.asarray(G_i + G_o, dtype=float), inv=True), ub=1, lb=-1)
-        # self._Mb__mask = np.logical_and(R_i >= 1, R_o <= 1)
 
 
 class SetMembranes:
@@ -382,14 +346,16 @@ class SetMembranes:
     def get_mb_occupancy(self):
         return self.__gtruth.sum() / np.prod(np.asarray(self.__voi.shape, dtype=float))
 
-    def build_set(self):
+    def build_set(self, verbosity=False):
         """
         Build a set of ellipsoid membranes and insert them in a tomogram and a vtkPolyData object
+        :param verbosity: if True (default False) the output message with info about the membranes generated is printed
         :return:
         """
 
         # Initialization
-        cont_mb = 1
+        count_mb = 1
+        count_exp = 0
 
         # Network loop
         while self.get_mb_occupancy() < self.__occ:
@@ -427,17 +393,12 @@ class SetMembranes:
                     raise MbError
 
                 # Insert membrane
-                self.insert_mb(hold_mb, merge='min', over_tolerance=self.__over_tolerance)
-                from polnet import lio
-                lio.write_mrc(hold_mb.get_tomo(), './out/hold/tomo_' + str(self._SetMembranes__count_mbs) + '.mrc',
-                             v_size=self._SetMembranes__v_size, dtype=np.float32)
-                lio.write_mrc(hold_mb.get_mask(), './out/hold/mask_' + str(self._SetMembranes__count_mbs) + '.mrc',
-                              v_size=self._SetMembranes__v_size, dtype=np.int8)
-                count_exp = 0
-                print('Membrane ' + str(cont_mb) + ', total occupancy: ' + str(self.get_mb_occupancy()) +
-                      ', volume: ' + str(hold_mb.get_vol()) + ', thickness: ' + str(hold_mb.get_thick()) +
-                      ', layer_s: ' + str(hold_mb.get_layer_s()) + ', radius (avg): ' + str(hold_rad))
-                cont_mb += 1
+                self.insert_mb(hold_mb, merge='min', over_tolerance=self.__over_tolerance, check_vol=True)
+                if verbosity:
+                    print('Membrane ' + str(count_mb) + ', total occupancy: ' + str(self.get_mb_occupancy()) +
+                          ', volume: ' + str(hold_mb.get_vol()) + ', thickness: ' + str(hold_mb.get_thick()) +
+                          ', layer_s: ' + str(hold_mb.get_layer_s()) + ', radius (avg): ' + str(hold_rad))
+                count_mb += 1
 
             # Handling the exception raised when a membrane could not be generated properly
             except MbError:
@@ -447,6 +408,7 @@ class SetMembranes:
                 if count_exp == MAX_TRIES_MB:
                     print('WARNING: more than ' + str(MAX_TRIES_MB) + ' tries failed to insert a membrane!')
                     break
+            count_exp = 0
 
     def get_voi(self):
         """
@@ -501,14 +463,18 @@ class SetMembranes:
         tomo_over = np.logical_and(np.logical_and(tomo_mb, self.__gtruth), self.__voi)
         return 100. * (tomo_over.sum() / self.get_vol())
 
-    def insert_mb(self, mb, merge='min', over_tolerance=None):
+    def insert_mb(self, mb, merge='min', over_tolerance=None, check_vol=True):
         """
         Insert the membrane into the set (tomogram, vtkPolyData and Ground Truth)
         :param mb: input membrane (Mb) object
         :param merge: merging mode for density insertion, valid: 'min' (default), 'max', 'sum' and 'insert'
         :param over_tolerance: overlapping tolerance (percentage of membrane voxel overlapping), if None then disabled
+        :param check_vol: if True (default) the input membrane volume is check and if equal to zero then the membrane
+                          is not inserted and MbError is raised
         :return: raises a ValueError if the membrane is not inserted
         """
+        if check_vol and (mb.get_vol() <= 0):
+            raise MbError
         if (over_tolerance is None) or (not self.check_overlap(mb, over_tolerance)):
             # Density tomogram insertion
             mb.insert_density_svol(self.__tomo, merge=merge, mode='tomo')

@@ -3,7 +3,7 @@ from unittest import TestCase
 import numpy as np
 
 from polnet.network import NetSAWLC, NetHelixFiber, NetHelixFiberB
-from polnet.lrandom import PGenUniformInRange, PGenHelixFiber, PGenHelixFiberB
+from polnet.lrandom import PGenHelixFiber, PGenHelixFiberB
 from polnet.polymer import FiberUnitSDimer, MTUnit
 from polnet.lio import *
 from polnet.utils import *
@@ -19,7 +19,7 @@ MMER_MRC = './in/emd_5225_13.68A_30.mrc'
 MMER_ISO = .543
 PMER_L = 1.2 # Number of times wrt MMER diameters
 PMER_OCC = 1 # 5 # %
-PMER_L_RANGE = (1000, 3000)
+PMER_L_MAX = 3000
 PMER_OVER_TOL = 0.01
 MMER_OUT = './out/sawlc_mmer.vtp'
 NET_OUT = './out/sawlc_net.vtp'
@@ -77,10 +77,10 @@ class TestNetSAWLC(TestCase):
         model_surf = poly_scale(model_surf, VOI_VSIZE)
         surf_diam = poly_max_distance(model_surf)
         save_vtp(model_surf, MMER_OUT)
-        pol_l_generator = PGenUniformInRange(PMER_L_RANGE[0], PMER_L_RANGE[1])
+        pol_l_generator = PGenHelixFiber()
 
         # Network generation
-        net_sawlc = NetSAWLC(voi, VOI_VSIZE, PMER_L*surf_diam, model_surf, pol_l_generator, PMER_OCC, PMER_OVER_TOL)
+        net_sawlc = NetSAWLC(voi, VOI_VSIZE, PMER_L*surf_diam, model_surf, PMER_L_MAX, pol_l_generator, PMER_OCC, PMER_OVER_TOL)
         net_sawlc.build_network()
 
         # Density tomogram generation

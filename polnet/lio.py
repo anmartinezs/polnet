@@ -69,3 +69,16 @@ def save_vti(image, fname):
     if writer.Write() != 1:
         raise IOError
 
+
+def load_poly(fname):
+    """
+    Load data vtkPolyData object from a file
+    :param fname: input .vtp file
+    :return: the vtkPolyData object loaded
+    """
+
+    reader = vtk.vtkXMLPolyDataReader()
+    reader.SetFileName(fname)
+    reader.Update()
+
+    return reader.GetOutput()

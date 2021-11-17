@@ -8,7 +8,7 @@ __author__ = 'Antonio Martinez-Sanchez'
 from polnet.utils import *
 from polnet.affine import *
 from polnet.polymer import SAWLC, HelixFiber
-from polnet.lrandom import PGen
+from polnet.lrandom import PGen, PGenHelixFiber, PGenHelixFiberB
 from abc import ABC, abstractmethod
 
 
@@ -100,13 +100,14 @@ class NetSAWLC(Network):
     Class for generating a network of SAWLC polymers
     """
 
-    def __init__(self, voi, v_size, l_length, m_surf, gen_pol_lengths, occ, over_tolerance=0):
+    def __init__(self, voi, v_size, l_length, m_surf, max_p_length, gen_pol_lengths, occ, over_tolerance=0):
         """
         Construction
         :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers
         :param v_size: voxel size (default 1)
         :param l_length: polymer link length
         :param m_surf: monomer surf
+        :param max_p_length: maximum polymer length
         :param gen_pol_lengths: a instance of a random generation model (random.PGen) to determine the achievable
         lengths for polymers
         :param occ: occupancy threshold in percentage [0, 100]%
@@ -119,12 +120,14 @@ class NetSAWLC(Network):
         # Input parsing
         assert l_length > 0
         assert isinstance(m_surf, vtk.vtkPolyData)
-        assert issubclass(gen_pol_lengths.__class__, PGen)
+        assert max_p_length >= 0
+        assert isinstance(gen_pol_lengths, PGenHelixFiber)
         assert (occ >= 0) and (occ <= 100)
         assert (over_tolerance >= 0) and (over_tolerance <= 100)
 
         # Variables assignment
         self.__l_length, self.__m_surf = l_length, m_surf
+        self.__max_p_length = max_p_length
         self.__gen_pol_lengths = gen_pol_lengths
         self.__occ, self.__over_tolerance = occ, over_tolerance
 
@@ -141,7 +144,7 @@ class NetSAWLC(Network):
             p0 = np.asarray((self._Network__voi.shape[0] * self._Network__v_size * random.random(),
                              self._Network__voi.shape[1] * self._Network__v_size * random.random(),
                              self._Network__voi.shape[2] * self._Network__v_size * random.random()))
-            max_length = self.__gen_pol_lengths.gen_next_length()
+            max_length = self.__gen_pol_lengths.gen_length(0, self.__max_p_length)
             hold_polymer = SAWLC(self.__l_length, self.__m_surf, p0)
 
             # Polymer loop
@@ -193,7 +196,7 @@ class NetHelixFiber(Network):
         # Input parsing
         assert l_length > 0
         assert isinstance(m_surf, vtk.vtkPolyData)
-        assert issubclass(gen_hfib_params.__class__, PGen)
+        assert isinstance(gen_hfib_params, PGenHelixFiber)
         assert (occ >= 0) and (occ <= 100)
         assert (over_tolerance >= 0) and (over_tolerance <= 100)
         assert (min_p_len > 0) and (hp_len > 0) and (mz_len > 0) and (mz_len_f >= 0)
@@ -275,7 +278,7 @@ class NetHelixFiberB(Network):
         # Input parsing
         assert l_length > 0
         assert isinstance(m_surf, vtk.vtkPolyData)
-        assert issubclass(gen_hfib_params.__class__, PGen)
+        assert isinstance(gen_hfib_params, PGenHelixFiberB)
         assert (occ >= 0) and (occ <= 100)
         assert (over_tolerance >= 0) and (over_tolerance <= 100)
         assert (min_p_len > 0) and (hp_len > 0) and (mz_len > 0) and (mz_len_f >= 0)

@@ -393,6 +393,6 @@ def density_norm(tomo, mask=None, inv=True):
     if st > 0:
         tomo_out = (hold_tomo-mn) / st
     else:
-        print('WARNING (relion_norm): standard deviation=' + str(st))
+        print('WARNING (density_norm): standard deviation=' + str(st))
 
     return tomo_out
