@@ -10,14 +10,19 @@ import mrcfile
 import numpy as np
 
 
-def load_mrc(fname):
+def load_mrc(fname, mmap=False):
     """
     Load an input MRC tomogram as ndarray
     :param fname: the input MRC
-    :return: a ndarray
+    :param mmap: if True (default False) the data are read as a memory map
+    :return: a ndarray (or memmap is mmap=True)
     """
-    mrc = mrcfile.open(fname, permissive=True)
-    return np.swapaxes(mrc.data, 0, 2)
+    if mmap:
+        mrc = mrcfile.mmap(fname, permissive=True)
+    else:
+        mrc = mrcfile.open(fname, permissive=True)
+        # return np.swapaxes(mrc.data, 0, 2)
+    return mrc.data
 
 
 def write_mrc(tomo, fname, v_size=1, dtype=None):
@@ -31,9 +36,11 @@ def write_mrc(tomo, fname, v_size=1, dtype=None):
     """
     with mrcfile.new(fname, overwrite=True) as mrc:
         if dtype is None:
-            mrc.set_data(np.swapaxes(tomo, 0, 2))
+            # mrc.set_data(np.swapaxes(tomo, 0, 2))
+            mrc.set_data(tomo)
         else:
-            mrc.set_data(np.swapaxes(tomo, 0, 2).astype(dtype))
+            # mrc.set_data(np.swapaxes(tomo, 0, 2).astype(dtype))
+            mrc.set_data(tomo.astype(dtype))
         mrc.voxel_size.flags.writeable = True
         mrc.voxel_size = (v_size, v_size, v_size)
         mrc.set_volume()
