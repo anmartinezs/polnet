@@ -7,6 +7,7 @@ __author__ = 'Antonio Martinez-Sanchez'
 import vtk
 import math
 import numpy as np
+from scipy import stats
 
 from vtkmodules.util import numpy_support
 
@@ -396,3 +397,203 @@ def density_norm(tomo, mask=None, inv=True):
         print('WARNING (density_norm): standard deviation=' + str(st))
 
     return tomo_out
+
+
+def add_sfield_to_poly(poly, sfield, name, dtype='float', interp='NN', mode='points'):
+    """
+    Add the values of a scalar field to a vtkPolyData object as point property
+    :param poly: vtkPolyData objects where the scalar field values will be added
+    :param sfield: input scalar field as ndarray
+    :param name: string with name associated to the added property
+    :param dtype: data type, valid 'float' or 'int'
+    :param interp: interpolation mode, valid 'NN'-> nearest neighbour and 'trilin'-> trilinear
+    :param mode: determines if the scalar field is either added to vtkPolyData points ('points', defualt) or
+                 cells ('cells')
+    """
+    assert isinstance(sfield, np.ndarray)
+    assert isinstance(name, str)
+    assert (dtype == 'float') or (dtype == 'int')
+    assert (interp == 'NN') or (interp == 'trilin')
+    if interp == 'trilin':
+        interp_func = trilin_interp
+    else:
+        interp_func = nn_iterp
+    assert (mode == 'points') or (mode == 'cells')
+
+    if mode == 'points':
+        # Creating and adding the new property as a new array for PointData
+        n_points = poly.GetNumberOfPoints()
+        if dtype == 'int':
+            arr = vtk.vtkIntArray()
+        else:
+            arr = vtk.vtkFloatArray()
+        arr.SetName(name)
+        arr.SetNumberOfComponents(1)
+        arr.SetNumberOfValues(n_points)
+        for i in range(n_points):
+            x, y, z = poly.GetPoint(i)
+            arr.SetValue(i, interp_func(x, y, z, sfield))
+        poly.GetPointData().AddArray(arr)
+    else:
+        # Creating and adding the new property as a new array for CellData
+        if dtype == 'int':
+            arr = vtk.vtkIntArray()
+        else:
+            arr = vtk.vtkFloatArray()
+        n_cells = poly.GetNumberOfCells()
+        arr.SetName(name)
+        arr.SetNumberOfComponents(1)
+        arr.SetNumberOfValues(n_cells)
+        for i in range(n_cells):
+            cell = vtk.vtkGenericCell()
+            poly.GetCell(i, cell)
+            pts = cell.GetPoints()
+            n_pts = pts.GetNumberOfPoints()
+            if dtype == 'int':
+                values = np.zeros(shape=n_pts, dtype=int)
+            else:
+                values = np.zeros(shape=n_pts, dtype=float)
+            for j in range(n_pts):
+                x, y, z = pts.GetPoint(j)
+                values[j] = interp_func(x, y, z, sfield)
+            arr.SetValue(i, stats.mode(values)[0][0])
+        poly.GetCellData().AddArray(arr)
+
+
+def trilin_interp(x, y, z, tomogram):
+    """
+    Trilinear interpolation of the value of a coordinate point within a tomogram
+    :param x: x input coordinate
+    :param y: y input coordinate
+    :param z: z input coordinate
+    :param tomogram: input ndarray with the scalar field
+    :return: the value interpolated
+    """
+
+    # Input parsing
+    assert isinstance(tomogram, np.ndarray) and len(tomogram.shape) == 3
+    xc = int(math.ceil(x))
+    yc = int(math.ceil(y))
+    zc = int(math.ceil(z))
+    xf = int(math.floor(x))
+    yf = int(math.floor(y))
+    zf = int(math.floor(z))
+    assert (xc < tomogram.shape[0]) and (yc < tomogram.shape[1]) and (zc < tomogram.shape[2]) and \
+            (xf >= 0) and (yf >= 0) and (zf >= 0)
+
+    # Get neigbourhood values
+    v000 = float(tomogram[xf, yf, zf])
+    v100 = float(tomogram[xc, yf, zf])
+    v010 = float(tomogram[xf, yc, zf])
+    v001 = float(tomogram[xf, yf, zc])
+    v101 = float(tomogram[xc, yf, zc])
+    v011 = float(tomogram[xf, yc, zc])
+    v110 = float(tomogram[xc, yc, zf])
+    v111 = float(tomogram[xc, yc, zc])
+
+    # Coordinates correction
+    xn = x - xf
+    yn = y - yf
+    zn = z - zf
+    x1 = 1 - xn
+    y1 = 1 - yn
+    z1 = 1 - zn
+
+    # Interpolation
+    return (v000 * x1 * y1 * z1) + (v100 * xn * y1 * z1) + (v010 * x1 * yn * z1) + \
+           (v001 * x1 * y1 * zn) + (v101 * xn * y1 * zn) + (v011 * x1 * yn * zn) + \
+           (v110 * xn * yn * z1) + (v111 * xn * yn * zn)
+
+
+def nn_iterp(x, y, z, tomogram):
+    """
+    Nearest neighbour interpolation of the value of a coordinate point within a tomogram
+    :param x: x input coordinate
+    :param y: y input coordinate
+    :param z: z input coordinate
+    :param tomogram: input ndarray with the scalar field
+    :return: the value interpolated
+    """
+
+    # Input parsing
+    assert isinstance(tomogram, np.ndarray) and len(tomogram.shape) == 3
+    xc = int(math.ceil(x))
+    yc = int(math.ceil(y))
+    zc = int(math.ceil(z))
+    xf = int(math.floor(x))
+    yf = int(math.floor(y))
+    zf = int(math.floor(z))
+    assert (xc < tomogram.shape[0]) and (yc < tomogram.shape[1]) and (zc < tomogram.shape[2]) and \
+               (xf >= 0) and (yf >= 0) and (zf >= 0)
+
+    # Finding the closest voxel
+    point = np.asarray((x, y, z))
+    X, Y, Z = np.meshgrid(range(xf,xc+1), range(yf,yc+1), range(zf,zc+1), indexing='ij')
+    X, Y, Z = X.flatten(), Y.flatten(), Z.flatten()
+    min_point = np.asarray((X[0], Y[0], Z[0]))
+    hold = point - min_point
+    min_dist = np.sqrt((hold * hold).sum())
+    for i in range(1, len(X)):
+        hold_point = np.asarray((X[i], Y[i], Z[i]))
+        hold = point - hold_point
+        hold_dist = np.sqrt((hold * hold).sum())
+        if hold_dist < min_dist:
+            min_point = hold_point
+            min_dist = hold_dist
+
+    # Interpolation
+    return tomogram[min_point[0], min_point[1], min_point[2]]
+
+
+def poly_threshold(poly, p_name, mode='points', low_th=None, hi_th=None):
+    """
+    Threshold a vtkPolyData according the values of a property
+    :param poly: vtkPolyData to threshold
+    :param p_name: property name for points
+    :param mode: determines if the property is associated to points data 'points' (default) or 'cells'
+    :low_th: low threshold value, default None then the minimum property value is assigned
+    :hi_th: high threshold value, default None then the maximum property value is assigned
+    :return: the threshold vtkPolyData
+    """
+
+    # Input parsing
+    prop = None
+    assert (mode == 'points') or (mode == 'cells')
+    if mode == 'points':
+        n_arrays = poly.GetPointData().GetNumberOfArrays()
+        for i in range(n_arrays):
+            if p_name == poly.GetPointData().GetArrayName(i):
+                prop = poly.GetPointData().GetArray(p_name)
+                break
+    else:
+        n_arrays = poly.GetCellData().GetNumberOfArrays()
+        for i in range(n_arrays):
+            if p_name == poly.GetCellData().GetArrayName(i):
+                prop = poly.GetCellData().GetArray(p_name)
+                break
+    assert prop is not None
+    if (low_th is None) or (hi_th is None):
+        rg_low, rg_hi = prop.GetRange()
+    if low_th is None:
+        low_th = rg_low
+    if hi_th is None:
+        hi_th = rg_hi
+
+    # Points thresholding filter
+    th_flt = vtk.vtkThreshold()
+    th_flt.SetInputData(poly)
+    if mode == 'cells':
+        th_flt.SetInputArrayToProcess(0, 0, 0, vtk.vtkDataObject.FIELD_ASSOCIATION_CELLS, p_name)
+    else:
+        th_flt.SetInputArrayToProcess(0, 0, 0, vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, p_name)
+    # th_flt.ThresholdByUpper(.5)
+    th_flt.ThresholdBetween(low_th, hi_th)
+    th_flt.AllScalarsOff()
+    th_flt.Update()
+
+    surf_flt = vtk.vtkDataSetSurfaceFilter()
+    surf_flt.SetInputData(th_flt.GetOutput())
+    surf_flt.Update()
+
+    return surf_flt.GetOutput()
+

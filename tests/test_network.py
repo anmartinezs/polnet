@@ -69,6 +69,8 @@ class TestNetSAWLC(TestCase):
 
         # Polymer parameters
         model = load_mrc(MMER_MRC)
+        model_mask = model < 0.5
+        model[model_mask] = 0
         model_surf = iso_surface(model, MMER_ISO, closed=False, normals=None)
         center = .5 * np.asarray(model.shape, dtype=float)
         # Monomer centering
@@ -84,8 +86,8 @@ class TestNetSAWLC(TestCase):
         net_sawlc.build_network()
 
         # Density tomogram generation
-        tomo = np.ones(shape=net_sawlc.get_voi().shape, dtype=np.float32)
-        net_sawlc.insert_density_svol(model, tomo, VOI_VSIZE, merge='min')
+        tomo = np.zeros(shape=net_sawlc.get_voi().shape, dtype=np.float32)
+        net_sawlc.insert_density_svol(model, tomo, VOI_VSIZE, merge='max')
 
         # Save the results
         save_vtp(net_sawlc.get_vtp(), NET_OUT)
@@ -116,8 +118,8 @@ class TestNetHelixFiber(TestCase):
         net_helix.build_network()
 
         # Density tomogram generation
-        tomo = np.ones(shape=net_helix.get_voi().shape, dtype=np.float32)
-        net_helix.insert_density_svol(model_svol, tomo, VOI_VSIZE, merge='min')
+        tomo = np.zeros(shape=net_helix.get_voi().shape, dtype=np.float32)
+        net_helix.insert_density_svol(model_svol, tomo, VOI_VSIZE, merge='max')
 
         # Save the results
         save_vtp(net_helix.get_vtp(), A_NET_OUT)
@@ -147,8 +149,8 @@ class TestNetHelixFiber(TestCase):
         net_helix.build_network()
 
         # Density tomogram generation
-        tomo = np.ones(shape=net_helix.get_voi().shape, dtype=np.float32)
-        net_helix.insert_density_svol(model_svol, tomo, VOI_VSIZE, merge='min')
+        tomo = np.zeros(shape=net_helix.get_voi().shape, dtype=np.float32)
+        net_helix.insert_density_svol(model_svol, tomo, VOI_VSIZE, merge='max')
 
         # Save the results
         save_vtp(net_helix.get_vtp(), MT_NET_OUT)

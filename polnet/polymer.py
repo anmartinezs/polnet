@@ -146,7 +146,7 @@ class Monomer:
         """
         return Monomer(self.__m_surf, self.__diam)
 
-    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='min'):
+    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max'):
         """
         Insert a monomer subvolume into a tomogram
         :param m_svol: input monomer sub-volume
@@ -162,7 +162,8 @@ class Monomer:
             if trans[0] == 't':
                 tot_v += (trans[1] * v_size_i)
             elif trans[0] == 'r':
-                hold_svol = tomo_rotate(hold_svol, trans[1], mode='constant', cval=hold_svol.max())
+                # hold_svol = tomo_rotate(hold_svol, trans[1], mode='constant', cval=hold_svol.max())
+                hold_svol = tomo_rotate(hold_svol, trans[1], mode='constant', cval=hold_svol.min())
         insert_svol_tomo(hold_svol, tomo, tot_v, merge=merge)
 
     def overlap_mmer(self, mmer, over_tolerance=0):
@@ -335,7 +336,7 @@ class Polymer(ABC):
         else:
             self.__t_length += points_distance(self.__r[-1], self.__r[-2])
 
-    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='min'):
+    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max'):
         """
         Insert a polymer as set of subvolumes into a tomogram
         :param m_svol: input monomer sub-volume reference
@@ -656,8 +657,8 @@ class FiberUnitSDimer(FiberUnit):
         self.__tomo += 1. / (1. + np.exp(-R))
 
         # Generating the surfaces
-        self.__tomo = lin_map(self.__tomo, lb=0, ub=1)
-        self.__surf = iso_surface(self.__tomo, .75)
+        self.__tomo = lin_map(self.__tomo, lb=1, ub=0) # self.__tomo = lin_map(self.__tomo, lb=0, ub=1)
+        self.__surf = iso_surface(self.__tomo, .25) # self.__surf = iso_surface(self.__tomo, .75)
         self.__surf = poly_scale(self.__surf, self.__v_size)
         self.__surf = poly_translate(self.__surf, -.5 * self.__v_size * (np.asarray(self.__tomo.shape)-.5))
 
@@ -723,8 +724,8 @@ class MTUnit(FiberUnit):
             ang += ang_step
 
         # Generating the surfaces
-        self.__tomo = lin_map(self.__tomo, lb=0, ub=1)
-        self.__surf = iso_surface(self.__tomo, .75)
+        self.__tomo = lin_map(self.__tomo, lb=1, ub=0) # self.__tomo = lin_map(self.__tomo, lb=0, ub=1)
+        self.__surf = iso_surface(self.__tomo, .25) # self.__surf = iso_surface(self.__tomo, .75)
         self.__surf = poly_scale(self.__surf, self.__v_size)
         self.__surf = poly_translate(self.__surf, -.5 * self.__v_size * (np.asarray(self.__tomo.shape) - .5))
 

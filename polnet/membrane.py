@@ -41,7 +41,7 @@ class Mb(ABC):
         self.__tomo_shape, self.__v_size = tomo_shape, v_size
         self.__center, self.__rot_q = np.asarray(center, dtype=float), np.asarray(rot_q, dtype=float)
         self.__thick, self.__layer_s = float(thick), float(layer_s)
-        self.__tomo, self.__mask = None, None
+        self.__tomo, self.__mask, self.__surf = None, None, None
 
     def get_thick(self):
         """
@@ -84,9 +84,9 @@ class Mb(ABC):
         Get the membrane as an VTK surface
         :return: a vtkPolyData object
         """
-        return iso_surface(self.__mask.astype(float), .5)
+        return self.__surf
 
-    def insert_density_svol(self, tomo, merge='min', mode='tomo'):
+    def insert_density_svol(self, tomo, merge='max', mode='tomo'):
         """
         Insert a the membrane into a tomogram
         :param tomo: tomogram where m_svol is added
@@ -160,6 +160,19 @@ class MbEllipsoid(Mb):
         R_o = ((X - p0_v[0]) / ao_v) ** 2 + ((Y - p0_v[1]) / bo_v) ** 2 + ((Z - p0_v[2]) / co_v) ** 2
         R_i = ((X - p0_v[0]) / ai_v) ** 2 + ((Y - p0_v[1]) / bi_v) ** 2 + ((Z - p0_v[2]) / ci_v) ** 2
         self._Mb__mask = tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0)
+        if self._Mb__mask.sum() == 0:
+            raise MbError
+
+        # Surface generation
+        R_i = ((X - p0_v[0]) / a_v) ** 2 + ((Y - p0_v[1]) / b_v) ** 2 + ((Z - p0_v[2]) / c_v) ** 2
+        R_i = tomo_rotate(R_i, self._Mb__rot_q, mode='reflect')
+        self._Mb__surf = iso_surface(R_i, 1)
+        # from polnet import lio
+        # lio.write_mrc(R_i.astype(np.float32), './out/hold.mrc')
+        add_sfield_to_poly(self._Mb__surf, self._Mb__mask, 'mb_mask', dtype='int', interp='NN', mode='points')
+        # lio.save_vtp(self._Mb__surf, './out/hold.vtp')
+        self._Mb__surf = poly_threshold(self._Mb__surf, 'mb_mask', mode='points', low_th=.5)
+        # lio.save_vtp(self._Mb__surf, './out/hold2.vtp')
 
         # Outer layer
         R_o = ((X - p0_v[0]) / ao_v_p1) ** 2 + ((Y - p0_v[1]) / bo_v_p1) ** 2 + ((Z - p0_v[2]) / co_v_p1) ** 2
@@ -172,7 +185,7 @@ class MbEllipsoid(Mb):
         G += tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0)
 
         # Smoothing
-        self._Mb__tomo = lin_map(density_norm(sp.ndimage.gaussian_filter(G.astype(float), s_v), inv=True), ub=1, lb=-1)
+        self._Mb__tomo = lin_map(density_norm(sp.ndimage.gaussian_filter(G.astype(float), s_v), inv=True), ub=0, lb=1)
 
 
 class MbSphere(Mb):
@@ -224,6 +237,13 @@ class MbSphere(Mb):
         R_i = ((X - p0_v[0]) / ai_v) ** 2 + ((Y - p0_v[1]) / ai_v) ** 2 + ((Z - p0_v[2]) / ai_v) ** 2
         self._Mb__mask = tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0)
 
+        # Surface generation
+        R_i = ((X - p0_v[0]) / rad_v) ** 2 + ((Y - p0_v[1]) / rad_v) ** 2 + ((Z - p0_v[2]) / rad_v) ** 2
+        R_i = tomo_rotate(R_i, self._Mb__rot_q, mode='reflect')
+        self._Mb__surf = iso_surface(R_i, 1)
+        add_sfield_to_poly(self._Mb__surf, self._Mb__mask, 'mb_mask', dtype='int', interp='NN', mode='points')
+        self._Mb__surf = poly_threshold(self._Mb__surf, 'mb_mask', mode='points', low_th=.5)
+
         # Outer layer
         R_o = ((X - p0_v[0]) / ao_v_p1) ** 2 + ((Y - p0_v[1]) / ao_v_p1) ** 2 + ((Z - p0_v[2]) / ao_v_p1) ** 2
         R_i = ((X - p0_v[0]) / ao_v_m1) ** 2 + ((Y - p0_v[1]) / ao_v_m1) ** 2 + ((Z - p0_v[2]) / ao_v_m1) ** 2
@@ -235,7 +255,7 @@ class MbSphere(Mb):
         G += tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0)
 
         # Smoothing
-        self._Mb__tomo = lin_map(density_norm(sp.ndimage.gaussian_filter(G.astype(float), s_v), inv=True), ub=1, lb=-1)
+        self._Mb__tomo = lin_map(density_norm(sp.ndimage.gaussian_filter(G.astype(float), s_v), inv=True), ub=0, lb=1)
 
 
 class MbTorus(Mb):
@@ -281,10 +301,16 @@ class MbTorus(Mb):
         X, Y, Z = np.meshgrid(np.arange(x_l, x_h), np.arange(y_l, y_h), np.arange(z_l, z_h), indexing='xy')
 
         # Mask generation
-        from polnet import lio
         R_o = ((rad_a_v - np.sqrt((X-p0_v[0])**2 + (Y-p0_v[1])**2))**2 + (Z-p0_v[2])**2 - bo_v*bo_v) <= 1
         R_i = ((rad_a_v - np.sqrt((X-p0_v[0])**2 + (Y-p0_v[1])**2))**2 + (Z-p0_v[2])**2 - bi_v*bi_v) >= 1
         self._Mb__mask = tomo_rotate(np.logical_and(R_i, R_o), self._Mb__rot_q, order=0)
+
+        # Surface generation
+        R_i = ((rad_a_v - np.sqrt((X-p0_v[0])**2 + (Y-p0_v[1])**2))**2 + (Z-p0_v[2])**2 - rad_b_v*rad_b_v)
+        R_i = tomo_rotate(R_i, self._Mb__rot_q, mode='reflect')
+        self._Mb__surf = iso_surface(R_i, 1)
+        add_sfield_to_poly(self._Mb__surf, self._Mb__mask, 'mb_mask', dtype='int', interp='NN', mode='points')
+        self._Mb__surf = poly_threshold(self._Mb__surf, 'mb_mask', mode='points', low_th=.5)
 
         # Outer layer
         R_o = ((rad_a_v - np.sqrt((X-p0_v[0])**2 + (Y-p0_v[1])**2))**2 + (Z-p0_v[2])**2 - bo_v_p1*bo_v_p1) <= 1
@@ -297,7 +323,7 @@ class MbTorus(Mb):
         G += tomo_rotate(np.logical_and(R_i, R_o), self._Mb__rot_q, order=0)
 
         # Smoothing
-        self._Mb__tomo = lin_map(density_norm(sp.ndimage.gaussian_filter(G.astype(float), s_v), inv=True), ub=1, lb=-1)
+        self._Mb__tomo = lin_map(density_norm(sp.ndimage.gaussian_filter(G.astype(float), s_v), inv=True), ub=0, lb=1)
 
 
 class SetMembranes:
@@ -393,7 +419,7 @@ class SetMembranes:
                     raise MbError
 
                 # Insert membrane
-                self.insert_mb(hold_mb, merge='min', over_tolerance=self.__over_tolerance, check_vol=True)
+                self.insert_mb(hold_mb, merge='max', over_tolerance=self.__over_tolerance, check_vol=True)
                 if verbosity:
                     print('Membrane ' + str(count_mb) + ', total occupancy: ' + str(self.get_mb_occupancy()) +
                           ', volume: ' + str(hold_mb.get_vol()) + ', thickness: ' + str(hold_mb.get_thick()) +

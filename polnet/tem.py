@@ -48,7 +48,7 @@ class TEM:
         :param out_file: output path
         """
         with open(out_file, 'w') as file:
-            for ang in range(angs):
+            for ang in angs:
                 file.write(str(ang) + '\n')
 
     def gen_tilt_series_imod(self, vol, angs, ax='X', mode='real'):
@@ -81,7 +81,12 @@ class TEM:
         for i in range(1, len(angs)):
             tangles += ',' + str(angs[i])
         xyzproj_cmd += [tangles]
-        xyzproj_cmd += ['-m', mode]
+        if mode == 'byte':
+            xyzproj_cmd += ['-m', '0']
+        elif mode == 'int':
+            xyzproj_cmd += ['-m', '1']
+        elif mode == 'real':
+            xyzproj_cmd += ['-m', '2']
 
         # Command calling
         try:
@@ -96,25 +101,22 @@ class TEM:
             print('ERROR: Log file could not be written:', self.__log_file)
             raise IOError
 
-    def add_detector_noise(self, img, snr):
+    def add_detector_noise(self, snr):
         """
         Add detector noise to micrographs. Readout noise has Gaussian distribution and dark current is typically
         one order magnitude lower, so the last one is neglected.
-        :param img: ndarray (1, 2 or 3D) where the noise is added
         :param snr: target snr to determine the level of noise to be added, linear scale so greater than zero
-        :return: the image with the noise added
         """
 
         # Input parsing
         assert os.path.exists(self.__micgraphs_file)
-        assert isinstance(img, np.ndarray)
         assert snr > 0
 
         # Load micrographs
         mics = lio.load_mrc(self.__micgraphs_file)
 
         # Adding readout noise with Gaussian distribution to every micrograph
-        for i in range(len(mics.shape[2])):
+        for i in range(mics.shape[2]):
             mic = mics[:, :, i]
             mask = mic > 0
             mn = mic[mask].mean()
@@ -133,11 +135,11 @@ class TEM:
 
         # Building the command
         tilt_cmd = [IMOD_CMD_TILT]
-        vol = lio.load_poly(self.__vol_file, mmap=True)
-        tilt_cmd += ['-inp', self.__tangs_file]
+        vol = lio.load_mrc(self.__vol_file, mmap=True, no_saxes=False)
+        tilt_cmd += ['-inp', self.__micgraphs_file]
         tilt_cmd += ['-output', self.__rec3d_file]
         tilt_cmd += ['-TILTFILE', self.__tangs_file]
-        tilt_cmd += ['-THICKNESS', vol.shape[2]]
+        tilt_cmd += ['-THICKNESS', str(vol.shape[0])]
 
         # Command calling
         try:
@@ -153,3 +155,11 @@ class TEM:
 
         # Swap Y-Z axes from the output given by IMOD
         lio.write_mrc(np.swapaxes(lio.load_mrc(self.__rec3d_file), 1, 2), self.__rec3d_file)
+
+
+    def invert_mics_den(self):
+        """
+        Invert micrographs densities
+        """
+        mics = lio.load_mrc(self.__micgraphs_file)
+        lio.write_mrc(-1 * mics, self.__micgraphs_file)

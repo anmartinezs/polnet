@@ -10,37 +10,44 @@ import mrcfile
 import numpy as np
 
 
-def load_mrc(fname, mmap=False):
+def load_mrc(fname, mmap=False, no_saxes=True):
     """
     Load an input MRC tomogram as ndarray
     :param fname: the input MRC
     :param mmap: if True (default False) the data are read as a memory map
+    :param no_saxes: if True (default) then X and Y axes are swaped to cancel the swaping made by mrcfile package
     :return: a ndarray (or memmap is mmap=True)
     """
     if mmap:
-        mrc = mrcfile.mmap(fname, permissive=True)
+        mrc = mrcfile.mmap(fname, permissive=True, mode='r+')
     else:
-        mrc = mrcfile.open(fname, permissive=True)
-        # return np.swapaxes(mrc.data, 0, 2)
+        mrc = mrcfile.open(fname, permissive=True, mode='r+')
+    if no_saxes:
+        return np.swapaxes(mrc.data, 0, 2)
     return mrc.data
 
 
-def write_mrc(tomo, fname, v_size=1, dtype=None):
+def write_mrc(tomo, fname, v_size=1, dtype=None, no_saxes=True):
     """
     Saves a tomo (3D dataset) as MRC file
     :param tomo: tomo to save as ndarray
     :param fname: output file path
     :param v_size: voxel size (default 1)
     :param dtype: data type (default None, then the dtype of tomo is considered)
+    :param no_saxes: if True (default) then X and Y axes are swaped to cancel the swaping made by mrcfile package
     :return:
     """
     with mrcfile.new(fname, overwrite=True) as mrc:
         if dtype is None:
-            # mrc.set_data(np.swapaxes(tomo, 0, 2))
-            mrc.set_data(tomo)
+            if no_saxes:
+                mrc.set_data(np.swapaxes(tomo, 0, 2))
+            else:
+                mrc.set_data(tomo)
         else:
-            # mrc.set_data(np.swapaxes(tomo, 0, 2).astype(dtype))
-            mrc.set_data(tomo.astype(dtype))
+            if no_saxes:
+                mrc.set_data(np.swapaxes(tomo, 0, 2).astype(dtype))
+            else:
+                mrc.set_data(tomo.astype(dtype))
         mrc.voxel_size.flags.writeable = True
         mrc.voxel_size = (v_size, v_size, v_size)
         mrc.set_volume()

@@ -1,6 +1,5 @@
 from unittest import TestCase
 
-import vtk
 from polnet.polymer import Monomer
 from polnet.lio import *
 from polnet.utils import *

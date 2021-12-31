@@ -82,7 +82,7 @@ class Network(ABC):
         app_flt.Update()
         return app_flt.GetOutput()
 
-    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='min'):
+    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max'):
         """
         Insert a polymer network as set of subvolumes into a tomogram
         :param m_svol: input monomer sub-volume reference

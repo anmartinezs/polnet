@@ -15,9 +15,9 @@ VOI_OFF = 4 # vx
 VOI_VSIZE = 13.68 # A/vx
 
 # Generic settings for membranes
-MB_OCC = 0.02 # %
+MB_OCC = 0.002 # %
 MB_THICK_RG = (25, 35) # A
-MB_LAYER_S_RG = (1, 1.5) # A
+MB_LAYER_S_RG = (5, 10) # A
 MB_MAX_ECC = .75
 MB_OVER_TOL = 1e-8
 MB_MIN_RAD = 75 # A
