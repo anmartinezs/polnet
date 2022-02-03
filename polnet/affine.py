@@ -217,7 +217,7 @@ def tomo_rotate(tomo, q, center=None, active=True, order=3, mode='constant', cva
 
     # Input parsing
     assert isinstance(tomo, np.ndarray) and (len(tomo.shape) == 3)
-    assert len(q) == 4
+    assert hasattr(q, '__len__') and (len(q) == 4)
     if center is None:
         # center = np.round(.5 * np.asarray(tomo.shape, dtype=np.float32))
         center = .5 * np.asarray(tomo.shape, dtype=np.float32)
@@ -252,6 +252,29 @@ def tomo_rotate(tomo, q, center=None, active=True, order=3, mode='constant', cva
     tomo_r = spnd.interpolation.map_coordinates(tomo, inds, order=order, mode=mode, cval=cval, prefilter=prefilter)
 
     return tomo_r.reshape(tomo.shape)
+
+
+def vect_rotate(vect, q, active=True):
+    """
+    Applies the rotation defined in a quaternion to a vector
+    :param tomo: input vector as 1D numpy array with length 3
+    :param q: quaternion encoding the rotation
+    :param active: rotation mode, if True (default) active otherwise passive
+    :return: the rotated vector as 1D numpy array
+    """
+
+    # Input parsing
+    assert isinstance(vect, np.ndarray) and (len(vect) == 3)
+    assert hasattr(q, '__len__') and (len(q) == 4)
+
+    # Getting rotation matrix
+    q /= vector_module(q)
+    R = quat_to_mat(q)
+    if not active:
+        R = R.T
+
+    # Applying rotation matrix
+    return np.matmul(R, vect)
 
 
 def quat_mult(q1, q2):

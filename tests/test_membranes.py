@@ -4,7 +4,10 @@ from unittest import TestCase
 import numpy as np
 
 from polnet.membrane import SetMembranes
+from polnet.network import NetSAWLC, PGenHelixFiber
 from polnet.lrandom import EllipGen, SphGen, TorGen
+from polnet.polymer import MB_DOMAIN_FIELD_STR
+from polnet.poly import poly_reverse_normals, add_sfield_to_poly
 from polnet.lio import *
 from polnet.utils import *
 from polnet.affine import *
@@ -37,6 +40,26 @@ MB_TOR_OUT = './out/torus_mbs.vtp'
 MB_TOR_TOMO_OUT = './out/torus_mbs.mrc'
 MB_TOR_GTRUTH_OUT = './out/torus_mbs_gt.mrc'
 
+# Membrane bound protein
+MMER_MRC = './in/pdb_5wek_13.68A_uncentered.mrc'
+MMER_ISO = .046
+MMER_CENTER = [13, 14.5, 11] # [57, 76, 36] # voxels
+MB_Z_HEIGHT = 16 # voxels
+MMER_OUT_VTK = './out/mb_mmer.vtp'
+MMER_OUT_VTK_2 = './out/mb_mmer_2.vtp'
+MMER_OUT_MRC = './out/mb_mmer.mrc'
+PMER_L = 1.2 # Number of times wrt MMER diameters
+PMER_OCC = 0.05 # 5 # %
+PMER_L_MAX = 3000
+PMER_OVER_TOL = 0.01
+PMER_REVERSE_NORMALS = True
+MMER_OUT = './out/mb_sawlc_mmer.vtp'
+NET_OUT = './out/mb_sawlc_net.vtp'
+NET_SKEL_OUT = './out/mb_sawlc_net_skel.vtp'
+NET_TOMO_OUT = './out/mb_sawlc_net_tomo.mrc'
+MB_POLY_OUT = './out/mb_poly.vtp'
+NET_VOI_OUT = './out/mb_sawlc_voi.mrc'
+
 
 class TestEllipMembranes(TestCase):
 
@@ -63,12 +86,52 @@ class TestEllipMembranes(TestCase):
         write_mrc(set_mbs.get_tomo(), MB_TOMO_OUT, v_size=VOI_VSIZE, dtype=np.float32)
         write_mrc(set_mbs.get_gtruth().astype(np.int16), MB_GTRUTH_OUT, v_size=VOI_VSIZE, dtype=np.float32)
 
+        # Insert membrane bound densities in a Polymer
+        # Polymer parameters
+        model = load_mrc(MMER_MRC)
+        model_mask = model < MMER_ISO
+        model[model_mask] = 0
+        model_surf = iso_surface(model, MMER_ISO, closed=False, normals=None)
+        center = np.asarray(MMER_CENTER) # .5 * np.asarray(model.shape, dtype=float)
+        off = .5 * np.asarray(model.shape) - center
+        # Adding membrane domain to monomer surface
+        mb_domain_mask = np.ones(shape=model.shape, dtype=bool)
+        for z in range(MB_Z_HEIGHT+1, model.shape[2]):
+            mb_domain_mask[:, :, z] = 0
+        add_sfield_to_poly(model_surf, mb_domain_mask, MB_DOMAIN_FIELD_STR, dtype='float', interp='NN', mode='points')
+        # Monomer centering
+        model_surf = poly_translate(model_surf, -center)
+        # Voxel resolution scaling
+        model_surf = poly_scale(model_surf, VOI_VSIZE)
+        surf_diam = poly_max_distance(model_surf)
+        save_vtp(model_surf, MMER_OUT)
+        pol_l_generator = PGenHelixFiber()
+        # Network generation
+        mb_poly = set_mbs.get_vtp()
+        if PMER_REVERSE_NORMALS:
+            mb_poly = poly_reverse_normals(mb_poly)
+        net_sawlc = NetSAWLC(voi, VOI_VSIZE, PMER_L * surf_diam, model_surf, PMER_L_MAX, pol_l_generator, PMER_OCC,
+                             PMER_OVER_TOL, poly=mb_poly, svol=model < MMER_ISO)
+        net_sawlc.build_network()
+        voi = net_sawlc.get_voi()
+        net_sawlc.insert_density_svol(model_mask, voi, VOI_VSIZE, merge='min', off_svol=off)
+        net_sawlc.set_voi(voi)
+        # Density tomogram generation
+        tomo = np.zeros(shape=net_sawlc.get_voi().shape, dtype=np.float32)
+        net_sawlc.insert_density_svol(model, tomo, VOI_VSIZE, merge='max', off_svol=off)
+        # Save the results
+        save_vtp(net_sawlc.get_vtp(), NET_OUT)
+        save_vtp(net_sawlc.get_skel(), NET_SKEL_OUT)
+        write_mrc(tomo, NET_TOMO_OUT, v_size=VOI_VSIZE)
+        write_mrc(net_sawlc.get_voi().astype(np.float32), NET_VOI_OUT, v_size=VOI_VSIZE)
+
         # Network generation for Spheres
         print('Generating Spheres...')
         set_mbs = SetMembranes(voi, VOI_VSIZE, mb_sph_generator, param_rg, MB_THICK_RG, MB_LAYER_S_RG, MB_OCC,
                                MB_OVER_TOL)
         set_mbs.build_set(verbosity=True)
         save_vtp(set_mbs.get_vtp(), MB_SPH_OUT)
+        save_vtp(mb_poly, MB_POLY_OUT)
         write_mrc(set_mbs.get_tomo(), MB_SPH_TOMO_OUT, v_size=VOI_VSIZE, dtype=np.float32)
         write_mrc(set_mbs.get_gtruth().astype(np.int16), MB_SPH_GTRUTH_OUT, v_size=VOI_VSIZE, dtype=np.float32)
 

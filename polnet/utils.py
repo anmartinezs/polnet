@@ -7,7 +7,6 @@ __author__ = 'Antonio Martinez-Sanchez'
 import vtk
 import math
 import numpy as np
-from scipy import stats
 
 from vtkmodules.util import numpy_support
 
@@ -235,9 +234,6 @@ def insert_svol_tomo(svol, tomo, sub_pt, merge='max'):
     :return:
     """
 
-    # Input parsing
-    assert (merge == 'max') or (merge == 'min') or (merge == 'sum') or (merge == 'insert')
-
     # Initialization
     sub_shape = svol.shape
     nx, ny, nz = sub_shape[0], sub_shape[1], sub_shape[2]
@@ -286,6 +282,14 @@ def insert_svol_tomo(svol, tomo, sub_pt, merge='max'):
         dif_h_y = dif_l_y
     if dif_l_z > dif_h_z:
         dif_h_z = dif_l_z
+    sz_svol = [dif_h_x - dif_l_x, dif_h_y - dif_l_y, dif_h_z - dif_l_z]
+    sz_off = [off_h_x - off_l_x, off_h_y - off_l_y, off_h_z - off_l_z]
+    if (sz_svol[0] > sz_off[0]) and (sz_svol[0] > 1):
+        dif_h_x -= 1
+    if (sz_svol[1] > sz_off[1]) and (sz_svol[1] > 1):
+        dif_h_y -= 1
+    if (sz_svol[2] > sz_off[2]) and (sz_svol[2] > 1):
+        dif_h_z -= 1
 
     # Modify the input tomogram
     if merge == 'insert':
@@ -397,67 +401,6 @@ def density_norm(tomo, mask=None, inv=True):
         print('WARNING (density_norm): standard deviation=' + str(st))
 
     return tomo_out
-
-
-def add_sfield_to_poly(poly, sfield, name, dtype='float', interp='NN', mode='points'):
-    """
-    Add the values of a scalar field to a vtkPolyData object as point property
-    :param poly: vtkPolyData objects where the scalar field values will be added
-    :param sfield: input scalar field as ndarray
-    :param name: string with name associated to the added property
-    :param dtype: data type, valid 'float' or 'int'
-    :param interp: interpolation mode, valid 'NN'-> nearest neighbour and 'trilin'-> trilinear
-    :param mode: determines if the scalar field is either added to vtkPolyData points ('points', defualt) or
-                 cells ('cells')
-    """
-    assert isinstance(sfield, np.ndarray)
-    assert isinstance(name, str)
-    assert (dtype == 'float') or (dtype == 'int')
-    assert (interp == 'NN') or (interp == 'trilin')
-    if interp == 'trilin':
-        interp_func = trilin_interp
-    else:
-        interp_func = nn_iterp
-    assert (mode == 'points') or (mode == 'cells')
-
-    if mode == 'points':
-        # Creating and adding the new property as a new array for PointData
-        n_points = poly.GetNumberOfPoints()
-        if dtype == 'int':
-            arr = vtk.vtkIntArray()
-        else:
-            arr = vtk.vtkFloatArray()
-        arr.SetName(name)
-        arr.SetNumberOfComponents(1)
-        arr.SetNumberOfValues(n_points)
-        for i in range(n_points):
-            x, y, z = poly.GetPoint(i)
-            arr.SetValue(i, interp_func(x, y, z, sfield))
-        poly.GetPointData().AddArray(arr)
-    else:
-        # Creating and adding the new property as a new array for CellData
-        if dtype == 'int':
-            arr = vtk.vtkIntArray()
-        else:
-            arr = vtk.vtkFloatArray()
-        n_cells = poly.GetNumberOfCells()
-        arr.SetName(name)
-        arr.SetNumberOfComponents(1)
-        arr.SetNumberOfValues(n_cells)
-        for i in range(n_cells):
-            cell = vtk.vtkGenericCell()
-            poly.GetCell(i, cell)
-            pts = cell.GetPoints()
-            n_pts = pts.GetNumberOfPoints()
-            if dtype == 'int':
-                values = np.zeros(shape=n_pts, dtype=int)
-            else:
-                values = np.zeros(shape=n_pts, dtype=float)
-            for j in range(n_pts):
-                x, y, z = pts.GetPoint(j)
-                values[j] = interp_func(x, y, z, sfield)
-            arr.SetValue(i, stats.mode(values)[0][0])
-        poly.GetCellData().AddArray(arr)
 
 
 def trilin_interp(x, y, z, tomogram):

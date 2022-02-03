@@ -5,9 +5,14 @@ A networks is a combination of a polymer in a volume
 
 __author__ = 'Antonio Martinez-Sanchez'
 
+import math
+
+import numpy as np
+
 from polnet.utils import *
 from polnet.affine import *
-from polnet.polymer import SAWLC, HelixFiber
+from polnet.poly import *
+from polnet.polymer import SAWLC, SAWLCPoly, HelixFiber
 from polnet.lrandom import PGen, PGenHelixFiber, PGenHelixFiberB
 from abc import ABC, abstractmethod
 
@@ -17,18 +22,21 @@ class Network(ABC):
     General class for a network of polymers
     """
 
-    def __init__(self, voi, v_size):
+    def __init__(self, voi, v_size, svol=None):
         """
         Construction
         :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers
         :param v_size: voxel size (default 1)
+        :param svol: monomer subvolume as a numpy ndarray (default None)
         """
-        assert isinstance(voi, np.ndarray)
-        self.__voi = voi
+        self.set_voi(voi)
         self.__vol = (self.__voi > 0).sum() * v_size * v_size * v_size
         self.__v_size = v_size
         self.__pl_occ = 0
         self.__pl = list()
+        self.__svol = svol
+        if self.__svol is not None:
+            assert isinstance(self.__svol, np.ndarray)
 
     def get_polymer_occupancy(self):
         return self.__pl_occ
@@ -36,6 +44,7 @@ class Network(ABC):
     def add_polymer(self, polymer):
         self.__pl.append(polymer)
         self.__pl_occ += 100. * (polymer.get_vol() / self.__vol)
+        print('Occ: ', self.__pl_occ)
 
     @abstractmethod
     def build_network(self):
@@ -50,6 +59,17 @@ class Network(ABC):
         :return: an ndarray
         """
         return self.__voi
+
+    def set_voi(self, voi):
+        """
+        Set the VOI
+        :param voi:
+        """
+        assert isinstance(voi, np.ndarray)
+        if voi.dtype is bool:
+            self.__voi = voi
+        else:
+            self.__voi = voi > 0
 
     def get_vtp(self):
         """
@@ -82,17 +102,43 @@ class Network(ABC):
         app_flt.Update()
         return app_flt.GetOutput()
 
-    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max'):
+    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max', off_svol=None):
         """
         Insert a polymer network as set of subvolumes into a tomogram
         :param m_svol: input monomer sub-volume reference
         :param tomo: tomogram where m_svol is added
         :param v_size: tomogram voxel size (default 1)
         :param merge: merging mode, valid: 'min' (default), 'max', 'sum' and 'insert'
-        :return:
+        :param off_svol: offset coordinates for sub-volume monomer center coordinates
         """
+        assert isinstance(m_svol, np.ndarray) and (len(m_svol.shape) == 3)
+        assert isinstance(tomo, np.ndarray) and (len(tomo.shape) == 3)
+        assert (merge == 'max') or (merge == 'min') or (merge == 'sum') or (merge == 'insert')
+        assert v_size > 0
+        if off_svol is not None:
+            assert isinstance(off_svol, np.ndarray) and (len(off_svol) == 3)
+
         for pl in self.__pl:
-            pl.insert_density_svol(m_svol, tomo, v_size, merge=merge)
+            pl.insert_density_svol(m_svol, tomo, v_size, merge=merge, off_svol=off_svol)
+
+    def add_monomer_to_voi(self, mmer, mmer_svol=None):
+        """
+        Adds a monomer to VOI mask
+        :param mmer: monomer to define rigid transformations
+        :param mmer_voi: subvolume (binary numpy ndarray) with monomer VOI
+        """
+        assert isinstance(mmer_svol, np.ndarray) and (mmer_svol.dtype == bool)
+        v_size_i = 1. / self.__v_size
+        tot_v = np.asarray((0., 0., 0.))
+        hold_svol = mmer_svol > 0
+        for trans in mmer.get_trans_list():
+            if trans[0] == 't':
+                tot_v += (trans[1] * v_size_i)
+            elif trans[0] == 'r':
+                hold_svol = tomo_rotate(hold_svol, trans[1], order=0, mode='constant', cval=hold_svol.max(),
+                                        prefilter=False)
+                # hold_svol = tomo_rotate(hold_svol, trans[1], mode='constant', cval=hold_svol.min())
+        insert_svol_tomo(hold_svol, self.__voi, tot_v, merge='min')
 
 
 class NetSAWLC(Network):
@@ -100,7 +146,8 @@ class NetSAWLC(Network):
     Class for generating a network of SAWLC polymers
     """
 
-    def __init__(self, voi, v_size, l_length, m_surf, max_p_length, gen_pol_lengths, occ, over_tolerance=0):
+    def __init__(self, voi, v_size, l_length, m_surf, max_p_length, gen_pol_lengths, occ, over_tolerance=0,
+                 poly=None, svol=None):
         """
         Construction
         :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers
@@ -112,10 +159,13 @@ class NetSAWLC(Network):
         lengths for polymers
         :param occ: occupancy threshold in percentage [0, 100]%
         :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0, in range [0,1))
+        :param poly: it allows to restrict monomer localizations to a polydata
+        :param svol: monomer subvolume as a numpy ndarray (default None)
+        :param off_svol: offset coordinates in voxels for shifting sub-volume monomer center coordinates (default None)
         """
 
         # Initialize abstract varibles
-        super(NetSAWLC, self).__init__(voi, v_size)
+        super(NetSAWLC, self).__init__(voi, v_size, svol=svol)
 
         # Input parsing
         assert l_length > 0
@@ -124,12 +174,15 @@ class NetSAWLC(Network):
         assert isinstance(gen_pol_lengths, PGenHelixFiber)
         assert (occ >= 0) and (occ <= 100)
         assert (over_tolerance >= 0) and (over_tolerance <= 100)
+        if poly is not None:
+            assert isinstance(poly, vtk.vtkPolyData)
 
         # Variables assignment
         self.__l_length, self.__m_surf = l_length, m_surf
         self.__max_p_length = max_p_length
         self.__gen_pol_lengths = gen_pol_lengths
         self.__occ, self.__over_tolerance = occ, over_tolerance
+        self.__poly = poly
 
     def build_network(self):
         """
@@ -137,15 +190,26 @@ class NetSAWLC(Network):
         :return:
         """
 
+        # Computes the maximum number of tries
+        c_try = 0
+        n_tries = math.ceil(self._Network__vol / poly_volume(self.__m_surf))
+
         # Network loop
-        while self._Network__pl_occ < self.__occ:
+        while (c_try <= n_tries) and (self._Network__pl_occ < self.__occ):
 
             # Polymer initialization
+            c_try += 1
             p0 = np.asarray((self._Network__voi.shape[0] * self._Network__v_size * random.random(),
                              self._Network__voi.shape[1] * self._Network__v_size * random.random(),
                              self._Network__voi.shape[2] * self._Network__v_size * random.random()))
             max_length = self.__gen_pol_lengths.gen_length(0, self.__max_p_length)
-            hold_polymer = SAWLC(self.__l_length, self.__m_surf, p0)
+            if self.__poly is None:
+                hold_polymer = SAWLC(self.__l_length, self.__m_surf, p0)
+            else:
+                hold_polymer = SAWLCPoly(self.__poly, self.__l_length, self.__m_surf, p0)
+            if hold_polymer.get_monomer(-1).overlap_voi(self._Network__voi, self._Network__v_size):
+                continue
+            self.add_monomer_to_voi(hold_polymer.get_monomer(-1), self._Network__svol)
 
             # Polymer loop
             not_finished = True
@@ -157,7 +221,9 @@ class NetSAWLC(Network):
                 else:
                     new_len = points_distance(monomer_data[0], hold_polymer.get_tail_point())
                     if hold_polymer.get_total_len() + new_len < max_length:
+                        # ) and (monomer_data[3].overlap_voi(self._Network__voi, self._Network__v_size)):
                         hold_polymer.add_monomer(monomer_data[0], monomer_data[1], monomer_data[2], monomer_data[3])
+                        self.add_monomer_to_voi(hold_polymer.get_monomer(-1), self._Network__svol)
                     else:
                         not_finished = False
 

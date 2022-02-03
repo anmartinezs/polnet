@@ -5,9 +5,18 @@ A polymer is a linear sequence of monomers.
 
 __author__ = 'Antonio Martinez-Sanchez'
 
+import numpy as np
+
 from polnet.utils import *
+from polnet.poly import *
 from polnet.affine import *
 from abc import ABC, abstractmethod
+
+##### VARIABLES
+
+MB_DOMAIN_FIELD_STR = 'mb_domain'
+
+##### CLASES
 
 
 class Monomer:
@@ -48,6 +57,14 @@ class Monomer:
 
     def get_diameter(self):
         return self.__diam
+
+    def get_trans_list(self):
+        """
+        Get transformations list
+        :return: a list with al transformations, each element is duple with a first element
+        indicating the transformation type ('r' or 't')
+        """
+        return self.__trans
 
     def compute_bounds(self):
         # Compute bounds
@@ -116,16 +133,28 @@ class Monomer:
         assert isinstance(voi, np.ndarray) and (voi.dtype == 'bool')
         nx, ny, nz = voi.shape
         v_size_i = 1. / v_size
+        mbd_prop = self.__m_surf.GetPointData().GetArray(MB_DOMAIN_FIELD_STR)
 
         # Any particle on the monomer surface is within the VOI
-        for i in range(self.__m_surf.GetNumberOfPoints()):
-            pt = np.asarray(self.__m_surf.GetPoint(i)) * v_size_i
-            x, y, z = np.round(pt).astype(int)
-            if (x < nx) and (y < ny) and (z < nz) and (x >= 0) and (y >= 0) and (z >= 0):
-                if not voi[x, y, z]:
+        if mbd_prop is None:
+            for i in range(self.__m_surf.GetNumberOfPoints()):
+                pt = np.asarray(self.__m_surf.GetPoint(i)) * v_size_i
+                x, y, z = np.round(pt).astype(int)
+                if (x < nx) and (y < ny) and (z < nz) and (x >= 0) and (y >= 0) and (z >= 0):
+                    if not voi[x, y, z]:
+                        return True
+                else:
                     return True
-            else:
-                return True
+        else:
+            for i in range(self.__m_surf.GetNumberOfPoints()):
+                if mbd_prop.GetValue(i) == 0:
+                    pt = np.asarray(self.__m_surf.GetPoint(i)) * v_size_i
+                    x, y, z = np.round(pt).astype(int)
+                    if (x < nx) and (y < ny) and (z < nz) and (x >= 0) and (y >= 0) and (z >= 0):
+                        if not voi[x, y, z]:
+                            return True
+                    else:
+                        return True
 
         return False
 
@@ -135,9 +164,7 @@ class Monomer:
         :param fast: if True (default) the volume monomer is only computed once
         :return: the computed volume
         """
-        mass = vtk.vtkMassProperties()
-        mass.SetInputData(self.__m_surf)
-        return mass.GetVolume()
+        return poly_volume(self.__m_surf)
 
     def get_copy(self):
         """
@@ -146,13 +173,14 @@ class Monomer:
         """
         return Monomer(self.__m_surf, self.__diam)
 
-    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max'):
+    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max', off_svol=None):
         """
         Insert a monomer subvolume into a tomogram
         :param m_svol: input monomer sub-volume
         :param tomo: tomogram where m_svol is added
         :param v_size: tomogram voxel size (default 1)
         :param merge: merging mode, valid: 'min' (default), 'max', 'sum' and 'insert'
+        :param off_svol: offset coordinates in voxels for shifting sub-volume monomer center coordinates (default None)
         :return:
         """
         v_size_i = 1. / v_size
@@ -162,8 +190,20 @@ class Monomer:
             if trans[0] == 't':
                 tot_v += (trans[1] * v_size_i)
             elif trans[0] == 'r':
-                # hold_svol = tomo_rotate(hold_svol, trans[1], mode='constant', cval=hold_svol.max())
-                hold_svol = tomo_rotate(hold_svol, trans[1], mode='constant', cval=hold_svol.min())
+                if merge == 'min':
+                    if hold_svol.dtype == bool:
+                        hold_svol = tomo_rotate(hold_svol, trans[1], order=0, mode='constant', cval=hold_svol.max())
+                    else:
+                        hold_svol = tomo_rotate(hold_svol, trans[1], mode='constant', cval=hold_svol.max())
+                else:
+                    if hold_svol.dtype == bool:
+                        hold_svol = tomo_rotate(hold_svol, trans[1], order=0, mode='constant', cval=hold_svol.min())
+                    else:
+                        hold_svol = tomo_rotate(hold_svol, trans[1], mode='constant', cval=hold_svol.min())
+                if off_svol is not None:
+                    off_svol = vect_rotate(off_svol, trans[1])
+        if off_svol is not None:
+            tot_v += off_svol
         insert_svol_tomo(hold_svol, tomo, tot_v, merge=merge)
 
     def overlap_mmer(self, mmer, over_tolerance=0):
@@ -266,6 +306,14 @@ class Polymer(ABC):
     def get_num_monomers(self):
         return len(self.__m)
 
+    def get_monomer(self, m_id):
+        """
+        Get a monomer
+        :param m_id: monomer id, it must be [0, get_num_monomers()-1]
+        :return: the Monomer instance
+        """
+        return self.__m[m_id]
+
     def get_tail_point(self):
         """
         Get the central coordinate for the latest monomer
@@ -299,13 +347,18 @@ class Polymer(ABC):
         verts, lines = vtk.vtkCellArray(), vtk.vtkCellArray()
 
         # Monomers loop
-        for i in range(1, len(self.__r)):
-            id_p0, id_p1 = points.InsertNextPoint(self.__r[i - 1]), points.InsertNextPoint(self.__r[i])
+        if len(self.__r) == 1:
+            id_p0 = points.InsertNextPoint(self.__r[0])
             verts.InsertNextCell(1)
             verts.InsertCellPoint(id_p0)
-            lines.InsertNextCell(2)
-            lines.InsertCellPoint(id_p0)
-            lines.InsertCellPoint(id_p1)
+        else:
+            for i in range(1, len(self.__r)):
+                id_p0, id_p1 = points.InsertNextPoint(self.__r[i - 1]), points.InsertNextPoint(self.__r[i])
+                verts.InsertNextCell(1)
+                verts.InsertCellPoint(id_p0)
+                lines.InsertNextCell(2)
+                lines.InsertCellPoint(id_p0)
+                lines.InsertCellPoint(id_p1)
 
         # Construct poly
         poly.SetPoints(points)
@@ -336,17 +389,18 @@ class Polymer(ABC):
         else:
             self.__t_length += points_distance(self.__r[-1], self.__r[-2])
 
-    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max'):
+    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max', off_svol=None):
         """
         Insert a polymer as set of subvolumes into a tomogram
         :param m_svol: input monomer sub-volume reference
         :param tomo: tomogram where m_svol is added
         :param v_size: tomogram voxel size (default 1)
         :param merge: merging mode, valid: 'min' (default), 'max', 'sum' and 'insert'
+        :param off_svol: offset coordinates for sub-volume monomer center coordinates
         :return:
         """
         for mmer in self.__m:
-            mmer.insert_density_svol(m_svol, tomo, v_size, merge=merge)
+            mmer.insert_density_svol(m_svol, tomo, v_size, merge=merge, off_svol=off_svol)
 
     @abstractmethod
     def set_reference(self):
@@ -412,7 +466,7 @@ class SAWLC(Polymer):
         :return:
         """
         assert hasattr(p0, '__len__') and (len(p0) == 3)
-        self.__p = np.asarray(p0)
+        self._Polymer__p = np.asarray(p0)
         hold_monomer = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
         hold_q = gen_rand_unit_quaternion()
         # hold_q = np.asarray((1, 0., 0., 1.), dtype=np.float32)
@@ -423,8 +477,6 @@ class SAWLC(Polymer):
     def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1):
         """
         Generates a new monomer for the polymer according to the specified random model
-        TODO: According to current implementation only tangential and axial rotation angles are chosen from a uniform
-              random distribution
         :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0)
         :param voi: VOI to define forbidden regions (default None, not applied)
         :param v_size: VOI voxel size, it must be greater than 0 (default 1)
@@ -438,6 +490,79 @@ class SAWLC(Polymer):
 
         # Rotation
         q = gen_rand_unit_quaternion()
+        # q = np.asarray((1, 0, 0, 1), dtype=np.float32)
+
+        # Monomer
+        # hold_m = self._Polymer__m[-1].get_copy()
+        hold_m = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
+        hold_m.rotate_q(q)
+        hold_m.translate(r)
+
+        # Check self-avoiding and forbidden regions
+        if self.overlap_polymer(hold_m, over_tolerance=over_tolerance):
+            return None
+        elif voi is not None:
+            if hold_m.overlap_voi(voi, v_size):
+                return None
+
+        return r, t, q, hold_m
+
+
+class SAWLCPoly(Polymer):
+    """
+    Class for fibers following model Self-Avoiding Worm-Like Chain (SAWLC) on a PolyData
+    """
+
+    def __init__(self, poly, l_length, m_surf, p0=(0, 0, 0)):
+        """
+        Constructor
+        :param poly: vtkPolyData where the monomer center will be embedded
+        :param l_lengh: link length
+        :param m_surf: monomer surface (as vtkPolyData object)
+        :param p0: starting point
+        """
+        super(SAWLCPoly, self).__init__(m_surf)
+        assert isinstance(poly, vtk.vtkPolyData)
+        assert l_length > 0
+        self.__l = l_length
+        self.__poly = poly
+        self.set_reference(p0)
+
+    def set_reference(self, p0=(0., 0., 0)):
+        """
+        Initializes the chain with the specified point input point, if points were introduced before they are forgotten
+        :param p0: starting point
+        :return:
+        """
+        assert hasattr(p0, '__len__') and (len(p0) == 3)
+        self._Polymer__p, hold_n = find_point_on_poly(np.asarray(p0), self.__poly)
+        hold_monomer = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
+        hold_q = gen_rand_quaternion_on_vector(hold_n)
+        # hold_q = np.asarray((1, 0., 0., 1.), dtype=np.float32)
+        hold_monomer.rotate_q(hold_q)
+        hold_monomer.translate(self._Polymer__p)
+        self.add_monomer(self._Polymer__p, np.asarray((0., 0., 0.)), hold_q, hold_monomer)
+
+    def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1):
+        """
+        Generates a new monomer for the polymer according to the specified random model
+        :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0)
+        :param voi: VOI to define forbidden regions (default None, not applied)
+        :param v_size: VOI voxel size, it must be greater than 0 (default 1)
+        :return: a 4-tuple with monomer center point, associated tangent vector, rotated quaternion and monomer,
+                 return None in case the generation has failed
+        """
+
+        # Translation
+        r = gen_uni_s2_sample_on_poly(self._Polymer__r[-1], self.__l, 2, self.__poly)
+        if r is None:
+            return None
+        r = np.asarray(r)
+        t = r - self._Polymer__r[-1]
+
+        # Rotation
+        hold_n = find_point_on_poly(r, self.__poly)[1]
+        q = gen_rand_quaternion_on_vector(hold_n)
         # q = np.asarray((1, 0, 0, 1), dtype=np.float32)
 
         # Monomer
@@ -493,7 +618,7 @@ class HelixFiber(Polymer):
         :return:
         """
         assert hasattr(p0, '__len__') and (len(p0) == 3)
-        self.__p = np.asarray(p0)
+        self._Polymer__p = np.asarray(p0)
         self.__rq = gen_rand_unit_quaternion()
         hold_monomer = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
         vzr = gen_uni_s2_sample(np.asarray((0., 0., 0.)), 1.)

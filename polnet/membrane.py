@@ -6,7 +6,7 @@ A membrane is modelled as two parallel surfaces with Gaussian profile
 __author__ = 'Antonio Martinez-Sanchez'
 
 import scipy as sp
-from polnet.utils import *
+from polnet.poly import *
 from polnet.affine import *
 from polnet.lrandom import *
 from abc import ABC, abstractmethod
