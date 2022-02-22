@@ -314,6 +314,26 @@ class Polymer(ABC):
         """
         return self.__m[m_id]
 
+    def get_mmers_list(self):
+        """
+        Get all polymer's monomers in a list
+        """
+        return self.__m
+
+    def get_mmer_center(self, m_id):
+        """
+        :param m_id: monomner id
+        :return: monomer coordinates center
+        """
+        return self.__m[m_id]
+
+    def get_mmer_rotation(self, m_id):
+        """
+        :param m_id: monomner id
+        :return: monomer rotation as a quaternion
+        """
+        return self.__q[m_id]
+
     def get_tail_point(self):
         """
         Get the central coordinate for the latest monomer
@@ -336,34 +356,50 @@ class Polymer(ABC):
 
         return app_flt.GetOutput()
 
-    def get_skel(self):
+    def get_skel(self, add_verts=True, add_lines=True, verts_rad=0):
         """
-        Get the polymer as a skeleton, each momomer is point and lines conecting monomers
+        Get the polymer as a skeleton, each monomer is a point or sphere and lines connecting monomers
+        :param add_verts: if True (default) the vertices are included in the vtkPolyData
+        :param add_lines: if True (default) the lines are included in the vtkPolyData
+        :param verts_rad: if verts is True then sets the vertex radius, if <=0 a vertices are just points
         :return: a vtkPolyData
         """
 
         # Initialization
         poly, points = vtk.vtkPolyData(), vtk.vtkPoints()
         verts, lines = vtk.vtkCellArray(), vtk.vtkCellArray()
+        sph_points = list()
 
         # Monomers loop
         if len(self.__r) == 1:
+            sph_points.append(self.__r[0])
             id_p0 = points.InsertNextPoint(self.__r[0])
-            verts.InsertNextCell(1)
-            verts.InsertCellPoint(id_p0)
-        else:
-            for i in range(1, len(self.__r)):
-                id_p0, id_p1 = points.InsertNextPoint(self.__r[i - 1]), points.InsertNextPoint(self.__r[i])
+            if add_verts and (verts_rad <= 0):
                 verts.InsertNextCell(1)
                 verts.InsertCellPoint(id_p0)
-                lines.InsertNextCell(2)
-                lines.InsertCellPoint(id_p0)
-                lines.InsertCellPoint(id_p1)
+        else:
+            for i in range(1, len(self.__r)):
+                sph_points.append(self.__r[i])
+                id_p0, id_p1 = points.InsertNextPoint(self.__r[i - 1]), points.InsertNextPoint(self.__r[i])
+                if add_verts and (verts_rad <= 0):
+                    verts.InsertNextCell(1)
+                    verts.InsertCellPoint(id_p0)
+                if add_lines:
+                    lines.InsertNextCell(2)
+                    lines.InsertCellPoint(id_p0)
+                    lines.InsertCellPoint(id_p1)
 
         # Construct poly
         poly.SetPoints(points)
-        poly.SetVerts(verts)
-        poly.SetLines(lines)
+        if add_verts and (verts_rad <= 0):
+            poly.SetVerts(verts)
+        if add_lines:
+            poly.SetLines(lines)
+
+        # Spheres case
+        if add_verts and (verts_rad > 0):
+            sph_vtp = points_to_poly_spheres(sph_points, verts_rad)
+            poly = merge_polys(sph_vtp, poly)
 
         return poly
 

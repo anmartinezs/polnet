@@ -1,6 +1,6 @@
 """
 Models for Transmision Electron Microscopy
-    * VERY IMPORTANT: this package makes usege of some IMOD binaries, so they must be installed in the system
+    * VERY IMPORTANT: this package makes usage of some IMOD binaries, so they must be installed in the system
 
 """
 
@@ -155,7 +155,6 @@ class TEM:
 
         # Swap Y-Z axes from the output given by IMOD
         lio.write_mrc(np.swapaxes(lio.load_mrc(self.__rec3d_file), 1, 2), self.__rec3d_file)
-
 
     def invert_mics_den(self):
         """

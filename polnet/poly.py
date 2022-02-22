@@ -218,3 +218,60 @@ def add_sfield_to_poly(poly, sfield, name, dtype='float', interp='NN', mode='poi
                 values[j] = interp_func(x, y, z, sfield)
             arr.SetValue(i, stats.mode(values)[0][0])
         poly.GetCellData().AddArray(arr)
+
+
+def merge_polys(poly_1, poly_2):
+    """
+    Merges two input poly_data in single one
+    :param poly_1: input poly_data 1
+    :param poly_2: input poly_data 2
+    :return: an poly_data that merges the two inputs
+    """
+    assert isinstance(poly_1, vtk.vtkPolyData) and isinstance(poly_2, vtk.vtkPolyData)
+    app_flt = vtk.vtkAppendPolyData()
+    app_flt.AddInputData(poly_1)
+    app_flt.AddInputData(poly_2)
+    app_flt.Update()
+    return app_flt.GetOutput()
+
+
+def add_label_to_poly(poly, lbl, p_name):
+    """
+    Add a label to all cells in a poly_data
+    :param poly: input poly_data
+    :param lbl: label (integer) value
+    :p_name: property name used for labels, if not exist in poly_dota is created
+    """
+    assert isinstance(poly, vtk.vtkPolyData)
+    lbl, p_name = int(lbl), str(p_name)
+    arr = vtk.vtkIntArray()
+    n_cells = poly.GetNumberOfCells()
+    arr.SetName(p_name)
+    arr.SetNumberOfComponents(1)
+    arr.SetNumberOfValues(n_cells)
+    for i in range(n_cells):
+        arr.SetValue(i, lbl)
+    poly.GetCellData().AddArray(arr)
+
+
+def points_to_poly_spheres(points, rad):
+    """
+    From an array of coordinates generates a poly_data associating a sphere centered a each point
+    :param points: array or list n points with shape [n, 3]
+    :param rad: sphere radius
+    :return: an output poly_data
+    """
+    assert hasattr(points, '__len__') and (len(points) > 0) and (len(points[0]) == 3)
+    rad = float(rad)
+    app_flt = vtk.vtkAppendPolyData()
+
+    for i in range(len(points)):
+        center = points[i]
+        vtp_source = vtk.vtkSphereSource()
+        vtp_source.SetCenter(center[0], center[1], center[2])
+        vtp_source.SetRadius(rad)
+        vtp_source.Update()
+        app_flt.AddInputData(vtp_source.GetOutput())
+
+    app_flt.Update()
+    return app_flt.GetOutput()

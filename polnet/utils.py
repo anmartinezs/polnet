@@ -4,6 +4,8 @@ Common functionality
 
 __author__ = 'Antonio Martinez-Sanchez'
 
+import os
+import shutil
 import vtk
 import math
 import numpy as np
@@ -540,3 +542,28 @@ def poly_threshold(poly, p_name, mode='points', low_th=None, hi_th=None):
 
     return surf_flt.GetOutput()
 
+def gen_six_connectivity_mask():
+    """
+    Generates a 6-connectivity mask
+    :return: 3x3x3 boolean numpy array
+    """
+    mask = np.zeros(shape=(3, 3, 3), dtype=bool)
+    mask[1, 1, 0] = True
+    mask[0, 1, 1] = True
+    mask[1, 1, 1] = True
+    mask[2, 1, 1] = True
+    mask[1, 0, 1] = True
+    mask[1, 2, 1] = True
+    mask[1, 1, 2] = True
+    return mask
+
+def clean_dir(dir):
+    """
+    Clean an directory contents (directory is preserved)
+    :param dir: directory path
+    """
+    for root, dirs, files in os.walk(dir):
+        for f in files:
+            os.unlink(os.path.join(root, f))
+        for d in dirs:
+            shutil.rmtree(os.path.join(root, d))

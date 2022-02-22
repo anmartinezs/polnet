@@ -1,7 +1,5 @@
-import math
-from unittest import TestCase
 
-import numpy as np
+from unittest import TestCase
 
 from polnet.membrane import SetMembranes
 from polnet.network import NetSAWLC, PGenHelixFiber
@@ -61,7 +59,7 @@ MB_POLY_OUT = './out/mb_poly.vtp'
 NET_VOI_OUT = './out/mb_sawlc_voi.mrc'
 
 
-class TestEllipMembranes(TestCase):
+class TestMembranes(TestCase):
 
     def test_build_network(self):
 

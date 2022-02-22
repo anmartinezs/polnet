@@ -86,19 +86,25 @@ class Mb(ABC):
         """
         return self.__surf
 
-    def insert_density_svol(self, tomo, merge='max', mode='tomo'):
+    def insert_density_svol(self, tomo, merge='max', mode='tomo', grow=0):
         """
         Insert a the membrane into a tomogram
         :param tomo: tomogram where m_svol is added
         :param merge: merging mode, valid: 'min' (default), 'max', 'sum' and 'insert'
-        :param mode: determines which data are inserted, valid: tomo (default) or mask
+        :param mode: determines which data are inserted, valid: 'tomo' (default), 'mask' and 'voi'
+        :param grow: number of voxel to grow the membrane tomogram to insert (default 0), only used in 'voi' mode
         :return:
         """
-        assert (mode == 'tomo') or (mode == 'mask')
+        assert (mode == 'tomo') or (mode == 'mask') or (mode == 'voi')
         if mode == 'tomo':
             hold = self.__tomo
         elif mode == 'mask':
             hold = self.__mask
+        elif mode == 'voi':
+            if grow >= 1:
+                hold = np.invert(sp.ndimage.morphology.binary_dilation(self.__mask, iterations=grow))
+            else:
+                hold = np.invert(self.__mask)
         insert_svol_tomo(hold, tomo, .5 * np.asarray(self.__tomo.shape), merge=merge)
 
     @abstractmethod
@@ -331,7 +337,7 @@ class SetMembranes:
     Class for modelling a set of membranes within a tomogram
     """
 
-    def __init__(self, voi, v_size, gen_rnd_surfs, param_rg, thick_rg, layer_rg, occ, over_tolerance=0):
+    def __init__(self, voi, v_size, gen_rnd_surfs, param_rg, thick_rg, layer_rg, occ, over_tolerance=0, voi_grow=0):
         """
         Construction
         :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for membranes
@@ -343,20 +349,22 @@ class SetMembranes:
         :param layer_s: lipid layer range (2-tuple)
         :param occ: occupancy threshold in percentage [0, 100]%
         :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0, in range [0,1))
+        :param voi_grow: number of voxels to grow the ground truth for generating the VOI (default 0)
         """
 
         # Input parsing
-        assert isinstance(voi, np.ndarray)
+        assert isinstance(voi, np.ndarray) and (voi.dtype == bool)
         assert issubclass(gen_rnd_surfs.__class__, SurfGen)
         assert hasattr(param_rg, '__len__') and (len(param_rg) == 3) and (param_rg[0] <= param_rg[1])
         assert hasattr(thick_rg, '__len__') and (len(thick_rg) == 2) and (thick_rg[0] <= thick_rg[1])
         assert hasattr(layer_rg, '__len__') and (len(layer_rg) == 2) and (layer_rg[0] <= layer_rg[1])
         assert (occ >= 0) and (occ <= 100)
         assert (over_tolerance >= 0) and (over_tolerance <= 100)
+        assert (voi_grow >= 0)
 
         # Variables assignment
         self.__voi = voi
-        self.__vol = (self.__voi > 0).sum() * v_size * v_size * v_size
+        self.__vol = self.__voi.sum() * v_size * v_size * v_size
         self.__v_size = v_size
         self.__tomo, self.__gtruth = np.zeros(shape=voi.shape, dtype=np.float16), \
                                      np.zeros(shape=voi.shape, dtype=bool)
@@ -365,6 +373,7 @@ class SetMembranes:
         self.__gen_rnd_surfs = gen_rnd_surfs
         self.__param_rg, self.__thick_rg, self.__layer_rg = param_rg, thick_rg, layer_rg
         self.__occ, self.__over_tolerance = occ, over_tolerance
+        self.__voi_grow = int(voi_grow)
 
     def get_vol(self):
         return self.__vol
@@ -419,7 +428,7 @@ class SetMembranes:
                     raise MbError
 
                 # Insert membrane
-                self.insert_mb(hold_mb, merge='max', over_tolerance=self.__over_tolerance, check_vol=True)
+                self.insert_mb(hold_mb, merge='max', over_tolerance=self.__over_tolerance, check_vol=True, grow=self.__voi_grow)
                 if verbosity:
                     print('Membrane ' + str(count_mb) + ', total occupancy: ' + str(self.get_mb_occupancy()) +
                           ', volume: ' + str(hold_mb.get_vol()) + ', thickness: ' + str(hold_mb.get_thick()) +
@@ -455,7 +464,8 @@ class SetMembranes:
         Get the ground truth within the VOI
         :return: an ndarray
         """
-        return self.__voi * self.__gtruth
+        # return self.__voi * self.__gtruth
+        return self.__gtruth
 
     def get_vtp(self):
         """
@@ -489,7 +499,7 @@ class SetMembranes:
         tomo_over = np.logical_and(np.logical_and(tomo_mb, self.__gtruth), self.__voi)
         return 100. * (tomo_over.sum() / self.get_vol())
 
-    def insert_mb(self, mb, merge='min', over_tolerance=None, check_vol=True):
+    def insert_mb(self, mb, merge='min', over_tolerance=None, check_vol=True, grow=0):
         """
         Insert the membrane into the set (tomogram, vtkPolyData and Ground Truth)
         :param mb: input membrane (Mb) object
@@ -497,6 +507,7 @@ class SetMembranes:
         :param over_tolerance: overlapping tolerance (percentage of membrane voxel overlapping), if None then disabled
         :param check_vol: if True (default) the input membrane volume is check and if equal to zero then the membrane
                           is not inserted and MbError is raised
+        :param grow: number of voxel to grow the VOI (default 0)
         :return: raises a ValueError if the membrane is not inserted
         """
         if check_vol and (mb.get_vol() <= 0):
@@ -506,6 +517,8 @@ class SetMembranes:
             mb.insert_density_svol(self.__tomo, merge=merge, mode='tomo')
             # Ground Truth
             mb.insert_density_svol(self.__gtruth, merge='max', mode='mask')
+            # VOI
+            mb.insert_density_svol(self.__voi, merge='min', mode='voi', grow=grow)
             # Surfaces insertion
             self.__app_vtp.AddInputData(mb.get_vtp())
             self.__app_vtp.Update()

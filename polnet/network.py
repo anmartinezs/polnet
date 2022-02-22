@@ -5,12 +5,8 @@ A networks is a combination of a polymer in a volume
 
 __author__ = 'Antonio Martinez-Sanchez'
 
-import math
+import scipy as sp
 
-import numpy as np
-
-from polnet.utils import *
-from polnet.affine import *
 from polnet.poly import *
 from polnet.polymer import SAWLC, SAWLCPoly, HelixFiber
 from polnet.lrandom import PGen, PGenHelixFiber, PGenHelixFiberB
@@ -38,6 +34,9 @@ class Network(ABC):
         if self.__svol is not None:
             assert isinstance(self.__svol, np.ndarray)
 
+    def get_pmers_list(self):
+        return self.__pl
+
     def get_polymer_occupancy(self):
         return self.__pl_occ
 
@@ -59,6 +58,17 @@ class Network(ABC):
         :return: an ndarray
         """
         return self.__voi
+
+    def get_gtruth(self, thick=1):
+        """
+        Get the ground truth tomogram
+        :param thick: ground truth tickness in voxels (default 1)
+        :return: a binary numpy 3D array
+        """
+        hold_gtruth = self.gen_vtp_points_tomo()
+        if thick >= 1:
+            hold_gtruth = sp.ndimage.morphology.binary_dilation(hold_gtruth, iterations=int(thick))
+        return hold_gtruth
 
     def set_voi(self, voi):
         """
@@ -86,21 +96,38 @@ class Network(ABC):
 
         return app_flt.GetOutput()
 
-    def get_skel(self):
+    def get_skel(self, add_verts=True, add_lines=True, verts_rad=0):
         """
-        Get Polymers Network as a vtkPolyData as points and lines
+        Get the polymer as a skeleton, each monomer is a point or sphere and lines connecting monomers
+        :param add_verts: if True (default) the vertices are included in the vtkPolyData
+        :param add_lines: if True (default) the lines are included in the vtkPolyData
+        :param verts_rad: if verts is True then sets the vertex radius, if <=0 a vertices are just points
         :return: a vtkPolyData
         """
-
         app_flt = vtk.vtkAppendPolyData()
 
         # Polymers loop
         for pol in self.__pl:
-            app_flt.AddInputData(pol.get_skel())
+            app_flt.AddInputData(pol.get_skel(add_verts, add_lines, verts_rad))
 
         # Update and return
         app_flt.Update()
         return app_flt.GetOutput()
+
+    def gen_vtp_points_tomo(self):
+        """
+        Generates a binary tomogram where True elements correspond with the polydata closes voxel projection
+        :return: a binary VOI shaped numpy array
+        """
+        nx, ny, nz = self.__voi.shape
+        hold_tomo = np.zeros(shape=(nx, ny, nz), dtype=bool)
+        hold_vtp_skel = self.get_skel()
+        for i in range(hold_vtp_skel.GetNumberOfPoints()):
+            x, y, z = hold_vtp_skel.GetPoint(i)
+            x, y, z = int(round(x)), int(round(y)), int(round(z))
+            if (x >= 0) and (y >= 0) and (z >= 0) and  (x < nx) and (y < ny) and (z < nz):
+                hold_tomo[x, y, z] = True
+        return hold_tomo
 
     def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max', off_svol=None):
         """
