@@ -19,16 +19,15 @@ class MmerFile:
         Constructor
         :param in_file: path to the input file with extension .pns
         """
-        if in_file is None:
-            self.__mmer_id = None
-            self.__mmer_svol = None
-            self.__iso = None
-            self.__pmer_l = None
-            self.__pmer_occ = None
-            self.__pmer_l_max = None
-            self.__pmer_over_tol = 0
-        else:
-            self.load_protein_file(in_file)
+        self.__mmer_id = None
+        self.__mmer_svol = None
+        self.__iso = None
+        self.__pmer_l = None
+        self.__pmer_occ = None
+        self.__pmer_l_max = None
+        self.__pmer_over_tol = 0
+        if in_file is not None:
+            self.load_mmer_file(in_file)
 
     def get_mmer_id(self):
         return self.__mmer_id
@@ -66,7 +65,10 @@ class MmerFile:
 
                     # Parsing an file entry
                     var, value = linea.split('=')
-                    var.strip(), value.strip()
+                    var = var.replace(' ', '')
+                    var = var.replace('\n', '')
+                    value = value.replace(' ', '')
+                    value = value.replace('\n', '')
                     if var == 'MMER_ID':
                         self.__mmer_id = value
                     elif var == 'MMER_SVOL':
@@ -98,6 +100,18 @@ class SynthTomo:
         self.__poly = None
         self.__motifs = list()
 
+    def get_den(self):
+        return self.__den
+
+    def get_mics(self):
+        return self.__mic
+
+    def get_poly(self):
+        return self.__poly
+
+    def get_tomo(self):
+        return self.__tomo
+
     def set_den(self, den):
         assert isinstance(den, str) and den.endswith('.mrc')
         self.__den = den
@@ -117,7 +131,7 @@ class SynthTomo:
     def get_motif_list(self):
         return self.__motifs
 
-    def add_networks(self, net, m_type, lbl, code):
+    def add_network(self, net, m_type, lbl, code):
         """
         Add al motifs within the input network to the synthetic tomogram
         :param net: a network object instance
@@ -125,7 +139,7 @@ class SynthTomo:
         :param lbl: integer label
         :param code: string code for the network monomers
         """
-        assert issubclass(net, Network)
+        assert issubclass(type(net), Network)
         assert isinstance(m_type, str) and isinstance(lbl, int) and isinstance(code, str)
         for pmer_id, pmer in enumerate(net.get_pmers_list()):
             for mmer_id in range(pmer.get_num_monomers()):
@@ -157,9 +171,10 @@ class SetTomos:
         assert isinstance(out_file, str) and out_file.endswith('.csv')
 
         # Writing output CSV file
-        with open(out_file) as csv_file:
-            csv.DictWriter(csv_file, dialect=csv.excel_tab, fieldnames=['Density', 'Micrographs', 'PolyData',
+        with open(out_file, 'w') as csv_file:
+            writer = csv.DictWriter(csv_file, dialect=csv.excel_tab, fieldnames=['Density', 'Micrographs', 'PolyData',
                            'Tomo3D', 'Type', 'Label', 'Code', 'Polymer', 'X', 'Y', 'Z', 'Q1', 'Q2', 'Q3', 'Q4'])
+            writer.writeheader()
 
             # Tomos loop
             for tomo in self.__tomos:
@@ -169,7 +184,7 @@ class SetTomos:
                 rec_path = tomo.get_tomo()
 
                 # Motifs loop
-                for motif in self.get_motif_list():
+                for motif in tomo.get_motif_list():
                     m_type = motif[0]
                     lbl_id = motif[1]
                     text_id = motif[2]
@@ -178,7 +193,7 @@ class SetTomos:
                     rotation = motif[5]
 
                     # Writing entry
-                    file_entry = [den_path, mics_path, poly_path, rec_path, m_type, lbl_id, text_id, pmer_id, center[0],
-                                  center[1], center[2], rotation[0], rotation[1], rotation[2], rotation[3]]
-                    csv.DictWriter(file_entry, dialect=csv.excel_tab, fieldnames=['Density', 'Micrographs', 'PolyData',
-                                'Tomo3D', 'Type', 'Label', 'Code', 'Polymer', 'X', 'Y', 'Z', 'Q1', 'Q2', 'Q3', 'Q4'])
+                    writer.writerow({'Density':den_path, 'Micrographs':mics_path, 'PolyData':poly_path,
+                                     'Tomo3D':rec_path, 'Type':m_type, 'Label':lbl_id, 'Code':text_id,
+                                     'Polymer':pmer_id, 'X':center[0], 'Y':center[1], 'Z':center[2],
+                                     'Q1':rotation[0], 'Q2':rotation[1], 'Q3':rotation[2], 'Q4':rotation[3]})

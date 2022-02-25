@@ -15,6 +15,7 @@ from polnet import lio
 ## IMOD commands
 IMOD_CMD_XYZPROJ = 'xyzproj'
 IMOD_CMD_TILT = 'tilt'
+IMOD_CMD_AHEADER = 'alterheader'
 
 
 class TEM:
@@ -154,7 +155,48 @@ class TEM:
             raise IOError
 
         # Swap Y-Z axes from the output given by IMOD
-        lio.write_mrc(np.swapaxes(lio.load_mrc(self.__rec3d_file), 1, 2), self.__rec3d_file)
+        hold_rec = np.swapaxes(lio.load_mrc(self.__rec3d_file), 1, 2)
+        # Flip Z-axis
+        lio.write_mrc(np.flip(hold_rec, axis=2), self.__rec3d_file)
+
+
+    def set_header(self, data='mics', p_size=None, origin=None):
+        """
+        Set 3D reconstructed tomogram pixel (voxel) size using alter 'alterheader' IMOD script
+        :param data: determines the data where the changes will be applied, valid: 'mics' or 'rec3d'
+        :param p_size: pixel size X, Y and Z dimensions
+        :param origin: origin X, Y and Z dimensions
+        """
+        assert (data == 'mics') or (data == 'rec3d')
+        if p_size is not None:
+            assert hasattr(p_size, '__len__') and len(p_size) == 3
+        if origin is not None:
+            assert hasattr(origin, '__len__') and len(origin) == 3
+
+        # Call to IMOD binary (tilt)
+
+        # Building the command
+        aheader_cmd = [IMOD_CMD_AHEADER]
+        if data == 'mics':
+            aheader_cmd += [self.__micgraphs_file,]
+        else:
+            aheader_cmd += [self.__rec3d_file,]
+        if p_size is not None:
+            aheader_cmd += ['-del', str(p_size[0]) + ',' + str(p_size[1]) + ',' + str(p_size[2])]
+        if origin is not None:
+            aheader_cmd += ['-org', str(origin[0]) + ',' + str(origin[1]) + ',' + str(origin[2])]
+
+        # Command calling
+        try:
+            with open(self.__log_file, 'a') as file_log:
+                file_log.write('\n[' + time.strftime("%c") + ']RUNNING COMMAND:-> ' + ' '.join(aheader_cmd) + '\n')
+                subprocess.call(aheader_cmd, stdout=file_log, stderr=file_log)
+        except subprocess.CalledProcessError:
+            print('ERROR: Error calling the command:', aheader_cmd)
+            raise subprocess.CalledProcessError
+        except IOError:
+            print('ERROR: Log file could not be written:', self.__log_file)
+            raise IOError
 
     def invert_mics_den(self):
         """

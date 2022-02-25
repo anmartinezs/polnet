@@ -5,9 +5,9 @@ from polnet.tem import TEM
 from polnet import lio
 
 TEM_DIR = './out/tem_dir'
-IN_VOL = './out/mt_net_tomo.mrc'
+IN_VOL = './out/stomo_density.mrc' # './out/mt_net_tomo.mrc'
 TILT_ANGS = np.arange(-60, 60, 2)
-DETECTOR_SNR = 0.1
+DETECTOR_SNR = 0.3
 
 
 class TestTEM(TestCase):

@@ -325,7 +325,7 @@ class Polymer(ABC):
         :param m_id: monomner id
         :return: monomer coordinates center
         """
-        return self.__m[m_id]
+        return self.__r[m_id]
 
     def get_mmer_rotation(self, m_id):
         """

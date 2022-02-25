@@ -30,25 +30,25 @@ from polnet.stomo import MmerFile, SynthTomo, SetTomos
 ##### Input parameters
 
 # Common tomogram settings
-ROOT_PATH = ''
+ROOT_PATH = '/home/antonio/workspace/synth_tomo/riboprot'
 NTOMOS = 2
-VOI_SHAPE = (400, 400, 150) # (924, 924, 300) # vx
+VOI_SHAPE = (1856, 1856, 150) # (924, 924, 300) # vx
 VOI_OFF = 4 # vx
 VOI_VSIZE = 2.2 # A/vx
 GTRUTH_VTP_LBLS = 'gt_labels'
 GTRUTH_POINTS_RAD = 35 # nm
 
 # Proteins list
-PROTEINS_LIST = ['', '']
+PROTEINS_LIST = ['in/ribo.pns', 'in/prot.pns']
 
 # Reconstruction tomograms
-TILT_ANGS = np.arange(-60, 60, 2)
-DETECTOR_SNR = 0.1
+TILT_ANGS = np.arange(-60, 60, 3)
+DETECTOR_SNR = 0 # 0.1
 
 # OUTPUT FILES
-OUT_DIR = ROOT_PATH + ''
+OUT_DIR = ROOT_PATH + '/out'
 TEM_DIR = OUT_DIR + '/tem'
-TOMOS_DIR = OUT_DIR + '/tem'
+TOMOS_DIR = OUT_DIR + '/tomos'
 
 ##### Main procedure
 
@@ -66,9 +66,12 @@ for tomod_id in range(NTOMOS):
     voi[VOI_OFF:VOI_SHAPE[0] - VOI_OFF, VOI_OFF:VOI_SHAPE[1] - VOI_OFF, VOI_OFF:VOI_SHAPE[2] - VOI_OFF] = True
     tomo_den = np.zeros(shape=voi.shape, dtype=np.float32)
     synth_tomo = SynthTomo()
+    poly_vtp = None
 
     # Loop for the list of input proteins loop
     for p_id, p_file in enumerate(PROTEINS_LIST):
+
+        print('PROCESSING FILE:', p_file)
 
         # Loading the protein
         protein = MmerFile(ROOT_PATH + '/' + p_file)
@@ -99,32 +102,45 @@ for tomod_id in range(NTOMOS):
         net_sawlc.insert_density_svol(model, tomo_den, VOI_VSIZE, merge='max')
         hold_vtp = net_sawlc.get_vtp()
         pp.add_label_to_poly(hold_vtp, p_id, p_name=GTRUTH_VTP_LBLS)
-        poly_vtp = pp.merge_polys(poly_vtp, hold_vtp)
+        if poly_vtp is not None:
+            poly_vtp = pp.merge_polys(poly_vtp, hold_vtp)
+        else:
+            poly_vtp = hold_vtp
         synth_tomo.add_network(net_sawlc, 'Protein', p_id, protein.get_mmer_id())
 
+        # DEBUG
+        """lio.write_mrc(voi.astype(np.float32), ROOT_PATH + '/hold_voi.mrc')
+        lio.save_vtp(model_surf, ROOT_PATH + '/hold_model.vtp')
+        lio.save_vtp(poly_vtp, ROOT_PATH + '/hold_poly.vtp')
+        lio.write_mrc(tomo_den, ROOT_PATH + '/hold_den.mrc')"""
+
     # Storing simulated density results
-    tomo_den_out = TOMOS_DIR + '/tomo_den_' + p_id + '.mrc'
+    tomo_den_out = TOMOS_DIR + '/tomo_den_' + str(tomod_id) + '.mrc'
     lio.write_mrc(tomo_den, tomo_den_out, v_size=VOI_VSIZE)
     synth_tomo.set_den(tomo_den_out)
-    poly_den_out = TOMOS_DIR + '/poly_den_' + p_id + '.mrc'
-    pp.save_vtp(poly_vtp, poly_den_out)
+    poly_den_out = TOMOS_DIR + '/poly_den_' + str(tomod_id) + '.vtp'
+    lio.save_vtp(poly_vtp, poly_den_out)
     synth_tomo.set_poly(poly_den_out)
 
     # TEM for 3D reconstructions
     temic = tem.TEM(TEM_DIR)
     vol = lio.load_mrc(tomo_den_out)
-    temic.gen_tilt_series_imod(vol, TILT_ANGS)
-    temic.add_detector_noise(DETECTOR_SNR)
+    temic.gen_tilt_series_imod(vol, TILT_ANGS, ax='Y')
+    if DETECTOR_SNR > 0:
+        temic.add_detector_noise(DETECTOR_SNR)
     temic.invert_mics_den()
+    temic.set_header(data='mics', p_size=(VOI_VSIZE, VOI_VSIZE, VOI_VSIZE))
     temic.recon3D_imod()
-    out_mics, out_tomo_rec = TOMOS_DIR + '/tomo_mics_' + p_id + '.mrc', TOMOS_DIR + '/tomo_rec_' + p_id + '.mrc'
+    temic.set_header(data='rec3d', p_size=(VOI_VSIZE, VOI_VSIZE, VOI_VSIZE), origin=(0, 0, 0))
+    out_mics, out_tomo_rec = TOMOS_DIR + '/tomo_mics_' + str(tomod_id) + '.mrc', TOMOS_DIR + '/tomo_rec_' \
+                             + str(tomod_id) + '.mrc'
     shutil.copyfile(TEM_DIR + '/out_micrographs.mrc', out_mics)
     shutil.copyfile(TEM_DIR + '/out_rec3d.mrc', out_tomo_rec)
     synth_tomo.set_mics(out_mics)
     synth_tomo.set_tomo(out_tomo_rec)
 
     # Update the set
-    set_stomos.add_tomo(synth_tomo)
+    set_stomos.add_tomos(synth_tomo)
 
 # Storing tomograms CSV file
 set_stomos.save_csv(OUT_DIR + '/tomos_motif_list.csv')
