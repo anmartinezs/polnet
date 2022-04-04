@@ -18,7 +18,7 @@ model
 
 __author__ = 'Antonio Martinez-Sanchez'
 
-import shutil
+import random
 
 from polnet.utils import *
 from polnet import lio
@@ -30,10 +30,10 @@ from polnet.stomo import MmerFile, SynthTomo, SetTomos
 ##### Input parameters
 
 # Common tomogram settings
-ROOT_PATH = '/home/antonio/workspace/synth_tomo/riboprot'
-NTOMOS = 2
-VOI_SHAPE = (1856, 1856, 150) # (924, 924, 300) # vx
-VOI_OFF = 4 # vx
+ROOT_PATH = '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth' # '/home/antonio/workspace/synth_tomo/riboprot'
+NTOMOS = 12
+VOI_SHAPE = (1856, 1856, 464) # (400, 400, 150) # (400, 400, 464) # (924, 924, 300) # vx
+VOI_OFFS = ((4,1852), (4,1852), (157,307))  # vx
 VOI_VSIZE = 2.2 # A/vx
 GTRUTH_VTP_LBLS = 'gt_labels'
 GTRUTH_POINTS_RAD = 35 # nm
@@ -42,8 +42,11 @@ GTRUTH_POINTS_RAD = 35 # nm
 PROTEINS_LIST = ['in/ribo.pns', 'in/prot.pns']
 
 # Reconstruction tomograms
-TILT_ANGS = np.arange(-60, 60, 3)
-DETECTOR_SNR = 0 # 0.1
+TILT_ANGS = range(-60, 61, 3) # np.arange(-60, 60, 3) # at MPI-B IMOD only works for ranges
+DETECTOR_SNR = [.15, .25] # 0.2
+MALIGN_MN = 1
+MALIGN_MX = 1.5
+MALIGN_SG = 0.2
 
 # OUTPUT FILES
 OUT_DIR = ROOT_PATH + '/out'
@@ -62,8 +65,8 @@ clean_dir(TOMOS_DIR)
 for tomod_id in range(NTOMOS):
 
     # Generate the VOI and tomogram density
-    voi = np.ones(shape=VOI_SHAPE, dtype=bool)
-    voi[VOI_OFF:VOI_SHAPE[0] - VOI_OFF, VOI_OFF:VOI_SHAPE[1] - VOI_OFF, VOI_OFF:VOI_SHAPE[2] - VOI_OFF] = True
+    voi = np.zeros(shape=VOI_SHAPE, dtype=bool)
+    voi[VOI_OFFS[0][0]:VOI_OFFS[0][1], VOI_OFFS[1][0]:VOI_OFFS[1][1], VOI_OFFS[2][0]:VOI_OFFS[2][1]] = True
     tomo_den = np.zeros(shape=voi.shape, dtype=np.float32)
     synth_tomo = SynthTomo()
     poly_vtp = None
@@ -126,14 +129,20 @@ for tomod_id in range(NTOMOS):
     temic = tem.TEM(TEM_DIR)
     vol = lio.load_mrc(tomo_den_out)
     temic.gen_tilt_series_imod(vol, TILT_ANGS, ax='Y')
-    if DETECTOR_SNR > 0:
-        temic.add_detector_noise(DETECTOR_SNR)
+    temic.add_mics_misalignment(MALIGN_MN, MALIGN_MX, MALIGN_SG)
+    if DETECTOR_SNR is not None:
+        snr = round((DETECTOR_SNR[1] - DETECTOR_SNR[0])*random.random() + DETECTOR_SNR[0], 2)
+        temic.add_detector_noise(snr)
     temic.invert_mics_den()
     temic.set_header(data='mics', p_size=(VOI_VSIZE, VOI_VSIZE, VOI_VSIZE))
     temic.recon3D_imod()
     temic.set_header(data='rec3d', p_size=(VOI_VSIZE, VOI_VSIZE, VOI_VSIZE), origin=(0, 0, 0))
-    out_mics, out_tomo_rec = TOMOS_DIR + '/tomo_mics_' + str(tomod_id) + '.mrc', TOMOS_DIR + '/tomo_rec_' \
-                             + str(tomod_id) + '.mrc'
+    if DETECTOR_SNR is not None:
+        out_mics, out_tomo_rec = TOMOS_DIR + '/tomo_mics_' + str(tomod_id) + '_snr' + str(snr) + '.mrc', TOMOS_DIR + '/tomo_rec_' \
+                                 + str(tomod_id) + '_snr' + str(snr) + '.mrc'
+    else:
+        out_mics, out_tomo_rec = TOMOS_DIR + '/tomo_mics_' + str(tomod_id) + '.mrc', TOMOS_DIR + '/tomo_rec_' \
+                                 + str(tomod_id) + '.mrc'
     shutil.copyfile(TEM_DIR + '/out_micrographs.mrc', out_mics)
     shutil.copyfile(TEM_DIR + '/out_rec3d.mrc', out_tomo_rec)
     synth_tomo.set_mics(out_mics)

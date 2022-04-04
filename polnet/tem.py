@@ -8,8 +8,10 @@ __author__ = 'Antonio Martinez-Sanchez'
 
 import os
 import time
+import math
 import subprocess
 import numpy as np
+import scipy as sp
 from polnet import lio
 
 ## IMOD commands
@@ -42,21 +44,31 @@ class TEM:
         if not os.path.exists(self.__work_dir):
             os.mkdir(self.__work_dir)
 
-    def __save_tangs_file(self, angs, out_file):
+    def __save_tangs_file(self, angs):
         """
-        Sores an tilt angles file according IMOD format
+        Stores the tilt angles file according IMOD format
         :param angs: non-empty iterable with the tilt angles
-        :param out_file: output path
         """
-        with open(out_file, 'w') as file:
+        with open(self.__tangs_file, 'w') as file:
             for ang in angs:
                 file.write(str(ang) + '\n')
+
+    def __load_tangs_file(self):
+        """
+        Load the tilt angles file into an array
+        :return: output array with the tilt angles
+        """
+        angs = list()
+        with open(self.__tangs_file, 'r') as file:
+            for line in file:
+                angs.append(float(line.strip()))
+        return np.asarray(angs)
 
     def gen_tilt_series_imod(self, vol, angs, ax='X', mode='real'):
         """
         Generates the 2D projection series from a 3D volume using 'xyzproj' IMOD binary
         :param vol: input 3D volume
-        :param angs: non-empty iterable with the tilt angles
+        :param angs: non-empty iterable with the tilt angles or a range
         :param ax: tilt axis, either 'X', 'Y' or 'Z' (default 'X')
         :param mode: mode of output file, valid: 'byte', 'int' or 'real' (default)
         """
@@ -77,10 +89,14 @@ class TEM:
         out_vol_path = self.__micgraphs_file
         xyzproj_cmd += ['-o', out_vol_path]
         xyzproj_cmd += ['-ax', ax]
-        xyzproj_cmd += ['-ta']
-        tangles = str(angs[0])
-        for i in range(1, len(angs)):
-            tangles += ',' + str(angs[i])
+        if isinstance(angs, range):
+            xyzproj_cmd += ['-an']
+            tangles = str(angs.start) + ',' + str(angs.stop) + ',' + str(angs.step)
+        else:
+            xyzproj_cmd += ['-ta']
+            tangles = str(angs[0])
+            for i in range(1, len(angs)):
+                tangles += ',' + str(angs[i])
         xyzproj_cmd += [tangles]
         if mode == 'byte':
             xyzproj_cmd += ['-m', '0']
@@ -94,7 +110,7 @@ class TEM:
             with open(self.__log_file, 'a') as file_log:
                 file_log.write('\n[' + time.strftime("%c") + ']RUNNING COMMAND:-> ' + ' '.join(xyzproj_cmd) + '\n')
                 subprocess.call(xyzproj_cmd, stdout=file_log, stderr=file_log)
-            self.__save_tangs_file(angs, self.__tangs_file)
+            self.__save_tangs_file(angs)
         except subprocess.CalledProcessError:
             print('ERROR: Error calling the command:', xyzproj_cmd)
             raise subprocess.CalledProcessError
@@ -200,7 +216,35 @@ class TEM:
 
     def invert_mics_den(self):
         """
-        Invert micrographs densities
+        Invert micrographs density
         """
         mics = lio.load_mrc(self.__micgraphs_file)
         lio.write_mrc(-1 * mics, self.__micgraphs_file)
+
+    def add_mics_misalignment(self, mn, mx, n_sigma=0):
+        """
+        Add random X and Y misalignment to each micrograh in the tilt series following a sinusoidal model:
+        f(t_angle) = mn + mx(sin(t_angle)/sin(max_t_angle))
+        :param mn: minimun mislignment value (t_angle = 0)
+        :param mx: maximum mislignment value (t_angle = max_t_angle)
+        :param n_sigma: sigma value for Gaussian noise.
+        :return: None
+        """
+
+        assert mx >= mn
+
+        # Micrographs loop
+        mics = lio.load_mrc(self.__micgraphs_file)
+        angs = np.abs(np.radians(self.__load_tangs_file()))
+        n_angs = len(angs)
+        shifts = mn + np.sin(angs)/np.sin(angs.max()) + np.random.normal(0, n_sigma, n_angs)
+        split_fs = np.random.uniform(0, 1, n_angs)
+        for i, shift, split_f in zip(range(n_angs), shifts, split_fs):
+            shift_x = shift / math.sqrt(split_f + 1)
+            shift_y = split_f * shift_x
+            mics[:, :, i] = sp.ndimage.shift(mics[:,:,i], (shift_x, shift_y), output=None, order=3, mode='constant',
+                                             cval=0.0, prefilter=True)
+
+        # Save shited micrographs
+        lio.write_mrc(mics, self.__micgraphs_file)
+

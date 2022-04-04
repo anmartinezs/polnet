@@ -6,6 +6,8 @@ __author__ = 'Antonio Martinez-Sanchez'
 
 import os
 import shutil
+import errno
+import stat
 import vtk
 import math
 import numpy as np
@@ -542,6 +544,7 @@ def poly_threshold(poly, p_name, mode='points', low_th=None, hi_th=None):
 
     return surf_flt.GetOutput()
 
+
 def gen_six_connectivity_mask():
     """
     Generates a 6-connectivity mask
@@ -557,6 +560,7 @@ def gen_six_connectivity_mask():
     mask[1, 1, 2] = True
     return mask
 
+
 def clean_dir(dir):
     """
     Clean an directory contents (directory is preserved)
@@ -564,6 +568,18 @@ def clean_dir(dir):
     """
     for root, dirs, files in os.walk(dir):
         for f in files:
-            os.unlink(os.path.join(root, f))
+            f_name = os.path.join(root, f)
+            try:
+                os.unlink(f_name)
+            except OSError as err:
+                if err.errno != errno.EBUSY:
+                    os.chmod(f_name, stat.S_IWRITE)
+                    os.remove(f_name)
         for d in dirs:
-            shutil.rmtree(os.path.join(root, d))
+            d_name = os.path.join(root, d)
+            try:
+                shutil.rmtree(d_name)
+            except OSError as err:
+                if err.errno != errno.EBUSY:
+                    os.chmod(d_name, stat.S_IWRITE)
+                    os.remove(d_name)
