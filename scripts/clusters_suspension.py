@@ -1,6 +1,6 @@
 """
-Script for generating tomograms simulating a suspension with different proteins distributed according SAWLC network
-model
+Script for generating tomograms simulating a suspension of proteins according SAWLC network model with intercalated
+monomers
     Input:
         - Number of tomograms to simulate
         - Tomogram dimensions parameter
@@ -24,7 +24,7 @@ from polnet.utils import *
 from polnet import lio
 from polnet import tem
 from polnet import poly as pp
-from polnet.network import PGenHelixFiber, NetSAWLC
+from polnet.network import PGenHelixFiber, NetSAWLCInter
 from polnet.stomo import MmerFile, SynthTomo, SetTomos
 
 ##### Input parameters
@@ -49,7 +49,7 @@ MALIGN_MX = 1.5
 MALIGN_SG = 0.2
 
 # OUTPUT FILES
-OUT_DIR = ROOT_PATH + '/out_v2'
+OUT_DIR = ROOT_PATH + '/out_clusters'
 TEM_DIR = OUT_DIR + '/tem'
 TOMOS_DIR = OUT_DIR + '/tomos'
 
@@ -72,6 +72,7 @@ for tomod_id in range(NTOMOS):
     poly_vtp = None
 
     # Loop for the list of input proteins loop
+    model_surfs, surf_diams = list(), list()
     for p_id, p_file in enumerate(PROTEINS_LIST):
 
         print('PROCESSING FILE:', p_file)
@@ -89,33 +90,33 @@ for tomod_id in range(NTOMOS):
         # Monomer centering
         model_surf = pp.poly_translate(model_surf, -center)
         # Voxel resolution scaling
-        model_surf = pp.poly_scale(model_surf, VOI_VSIZE)
-        surf_diam = pp.poly_max_distance(model_surf)
-        pol_l_generator = PGenHelixFiber()
+        model_surfs.append(pp.poly_scale(model_surf, VOI_VSIZE))
+        surf_diams.append(pp.poly_max_distance(model_surf) * protein.get_pmer_l())
 
-        # Network generation
-        net_sawlc = NetSAWLC(voi, VOI_VSIZE, protein.get_pmer_l() * surf_diam, model_surf, protein.get_pmer_l_max(),
+    # Network generation
+    pol_l_generator = PGenHelixFiber()
+    net_sawlc = NetSAWLCInter(voi, VOI_VSIZE, surf_diams, model_surfs, protein.get_pmer_l_max(),
                              pol_l_generator, protein.get_pmer_occ(), protein.get_pmer_over_tol(), poly=None,
                              svol=model < protein.get_iso())
-        net_sawlc.build_network()
-        voi = net_sawlc.get_voi()
+    net_sawlc.build_network()
+    voi = net_sawlc.get_voi()
 
-        # Density tomogram updating
-        net_sawlc.insert_density_svol(model_mask, voi, VOI_VSIZE, merge='min')
-        net_sawlc.insert_density_svol(model, tomo_den, VOI_VSIZE, merge='max')
-        hold_vtp = net_sawlc.get_vtp()
-        pp.add_label_to_poly(hold_vtp, p_id, p_name=GTRUTH_VTP_LBLS)
-        if poly_vtp is not None:
-            poly_vtp = pp.merge_polys(poly_vtp, hold_vtp)
-        else:
-            poly_vtp = hold_vtp
-        synth_tomo.add_network(net_sawlc, 'Protein', p_id, protein.get_mmer_id())
+    # Density tomogram updating
+    net_sawlc.insert_density_svol(model_mask, voi, VOI_VSIZE, merge='min')
+    net_sawlc.insert_density_svol(model, tomo_den, VOI_VSIZE, merge='max')
+    hold_vtp = net_sawlc.get_vtp()
+    pp.add_label_to_poly(hold_vtp, p_id, p_name=GTRUTH_VTP_LBLS)
+    if poly_vtp is not None:
+        poly_vtp = pp.merge_polys(poly_vtp, hold_vtp)
+    else:
+        poly_vtp = hold_vtp
+    synth_tomo.add_network(net_sawlc, 'Protein', p_id, protein.get_mmer_id())
 
-        # DEBUG
-        """lio.write_mrc(voi.astype(np.float32), ROOT_PATH + '/hold_voi.mrc')
-        lio.save_vtp(model_surf, ROOT_PATH + '/hold_model.vtp')
-        lio.save_vtp(poly_vtp, ROOT_PATH + '/hold_poly.vtp')
-        lio.write_mrc(tomo_den, ROOT_PATH + '/hold_den.mrc')"""
+    # DEBUG
+    """lio.write_mrc(voi.astype(np.float32), ROOT_PATH + '/hold_voi.mrc')
+    lio.save_vtp(model_surf, ROOT_PATH + '/hold_model.vtp')
+    lio.save_vtp(poly_vtp, ROOT_PATH + '/hold_poly.vtp')
+    lio.write_mrc(tomo_den, ROOT_PATH + '/hold_den.mrc')"""
 
     # Storing simulated density results
     tomo_den_out = TOMOS_DIR + '/tomo_den_' + str(tomod_id) + '.mrc'
