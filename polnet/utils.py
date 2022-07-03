@@ -583,3 +583,30 @@ def clean_dir(dir):
                 if err.errno != errno.EBUSY:
                     os.chmod(d_name, stat.S_IWRITE)
                     os.remove(d_name)
+
+
+def vol_cube(vol):
+    """
+    Reshape a 3D volume for being cubic
+    :param vol: input volume (ndarray)
+    :return: a cubic volume with the info from the input, the cube dimension corresponds with the largest input
+             dimension
+    """
+    assert isinstance(vol, np.ndarray)
+    assert len(vol.shape) == 3
+    dim_max = np.argmax(vol.shape)
+    cube_dim = vol.shape[dim_max]
+    out_vol = np.zeros(shape=(cube_dim, cube_dim, cube_dim), dtype=vol.dtype)
+    if dim_max == 0:
+        off_ly, off_lz = (cube_dim - vol.shape[1])//2, (cube_dim - vol.shape[2])//2
+        off_hy, off_hz = off_ly + vol.shape[1], off_lz + vol.shape[2]
+        out_vol[:,off_ly:off_hy,off_lz:off_hz] = vol
+    elif dim_max == 1:
+        off_lx, off_lz = (cube_dim - vol.shape[0])//2, (cube_dim - vol.shape[2])//2
+        off_hx, off_hz = off_lx + vol.shape[0], off_lz + vol.shape[2]
+        out_vol[off_lx:off_hx,:,off_lz:off_hz] = vol
+    else:
+        off_lx, off_ly = (cube_dim - vol.shape[0])//2, (cube_dim - vol.shape[1])//2
+        off_hx, off_hy = off_lx + vol.shape[0], off_ly + vol.shape[1]
+        out_vol[off_lx:off_hx,off_lx:off_hx,:] = vol
+    return out_vol

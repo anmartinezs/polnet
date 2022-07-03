@@ -14,6 +14,8 @@ from scipy import stats
 
 # CONSTANTS
 
+GTRUTH_VTP_LBLS = 'gt_labels'
+
 
 # FUNCTIONS
 from polnet.utils import wrap_angle

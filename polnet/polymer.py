@@ -264,10 +264,12 @@ class Polymer(ABC):
     Abstract class for modeling a Polymer (a sequence of monomers)
     """
 
-    def __init__(self, m_surf):
+    def __init__(self, m_surf, id0=0, code0=''):
         """
         Constructor
         :param m_surf: monomer surface (as vtkPolyData object)
+        :param id0: id for the initial monomer (default 0)
+        :param code0: code string for the initial monomer (default '')
         """
         h_diam = poly_max_distance(m_surf)
         assert h_diam > 0
@@ -278,6 +280,24 @@ class Polymer(ABC):
         self.__u = None
         self.__t, self.__r, self.__q = list(), list(), list()
         self.__t_length = 0
+        self.__ids = list()
+        self.__codes = list()
+
+    def get_mmer_id(self, m_id):
+        """
+        Get monomer id from its postion
+        :param m_id: monomoer position in the polymer
+        :return: an integer with the monomer id
+        """
+        return self.__ids[m_id]
+
+    def get_mmer_code(self, m_id):
+        """
+        Get monomer code from its postion
+        :param m_id: monomoer position in the polymer
+        :return: an string with the monomer code
+        """
+        return self.__codes[m_id]
 
     def get_vol(self, fast=True):
         """
@@ -350,8 +370,10 @@ class Polymer(ABC):
         app_flt = vtk.vtkAppendPolyData()
 
         # Polymers loop
-        for m in self.__m:
-            app_flt.AddInputData(m.get_vtp())
+        for m_id in range(len(self.__m)):
+            m_poly = self.__m[m_id].get_vtp()
+            add_label_to_poly(m_poly, self.__ids[m_id], GTRUTH_VTP_LBLS)
+            app_flt.AddInputData(m_poly)
         app_flt.Update()
 
         return app_flt.GetOutput()
@@ -403,13 +425,15 @@ class Polymer(ABC):
 
         return poly
 
-    def add_monomer(self, r, t, q, m):
+    def add_monomer(self, r, t, q, m, id=0, code=''):
         """
         Add a new monomer surface to the polymer once affine transformation is known
         :param r: center point
         :param t: tangent vector
         :param q: unit quaternion for rotation
         :param m: monomer
+        :param id: monomer id (default 0), necessary to identify the monomer within a list in an intercalated polymer
+        :param code: monomer code string (default '')
         :return:
         """
         assert isinstance(r, np.ndarray) and isinstance(t, np.ndarray) and isinstance(q, np.ndarray) \
@@ -419,6 +443,8 @@ class Polymer(ABC):
         self.__t.append(t)
         self.__q.append(q)
         self.__m.append(m)
+        self.__ids.append(id)
+        self.__codes.append(code)
         # Update total length
         if self.get_num_monomers() <= 1:
             self.__t_length = 0
@@ -428,15 +454,17 @@ class Polymer(ABC):
     def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max', off_svol=None):
         """
         Insert a polymer as set of subvolumes into a tomogram
-        :param m_svol: input monomer sub-volume reference
+        :param m_svol: input monomer (or list) sub-volume reference
         :param tomo: tomogram where m_svol is added
         :param v_size: tomogram voxel size (default 1)
         :param merge: merging mode, valid: 'min' (default), 'max', 'sum' and 'insert'
         :param off_svol: offset coordinates for sub-volume monomer center coordinates
         :return:
         """
-        for mmer in self.__m:
-            mmer.insert_density_svol(m_svol, tomo, v_size, merge=merge, off_svol=off_svol)
+        if not hasattr(m_svol, '__len__'):
+            m_svol = [m_svol, ]
+        for mmer, id in zip(self.__m, self.__ids):
+            mmer.insert_density_svol(m_svol[id], tomo, v_size, merge=merge, off_svol=off_svol)
 
     @abstractmethod
     def set_reference(self):
@@ -483,22 +511,26 @@ class SAWLC(Polymer):
     Class for fibers following model Self-Avoiding Worm-Like Chain (SAWLC)
     """
 
-    def __init__(self, l_length, m_surf, p0=(0, 0, 0)):
+    def __init__(self, l_length, m_surf, p0=(0, 0, 0), id0=0, code0=''):
         """
         Constructor
         :param l_lengh: link length
         :param m_surf: monomer surface (as vtkPolyData object)
         :param p0: starting point
+        :param id0: id for the initial monomer
+        :param code0: code string for the initial monomer (default '')
         """
         super(SAWLC, self).__init__(m_surf)
         assert l_length > 0
         self.__l = l_length
-        self.set_reference(p0)
+        self.set_reference(p0, id0=id0, code0=code0)
 
-    def set_reference(self, p0=(0., 0., 0)):
+    def set_reference(self, p0=(0., 0., 0), id0=0, code0=''):
         """
         Initializes the chain with the specified point input point, if points were introduced before the are forgotten
         :param p0: starting point
+        :param id0: id for the initial monomer
+        :param code0: code string for the initial monomer (default '')
         :return:
         """
         assert hasattr(p0, '__len__') and (len(p0) == 3)
@@ -508,7 +540,7 @@ class SAWLC(Polymer):
         # hold_q = np.asarray((1, 0., 0., 1.), dtype=np.float32)
         hold_monomer.rotate_q(hold_q)
         hold_monomer.translate(p0)
-        self.add_monomer(p0, np.asarray((0., 0., 0.)), hold_q, hold_monomer)
+        self.add_monomer(p0, np.asarray((0., 0., 0.)), hold_q, hold_monomer, id=id0, code=code0)
 
     def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1):
         """
@@ -549,25 +581,29 @@ class SAWLCPoly(Polymer):
     Class for fibers following model Self-Avoiding Worm-Like Chain (SAWLC) on a PolyData
     """
 
-    def __init__(self, poly, l_length, m_surf, p0=(0, 0, 0)):
+    def __init__(self, poly, l_length, m_surf, p0=(0, 0, 0), id0=0, code=''):
         """
         Constructor
         :param poly: vtkPolyData where the monomer center will be embedded
         :param l_lengh: link length
         :param m_surf: monomer surface (as vtkPolyData object)
         :param p0: starting point
+        :param id0: id for the initial monomer (default 0)
+        :param code0: code string for the initial monomer (default '')
         """
         super(SAWLCPoly, self).__init__(m_surf)
         assert isinstance(poly, vtk.vtkPolyData)
         assert l_length > 0
         self.__l = l_length
         self.__poly = poly
-        self.set_reference(p0)
+        self.set_reference(p0, id0=id0, code0=code)
 
-    def set_reference(self, p0=(0., 0., 0)):
+    def set_reference(self, p0=(0., 0., 0), id0=0, code0=''):
         """
         Initializes the chain with the specified point input point, if points were introduced before they are forgotten
         :param p0: starting point
+        :param id0: id for the initial monomer (default 0)
+        :param code0: code string for the initial monomer (default '')
         :return:
         """
         assert hasattr(p0, '__len__') and (len(p0) == 3)
@@ -577,7 +613,7 @@ class SAWLCPoly(Polymer):
         # hold_q = np.asarray((1, 0., 0., 1.), dtype=np.float32)
         hold_monomer.rotate_q(hold_q)
         hold_monomer.translate(self._Polymer__p)
-        self.add_monomer(self._Polymer__p, np.asarray((0., 0., 0.)), hold_q, hold_monomer)
+        self.add_monomer(self._Polymer__p, np.asarray((0., 0., 0.)), hold_q, hold_monomer, id=id0, code0=code0)
 
     def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1):
         """

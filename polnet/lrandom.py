@@ -42,26 +42,6 @@ def gen_bounded_exp(mean, lb, ub):
 #############################################
 
 
-class PGen(ABC):
-    """
-    Abstract class for random polymer models
-    """
-
-    @abstractmethod
-    def gen_next_length(self):
-        raise NotImplemented
-
-
-class PGenHelixFiber(ABC):
-    """
-    Abstract class for random polymer models
-    """
-
-    @abstractmethod
-    def gen_next_length(self):
-        raise NotImplemented
-
-
 class PGenHelixFiber(ABC):
     """
     Class to model random distribution for helix fiber parameters
@@ -210,3 +190,52 @@ class TorGen(SurfGen):
         """
         return np.sort(np.asarray((random.uniform(self.__radius_rg[0], self.__radius_rg[1]),
                                    random.uniform(self.__radius_rg[0], self.__radius_rg[1]))))[::-1]
+
+
+class SGen(ABC):
+    """
+    Abstract class for a (random) sequence
+    """
+
+    @abstractmethod
+    def gen_next_mmer_id(self, n_mmers, prev_id):
+        """
+        Generated the id for the next monomer
+        :param n_mmers: number of diferent monomers
+        :param prev_id: previous monomer identifier
+        :return: an integer indication the next monomer
+        """
+        raise NotImplemented
+
+
+class SGenFixed(SGen):
+    """
+    A fixed sequence sequence is generated
+    """
+
+    def gen_next_mmer_id(self, n_surf, prev_id):
+        """
+            Generated the id for the next monomer
+            :param n_mmers: number of diferent monomers
+            :param prev_id: previous monomer identifier
+            :return: an integer indication the next monomer
+        """
+        curr_id = prev_id + 1
+        if curr_id >= n_surf: return 0
+        else: return curr_id
+
+
+class SGenUniform(SGen):
+    """
+    Uniformly random distribution
+    """
+
+    def gen_next_mmer_id(self, n_surf, prev_id=None):
+        """
+            Generated the id for the next monomer
+            :param n_mmers: number of diferent monomers
+            :param prev_id: previous monomer identifier (default None, not needed because this model is memoryless)
+            :return: an integer indication the next monomer
+        """
+        return random.randint(0, n_surf-1)
+

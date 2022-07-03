@@ -24,7 +24,7 @@ from polnet.utils import *
 from polnet import lio
 from polnet import tem
 from polnet import poly as pp
-from polnet.network import PGenHelixFiber, NetSAWLCInter
+from polnet.network import PGenHelixFiber, SGenUniform, NetSAWLCInter
 from polnet.stomo import MmerFile, SynthTomo, SetTomos
 
 ##### Input parameters
@@ -32,14 +32,14 @@ from polnet.stomo import MmerFile, SynthTomo, SetTomos
 # Common tomogram settings
 ROOT_PATH = '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth' # '/home/antonio/workspace/synth_tomo/riboprot'
 NTOMOS = 1 # 12
-VOI_SHAPE = (1856, 1856, 236) # (1856, 1856, 464) # (400, 400, 150) # (400, 400, 464) # (924, 924, 300) # vx
-VOI_OFFS = ((4,1852), (4,1852), (4,232))  # vx
+VOI_SHAPE =  (1856, 1856, 236) # (400, 400, 236) #(1856, 1856, 464) # (400, 400, 464) # (924, 924, 300) # vx
+VOI_OFFS = ((4,1852), (4,1852), (4,232)) # ((4,396), (4,396), (4,232)) # vx
 VOI_VSIZE = 2.2 # A/vx
-GTRUTH_VTP_LBLS = 'gt_labels'
 GTRUTH_POINTS_RAD = 35 # nm
 
 # Proteins list
-PROTEINS_LIST = ['in/ribo_v2.pns', 'in/prot_v2.pns', 'in/ribo_30S_v2.pns', 'in/ribo_50S_v2.pns', 'in/prot_sc_v2.pns', 'in/prot_dc_v2.pns']
+PROTEINS_LIST = ['in/ribo_v2.pns', 'in/prot_v2.pns', 'in/ribo_30S_v2.pns', 'in/ribo_50S_v2.pns', 'in/prot_sc_v2.pns',
+                 'in/prot_dc_v2.pns']
 
 # Reconstruction tomograms
 TILT_ANGS = range(-60, 61, 3) # np.arange(-60, 60, 3) # at MPI-B IMOD only works for ranges
@@ -47,6 +47,9 @@ DETECTOR_SNR = None # [.15, .25] # 0.2
 MALIGN_MN = 1
 MALIGN_MX = 1.5
 MALIGN_SG = 0.2
+
+# CLUSTERS SETTINGS
+NET_OCC = 10
 
 # OUTPUT FILES
 OUT_DIR = ROOT_PATH + '/out_clusters'
@@ -72,7 +75,7 @@ for tomod_id in range(NTOMOS):
     poly_vtp = None
 
     # Loop for the list of input proteins loop
-    model_surfs, surf_diams = list(), list()
+    model_surfs, surf_diams, models, model_masks, model_codes = list(), list(), list(), list(), list()
     for p_id, p_file in enumerate(PROTEINS_LIST):
 
         print('PROCESSING FILE:', p_file)
@@ -83,6 +86,7 @@ for tomod_id in range(NTOMOS):
         # Genrate the SAWLC network associated to the input protein
         # Polymer parameters
         model = lio.load_mrc(protein.get_mmer_svol())
+        model = vol_cube(model)
         model_mask = model < protein.get_iso()
         model[model_mask] = 0
         model_surf = pp.iso_surface(model, protein.get_iso(), closed=False, normals=None)
@@ -90,33 +94,36 @@ for tomod_id in range(NTOMOS):
         # Monomer centering
         model_surf = pp.poly_translate(model_surf, -center)
         # Voxel resolution scaling
-        model_surfs.append(pp.poly_scale(model_surf, VOI_VSIZE))
+        model_surf = pp.poly_scale(model_surf, VOI_VSIZE)
+        model_surfs.append(model_surf)
         surf_diams.append(pp.poly_max_distance(model_surf) * protein.get_pmer_l())
+        models.append(model)
+        model_masks.append(model_mask)
+        model_codes.append(protein.get_mmer_id())
 
     # Network generation
-    pol_l_generator = PGenHelixFiber()
+    pol_l_generator, pol_s_generator = PGenHelixFiber(), SGenUniform()
     net_sawlc = NetSAWLCInter(voi, VOI_VSIZE, surf_diams, model_surfs, protein.get_pmer_l_max(),
-                             pol_l_generator, protein.get_pmer_occ(), protein.get_pmer_over_tol(), poly=None,
-                             svol=model < protein.get_iso())
+                              pol_l_generator, pol_s_generator, NET_OCC, protein.get_pmer_over_tol(),
+                              poly=None, svols=model_masks, codes=model_codes)
     net_sawlc.build_network()
     voi = net_sawlc.get_voi()
 
     # Density tomogram updating
-    net_sawlc.insert_density_svol(model_mask, voi, VOI_VSIZE, merge='min')
-    net_sawlc.insert_density_svol(model, tomo_den, VOI_VSIZE, merge='max')
+    net_sawlc.insert_density_svol(model_masks, voi, VOI_VSIZE, merge='min')
+    net_sawlc.insert_density_svol(models, tomo_den, VOI_VSIZE, merge='max')
     hold_vtp = net_sawlc.get_vtp()
-    pp.add_label_to_poly(hold_vtp, p_id, p_name=GTRUTH_VTP_LBLS)
     if poly_vtp is not None:
         poly_vtp = pp.merge_polys(poly_vtp, hold_vtp)
     else:
         poly_vtp = hold_vtp
-    synth_tomo.add_network(net_sawlc, 'Protein', p_id, protein.get_mmer_id())
+    synth_tomo.add_network(net_sawlc, 'Protein')
 
     # DEBUG
-    """lio.write_mrc(voi.astype(np.float32), ROOT_PATH + '/hold_voi.mrc')
+    lio.write_mrc(voi.astype(np.float32), ROOT_PATH + '/hold_voi.mrc')
     lio.save_vtp(model_surf, ROOT_PATH + '/hold_model.vtp')
     lio.save_vtp(poly_vtp, ROOT_PATH + '/hold_poly.vtp')
-    lio.write_mrc(tomo_den, ROOT_PATH + '/hold_den.mrc')"""
+    lio.write_mrc(tomo_den, ROOT_PATH + '/hold_den.mrc')
 
     # Storing simulated density results
     tomo_den_out = TOMOS_DIR + '/tomo_den_' + str(tomod_id) + '.mrc'

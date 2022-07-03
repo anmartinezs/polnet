@@ -9,7 +9,7 @@ import scipy as sp
 
 from polnet.poly import *
 from polnet.polymer import SAWLC, SAWLCPoly, HelixFiber
-from polnet.lrandom import PGen, PGenHelixFiber, PGenHelixFiberB
+from polnet.lrandom import SGen, SGenUniform, SGenFixed, PGenHelixFiber, PGenHelixFiberB
 from abc import ABC, abstractmethod
 
 
@@ -23,7 +23,7 @@ class Network(ABC):
         Construction
         :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers
         :param v_size: voxel size (default 1)
-        :param svol: monomer subvolume as a numpy ndarray (default None)
+        :param svol: monomer subvolume (or list of) as a numpy ndarray (default None)
         """
         self.set_voi(voi)
         self.__vol = (self.__voi > 0).sum() * v_size * v_size * v_size
@@ -32,7 +32,8 @@ class Network(ABC):
         self.__pl = list()
         self.__svol = svol
         if self.__svol is not None:
-            assert isinstance(self.__svol, np.ndarray)
+            if not hasattr(svol, '__len__'):
+                assert isinstance(self.__svol, np.ndarray)
 
     def get_pmers_list(self):
         return self.__pl
@@ -132,13 +133,14 @@ class Network(ABC):
     def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max', off_svol=None):
         """
         Insert a polymer network as set of subvolumes into a tomogram
-        :param m_svol: input monomer sub-volume reference
+        :param m_svol: input monomer (or list) sub-volume reference
         :param tomo: tomogram where m_svol is added
         :param v_size: tomogram voxel size (default 1)
         :param merge: merging mode, valid: 'min' (default), 'max', 'sum' and 'insert'
         :param off_svol: offset coordinates for sub-volume monomer center coordinates
         """
-        assert isinstance(m_svol, np.ndarray) and (len(m_svol.shape) == 3)
+        if not hasattr(m_svol, '__len__'):
+            assert isinstance(m_svol, np.ndarray) and (len(m_svol.shape) == 3)
         assert isinstance(tomo, np.ndarray) and (len(tomo.shape) == 3)
         assert (merge == 'max') or (merge == 'min') or (merge == 'sum') or (merge == 'insert')
         assert v_size > 0
@@ -158,6 +160,7 @@ class Network(ABC):
         v_size_i = 1. / self.__v_size
         tot_v = np.asarray((0., 0., 0.))
         hold_svol = mmer_svol > 0
+        print('Jol3', hold_svol.sum())
         for trans in mmer.get_trans_list():
             if trans[0] == 't':
                 tot_v += (trans[1] * v_size_i)
@@ -251,6 +254,112 @@ class NetSAWLC(Network):
                         # ) and (monomer_data[3].overlap_voi(self._Network__voi, self._Network__v_size)):
                         hold_polymer.add_monomer(monomer_data[0], monomer_data[1], monomer_data[2], monomer_data[3])
                         self.add_monomer_to_voi(hold_polymer.get_monomer(-1), self._Network__svol)
+                    else:
+                        not_finished = False
+
+            # Updating polymer
+            self.add_polymer(hold_polymer)
+            # print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
+            #       ' and length ' + str(hold_polymer.get_total_len()))
+
+
+class NetSAWLCInter(Network):
+    """
+    Class for generating a network of SAWLC polymers with intercalated monomers
+    """
+
+    def __init__(self, voi, v_size, l_lengths, m_surfs, max_p_length, gen_pol_lengths, gen_seq_mmers,
+                 occ, over_tolerance=0, poly=None, svols=None, codes=None):
+        """
+        Construction
+        :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers
+        :param v_size: voxel size (default 1)
+        :param l_lengths: polymer link lengths
+        :param m_surfs: monomers list with the posible monomer surfaces
+        :param max_p_length: maximum polymer length
+        :param gen_pol_lengths: an instance of a random generation model (lrandom.PGen) to determine the achievable
+        lengths for polymers
+        :param gen_seq_mmers: an instance of a random generation model (lrandom.SGen) to generate a sequence of monomers
+        :param occ: occupancy threshold in percentage [0, 100]%
+        :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0, in range [0,1))
+        :param poly: it allows to restrict monomer localizations to a polydata
+        :param svol: monomer subvolumes as list numpy ndarrays (default None)
+        :param codes: monomer codes a a list (default None)
+        :param off_svol: offset coordinates in voxels for shifting sub-volume monomer center coordinates (default None)
+        """
+
+        # Initialize abstract varibles
+        super(NetSAWLCInter, self).__init__(voi, v_size, svol=svols)
+
+        # Input parsing
+        assert hasattr(l_lengths, '__len__')
+        assert hasattr(m_surfs, '__len__')
+        if codes is not None:
+            assert hasattr(codes, '__len__') and (len(codes) == len(svols))
+        assert max_p_length >= 0
+        assert isinstance(gen_pol_lengths, PGenHelixFiber)
+        assert issubclass(type(gen_seq_mmers), SGen)
+        assert (occ >= 0) and (occ <= 100)
+        assert (over_tolerance >= 0) and (over_tolerance <= 100)
+        if poly is not None:
+            assert isinstance(poly, vtk.vtkPolyData)
+
+        # Variables assignment
+        self.__l_lengths, self.__m_surfs = l_lengths, m_surfs
+        self.__max_p_length = max_p_length
+        self.__gen_pol_lengths, self.__gen_seq_mmers = gen_pol_lengths, gen_seq_mmers
+        self.__occ, self.__over_tolerance = occ, over_tolerance
+        self.__poly = poly
+        self.__codes = codes
+
+    def build_network(self):
+        """
+        Add polymers following SAWLC model until an occupancy limit is passed
+        :return:
+        """
+
+        # Computes the maximum number of tries
+        prev_id = 0
+        c_try = 0
+        n_tries = math.ceil(self._Network__vol) # math.ceil(self._Network__vol / poly_volume(self.__m_surfs[prev_id]))
+
+        # Network loop
+        while (c_try <= n_tries) and (self._Network__pl_occ < self.__occ):
+
+            # Polymer initialization
+            c_try += 1
+            p0 = np.asarray((self._Network__voi.shape[0] * self._Network__v_size * random.random(),
+                             self._Network__voi.shape[1] * self._Network__v_size * random.random(),
+                             self._Network__voi.shape[2] * self._Network__v_size * random.random()))
+            max_length = self.__gen_pol_lengths.gen_length(0, self.__max_p_length)
+            mmer_id = self.__gen_seq_mmers.gen_next_mmer_id(len(self.__m_surfs), prev_id)
+            prev_id = mmer_id
+            if self.__poly is None:
+                hold_polymer = SAWLC(self.__l_lengths[mmer_id], self.__m_surfs[mmer_id], p0, id0=mmer_id,
+                                     code0=self.__codes[mmer_id])
+            else:
+                hold_polymer = SAWLCPoly(self.__poly, self.__l_lengths[mmer_id], self.__m_surfs[mmer_id], p0,
+                                         id0=mmer_id, code0=self.__codes[mmer_id])
+            if hold_polymer.get_monomer(-1).overlap_voi(self._Network__voi, self._Network__v_size):
+                continue
+            print('Jol1', hold_polymer.get_monomer(-1).get_diameter())
+            self.add_monomer_to_voi(hold_polymer.get_monomer(-1), self._Network__svol[mmer_id])
+
+            # Polymer loop
+            not_finished = True
+            while (hold_polymer.get_total_len() < max_length) and not_finished:
+                monomer_data = hold_polymer.gen_new_monomer(self.__over_tolerance, self._Network__voi,
+                                                            self._Network__v_size)
+                if monomer_data is None:
+                    not_finished = False
+                else:
+                    new_len = points_distance(monomer_data[0], hold_polymer.get_tail_point())
+                    if hold_polymer.get_total_len() + new_len < max_length:
+                        # ) and (monomer_data[3].overlap_voi(self._Network__voi, self._Network__v_size)):
+                        hold_polymer.add_monomer(monomer_data[0], monomer_data[1], monomer_data[2], monomer_data[3],
+                                                 id=mmer_id, code=self.__codes[mmer_id])
+                        print('Jol2', hold_polymer.get_monomer(-1).get_diameter())
+                        self.add_monomer_to_voi(hold_polymer.get_monomer(-1), self._Network__svol[mmer_id])
                     else:
                         not_finished = False
 

@@ -131,19 +131,29 @@ class SynthTomo:
     def get_motif_list(self):
         return self.__motifs
 
-    def add_network(self, net, m_type, lbl, code):
+    def add_network(self, net, m_type, lbl=None, code=None):
         """
         Add al motifs within the input network to the synthetic tomogram
         :param net: a network object instance
         :param m_type: string with the type of monomers contained in the network
-        :param lbl: integer label
-        :param code: string code for the network monomers
+        :param lbl: integer label, if None (default) it is taken from monomer information
+        :param code: string code for the network monomers, if None (default) it is taken from monomer information
         """
         assert issubclass(type(net), Network)
-        assert isinstance(m_type, str) and isinstance(lbl, int) and isinstance(code, str)
+        assert isinstance(m_type, str)
+        if (lbl is not None): assert isinstance(lbl, int)
+        if (code is not None): assert isinstance(code, str)
         for pmer_id, pmer in enumerate(net.get_pmers_list()):
             for mmer_id in range(pmer.get_num_monomers()):
-                self.__motifs.append(list((m_type, lbl, code, pmer_id,
+                if lbl is None:
+                    hold_lbl = pmer.get_mmer_id(mmer_id)
+                else:
+                    hold_lbl = pmer.get_mmer_code(mmer_id)
+                if code is None:
+                    hold_code = pmer.get_mmer_code(mmer_id)
+                else:
+                    hold_code = pmer.get_mmer_code(mmer_id)
+                self.__motifs.append(list((m_type, hold_lbl, hold_code, pmer_id,
                                            pmer.get_mmer_center(mmer_id), pmer.get_mmer_rotation(mmer_id))))
 
 
