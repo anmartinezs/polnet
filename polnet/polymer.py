@@ -50,10 +50,7 @@ class Monomer:
         Computer and return the monomer center of mass
         :return: a numpy array
         """
-        cm_flt = vtk.vtkCenterOfMass()
-        cm_flt.SetInputData(self.__m_surf)
-        cm_flt.Update()
-        return np.asarray(cm_flt.GetCenter())
+        return np.asarray(poly_center_mass(self.__m_surf))
 
     def get_diameter(self):
         return self.__diam
@@ -119,12 +116,13 @@ class Monomer:
             y_over = False
         return x_over and y_over and z_over
 
-    def overlap_voi(self, voi, v_size=1):
+    def overlap_voi(self, voi, v_size=1, over_tolerance=0):
         """
         Determines if the monomer overlaps a VOI, that requires the next condition:
             - Any particle on the monomer surface is within the VOI
         :param voi: input VOI (Volume Of Interest), binary tomgram with True for VOI voxels
         :param v_size: voxel size, it must greater than 0 (default 1)
+        :param over_tolerance: maximum overlap allowed (default 0)
         :return: True if the monomer overlaps the VOI, False otherwise
         """
 
@@ -136,15 +134,23 @@ class Monomer:
         mbd_prop = self.__m_surf.GetPointData().GetArray(MB_DOMAIN_FIELD_STR)
 
         # Any particle on the monomer surface is within the VOI
+        count, n_points = 0., self.__m_surf.GetNumberOfPoints()
+        n_points_if = 1. / float(n_points)
         if mbd_prop is None:
             for i in range(self.__m_surf.GetNumberOfPoints()):
                 pt = np.asarray(self.__m_surf.GetPoint(i)) * v_size_i
                 x, y, z = np.round(pt).astype(int)
                 if (x < nx) and (y < ny) and (z < nz) and (x >= 0) and (y >= 0) and (z >= 0):
                     if not voi[x, y, z]:
-                        return True
+                        count += 1
+                        over = count * n_points_if
+                        if over > over_tolerance:
+                            return True
                 else:
-                    return True
+                    count += 1
+                    over = count * n_points_if
+                    if over > over_tolerance:
+                        return True
         else:
             for i in range(self.__m_surf.GetNumberOfPoints()):
                 if mbd_prop.GetValue(i) == 0:
@@ -152,9 +158,15 @@ class Monomer:
                     x, y, z = np.round(pt).astype(int)
                     if (x < nx) and (y < ny) and (z < nz) and (x >= 0) and (y >= 0) and (z >= 0):
                         if not voi[x, y, z]:
-                            return True
+                            count += 1
+                            over = count * n_points_if
+                            if over > over_tolerance:
+                                return True
                     else:
-                        return True
+                        count += 1
+                        over = count * n_points_if
+                        if over > over_tolerance:
+                            return True
 
         return False
 
@@ -210,6 +222,7 @@ class Monomer:
         """
         Determines if the monomer overlaps with another
         :param mmer: input monomer to check overlap with self
+        :param over_tolerance: maximum overlap allowed (default 0)
         :return: True if overlapping, otherwise False
         """
         # Initialization
@@ -235,6 +248,7 @@ class Monomer:
         """
         Determines if the monomer overlaps with another momonmer in a network
         :param mmer: input monomer to check overlap with self
+        :param over_tolerance: maximum overlap allowed (default 0)
         :return: True if overlapping, otherwise False
         """
         # Initialization
@@ -271,7 +285,7 @@ class Polymer(ABC):
         :param id0: id for the initial monomer (default 0)
         :param code0: code string for the initial monomer (default '')
         """
-        h_diam = poly_max_distance(m_surf)
+        h_diam = poly_diam(m_surf)
         assert h_diam > 0
         self.__m_surf = m_surf
         self.__m_diam = h_diam
@@ -461,7 +475,7 @@ class Polymer(ABC):
         :param off_svol: offset coordinates for sub-volume monomer center coordinates
         :return:
         """
-        if not hasattr(m_svol, '__len__'):
+        if isinstance(m_svol, np.ndarray):
             m_svol = [m_svol, ]
         for mmer, id in zip(self.__m, self.__ids):
             mmer.insert_density_svol(m_svol[id], tomo, v_size, merge=merge, off_svol=off_svol)
@@ -542,18 +556,24 @@ class SAWLC(Polymer):
         hold_monomer.translate(p0)
         self.add_monomer(p0, np.asarray((0., 0., 0.)), hold_q, hold_monomer, id=id0, code=code0)
 
-    def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1):
+    def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1, fix_dst=None, ext_surf=None):
         """
         Generates a new monomer for the polymer according to the specified random model
         :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0)
         :param voi: VOI to define forbidden regions (default None, not applied)
         :param v_size: VOI voxel size, it must be greater than 0 (default 1)
+        :param fix_dst: allows to set the distance for the new monomer externally (default None)
+        :param ext_surf: allows to set the new mmer surface externally (default None)
         :return: a 4-tuple with monomer center point, associated tangent vector, rotated quaternion and monomer,
                  return None in case the generation has failed
         """
 
         # Translation
-        t = gen_uni_s2_sample(np.asarray((0., 0., 0.)), self.__l)
+        if fix_dst is None:
+            hold_l = self.__l
+        else:
+            hold_l = fix_dst
+        t = gen_uni_s2_sample(np.asarray((0., 0., 0.)), hold_l)
         r = self._Polymer__r[-1] + t
 
         # Rotation
@@ -561,8 +581,10 @@ class SAWLC(Polymer):
         # q = np.asarray((1, 0, 0, 1), dtype=np.float32)
 
         # Monomer
-        # hold_m = self._Polymer__m[-1].get_copy()
-        hold_m = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
+        if ext_surf is None:
+            hold_m = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
+        else:
+            hold_m = Monomer(ext_surf, self._Polymer__m_diam)
         hold_m.rotate_q(q)
         hold_m.translate(r)
 
@@ -570,7 +592,7 @@ class SAWLC(Polymer):
         if self.overlap_polymer(hold_m, over_tolerance=over_tolerance):
             return None
         elif voi is not None:
-            if hold_m.overlap_voi(voi, v_size):
+            if hold_m.overlap_voi(voi, v_size, over_tolerance=over_tolerance):
                 return None
 
         return r, t, q, hold_m

@@ -5,7 +5,7 @@ from polnet.membrane import SetMembranes
 from polnet.network import NetSAWLC, PGenHelixFiber
 from polnet.lrandom import EllipGen, SphGen, TorGen
 from polnet.polymer import MB_DOMAIN_FIELD_STR
-from polnet.poly import poly_reverse_normals, add_sfield_to_poly
+from polnet.poly import poly_reverse_normals, add_sfield_to_poly, poly_diam
 from polnet.lio import *
 from polnet.utils import *
 from polnet.affine import *
@@ -101,7 +101,7 @@ class TestMembranes(TestCase):
         model_surf = poly_translate(model_surf, -center)
         # Voxel resolution scaling
         model_surf = poly_scale(model_surf, VOI_VSIZE)
-        surf_diam = poly_max_distance(model_surf)
+        surf_diam = poly_diam(model_surf)
         save_vtp(model_surf, MMER_OUT)
         pol_l_generator = PGenHelixFiber()
         # Network generation

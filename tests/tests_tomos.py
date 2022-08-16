@@ -136,7 +136,7 @@ class TestTomos(TestCase):
         model_surf = poly_translate(model_surf, -center)
         # Voxel resolution scaling
         model_surf = poly_scale(model_surf, VOI_VSIZE)
-        surf_diam = poly_max_distance(model_surf)
+        surf_diam = poly_diam(model_surf)
         pol_l_generator = PGenHelixFiber()
         # Network generation
         mb_poly = set_mbs.get_vtp()
@@ -245,7 +245,7 @@ class TestTomos(TestCase):
         model_surf = poly_translate(model_surf, -center)
         # Voxel resolution scaling
         model_surf = poly_scale(model_surf, VOI_VSIZE)
-        surf_diam = poly_max_distance(model_surf)
+        surf_diam = poly_diam(model_surf)
         pol_l_generator = PGenHelixFiber()
 
         # Network generation

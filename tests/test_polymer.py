@@ -4,6 +4,7 @@ from polnet.polymer import Monomer
 from polnet.lio import *
 from polnet.utils import *
 from polnet.affine import *
+from polnet.poly import poly_diam
 
 # MMER SETTINGS
 VOI_VSIZE = 13.68 # A/vx
@@ -26,7 +27,7 @@ class TestMonomer(TestCase):
         model_surf = poly_translate(model_surf, -center)
         # Voxel resolution scaling
         model_surf = poly_scale(model_surf, VOI_VSIZE)
-        m_diam = poly_max_distance(model_surf)
+        m_diam = poly_diam(model_surf)
 
         # Create the mmer
         mmer = Monomer(model_surf, m_diam)

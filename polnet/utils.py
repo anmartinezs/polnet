@@ -46,25 +46,6 @@ def points_distance(a, b):
     return math.sqrt((hold * hold).sum())
 
 
-def poly_max_distance(vtp):
-    """
-    Computes the maximum distance in vtkPolyData
-    :param vtp: input vtkPolyData
-    :return: the maximum distance as real value
-    """
-    if vtp.GetNumberOfPoints() <= 0:
-        return 0
-    else:
-        mx = 0
-        ref_p = np.asarray(vtp.GetPoint(0))
-        for i in range(1, vtp.GetNumberOfPoints()):
-            hold_p = np.asarray(vtp.GetPoint(i))
-            hold_mx = points_distance(ref_p, hold_p)
-            if hold_mx > mx:
-                mx = hold_mx
-        return mx
-
-
 def iso_surface(tomo, th, flp=None, closed=False, normals=None):
     """
     Iso-surface on an input 3D volume

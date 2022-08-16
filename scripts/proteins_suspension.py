@@ -40,6 +40,7 @@ GTRUTH_POINTS_RAD = 35 # nm
 
 # Proteins list
 PROTEINS_LIST = ['in/ribo_v2.pns', 'in/prot_v2.pns', 'in/ribo_30S_v2.pns', 'in/ribo_50S_v2.pns', 'in/prot_sc_v2.pns', 'in/prot_dc_v2.pns']
+SURF_DEC = 0.9 # Target reduction factor for surface decimation (defatul None)
 
 # Reconstruction tomograms
 TILT_ANGS = range(-60, 61, 3) # np.arange(-60, 60, 3) # at MPI-B IMOD only works for ranges
@@ -85,12 +86,14 @@ for tomod_id in range(NTOMOS):
         model_mask = model < protein.get_iso()
         model[model_mask] = 0
         model_surf = pp.iso_surface(model, protein.get_iso(), closed=False, normals=None)
+        if SURF_DEC is not None:
+            model_surf = pp.poly_decimate(model_surf, SURF_DEC)
         center = .5 * np.asarray(model.shape, dtype=float)
         # Monomer centering
         model_surf = pp.poly_translate(model_surf, -center)
         # Voxel resolution scaling
         model_surf = pp.poly_scale(model_surf, VOI_VSIZE)
-        surf_diam = pp.poly_max_distance(model_surf)
+        surf_diam = pp.poly_diam(model_surf)
         pol_l_generator = PGenHelixFiber()
 
         # Network generation

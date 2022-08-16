@@ -5,6 +5,7 @@ import numpy as np
 from polnet.network import NetSAWLC, NetHelixFiber, NetHelixFiberB
 from polnet.lrandom import PGenHelixFiber, PGenHelixFiberB
 from polnet.polymer import FiberUnitSDimer, MTUnit
+from polnet.poly import poly_diam
 from polnet.lio import *
 from polnet.utils import *
 from polnet.affine import *
@@ -77,7 +78,7 @@ class TestNetSAWLC(TestCase):
         model_surf = poly_translate(model_surf, -center)
         # Voxel resolution scaling
         model_surf = poly_scale(model_surf, VOI_VSIZE)
-        surf_diam = poly_max_distance(model_surf)
+        surf_diam = poly_diam(model_surf)
         save_vtp(model_surf, MMER_OUT)
         pol_l_generator = PGenHelixFiber()
 

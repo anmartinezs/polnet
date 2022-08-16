@@ -277,3 +277,110 @@ def points_to_poly_spheres(points, rad):
 
     app_flt.Update()
     return app_flt.GetOutput()
+
+
+def poly_max_distance(vtp):
+    """
+    Computes the maximum distance in vtkPolyData
+    :param vtp: input vtkPolyData
+    :return: the maximum distance as real value
+    """
+    if vtp.GetNumberOfPoints() <= 1:
+        return 0
+    else:
+        mx = 0
+        for i in range(0, vtp.GetNumberOfPoints() - 1):
+            ref_p = np.asarray(vtp.GetPoint(i))
+            for j in range(i + 1, vtp.GetNumberOfPoints()):
+                hold_p = np.asarray(vtp.GetPoint(j))
+                hold_mx = points_distance(ref_p, hold_p)
+                if hold_mx > mx:
+                    mx = hold_mx
+        return mx
+
+def poly_diam(vtp):
+    """
+    Computes the diameter of a polydata, approximated to two times the maximumd point distance to its center of mass
+    :param vtp: input vtkPolyData
+    :return: the maximum distance as real value
+    """
+    if vtp.GetNumberOfPoints() <= 1:
+        return 0
+    else:
+        mx = 0
+        ref_p = poly_center_mass(vtp)
+        for i in range(0, vtp.GetNumberOfPoints()):
+            hold_p = np.asarray(vtp.GetPoint(i))
+            hold_mx = points_distance(ref_p, hold_p)
+            if hold_mx > mx:
+                mx = hold_mx
+        return mx
+
+
+def poly_point_min_dst(poly, point, chull=False):
+    """
+    Compute the minimum distance from a point to a poly
+    :param poly: input poly
+    :param point: input point
+    :param chull: computation mode, if True (default False) the convex hull surface is firstly extracted to avoid poly holes,
+                'otherwise the minimum distance is directly computed
+    :return: the minimum distance found
+    """
+
+    if poly.GetNumberOfPoints() <= 0:
+        return 0
+    else:
+        mn = np.finfo(float).max
+        if chull:
+            poly = convex_hull_surface(poly)
+        ref_p = np.asarray(point, dtype=float)
+        for j in range(0, poly.GetNumberOfPoints()):
+            hold_p = np.asarray(poly.GetPoint(j))
+            hold_mn = points_distance(ref_p, hold_p)
+            if hold_mn < mn:
+                mn = hold_mn
+        return mn
+
+
+def poly_center_mass(poly):
+    """
+    Computes the center of mass of polydata
+    :param poly: input poly
+    :return: center of mass coordinates
+    """
+    cm_flt = vtk.vtkCenterOfMass()
+    cm_flt.SetInputData(poly)
+    cm_flt.Update()
+    return np.asarray(cm_flt.GetCenter())
+
+
+def convex_hull_surface(poly):
+    """
+    Extract the convex full surface of a polydata
+    :param poly: input polydata
+    :return: convex hull surface
+    """
+    convexHull = vtk.vtkDelaunay3D()
+    convexHull.SetInputData(poly)
+    outerSurface = vtk.vtkGeometryFilter()
+    convexHull.Update()
+    outerSurface.SetInputData(convexHull.GetOutput())
+    outerSurface.Update()
+
+    return outerSurface.GetOutput()
+
+
+def poly_decimate(poly, dec):
+    """
+    Decimate a vtkPolyData
+    :param poly: input vtkPolyData
+    :param dec: Specify the desired reduction in the total number of polygons, default None (not applied)
+               (e.g., if TargetReduction is set to 0.9,
+               this filter will try to reduce the data set to 10% of its original size).
+    :return: the input poly filtered
+    """
+    tr_dec = vtk.vtkDecimatePro()
+    tr_dec.SetInputData(poly)
+    tr_dec.SetTargetReduction(dec)
+    tr_dec.Update()
+    return tr_dec.GetOutput()
