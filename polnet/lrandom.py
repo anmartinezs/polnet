@@ -239,3 +239,28 @@ class SGenUniform(SGen):
         """
         return random.randint(0, n_surf-1)
 
+
+class SGenProp(SGen):
+    """
+    Generates numbers according to some proportion
+    """
+
+    def __init__(self, prop_l):
+        """
+        :param prop_l: proportions list
+        """
+        assert hasattr(prop_l, '__len__') and sum(prop_l) == 1
+        self.__n_surf = len(prop_l)
+        self.__props = prop_l
+        self.__mmer_ids = range(len(self.__props))
+
+    def gen_next_mmer_id(self, n_surf=None, prev_id=None):
+        """
+            Generated the id for the next monomer
+            :param n_mmers: number of different monomers, (default None, not needed because this information is
+            introduced in this model during construction)
+            :param prev_id: previous monomer identifier (default None, not needed because this model is memoryless)
+            :return: an integer indication the next monomer
+        """
+        return random.choices(self.__mmer_ids, weights=self.__props, k=1)[0]
+

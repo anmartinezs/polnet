@@ -297,6 +297,12 @@ class Polymer(ABC):
         self.__ids = list()
         self.__codes = list()
 
+    def get_mmer_ids(self):
+        """
+        :return: the list of mmer ids
+        """
+        return self.__ids
+
     def get_mmer_id(self, m_id):
         """
         Get monomer id from its postion

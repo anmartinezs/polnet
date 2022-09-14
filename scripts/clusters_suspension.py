@@ -24,22 +24,28 @@ from polnet.utils import *
 from polnet import lio
 from polnet import tem
 from polnet import poly as pp
-from polnet.network import PGenHelixFiber, SGenUniform, NetSAWLCInter
+from polnet.network import PGenHelixFiber, SGenUniform, SGenProp, NetSAWLCInter
 from polnet.stomo import MmerFile, SynthTomo, SetTomos
 
 ##### Input parameters
 
 # Common tomogram settings
 ROOT_PATH = '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth' # '/home/antonio/workspace/synth_tomo/riboprot'
-NTOMOS = 1 # 12
-VOI_SHAPE = (400, 400, 236) # (1856, 1856, 236) # (1856, 1856, 464) # (400, 400, 464) # (924, 924, 300) # vx
-VOI_OFFS =  ((4,396), (4,396), (4,232)) # ((4,1852), (4,1852), (4,232)) # vx
+NTOMOS = 10 # 12
+VOI_SHAPE = (1856, 1856, 464) # (400, 400, 236) # (1856, 1856, 236) # (1856, 1856, 464) # (400, 400, 464) # (924, 924, 300) # vx
+VOI_OFFS =  ((4,1852), (4,1852), (32,432)) # ((4,396), (4,396), (4,232)) # ((4,1852), (4,1852), (4,232)) # vx
 VOI_VSIZE = 2.2 # A/vx
 GTRUTH_POINTS_RAD = 35 # nm
 
 # Proteins list
-PROTEINS_LIST = ['in/ribo_v2.pns', 'in/prot_v2.pns', 'in/ribo_30S_v2.pns', 'in/ribo_50S_v2.pns', 'in/prot_sc_v2.pns',
-                 'in/prot_dc_v2.pns']
+PROTEINS_LIST = ['in/ribo_v2.pns', 'in/prot_v2.pns'] # ['in/ribo_v2.pns', 'in/prot_v2.pns', 'in/ribo_30S_v2.pns', 'in/ribo_50S_v2.pns', 'in/prot_sc_v2.pns',
+                # 'in/prot_dc_v2.pns']
+
+# Proportions list, specifies the proportion for each protein, this proportion is tried to be achieved but no guaranteed
+# The toal sum of this list must be 1
+PROP_LIST = [.4, .6]
+assert sum(PROP_LIST) == 1
+
 DIST_OFF = 5 # A / vx
 SURF_DEC = 0.9 # Target reduction factor for surface decimation (defatul None)
 
@@ -51,10 +57,10 @@ MALIGN_MX = 1.5
 MALIGN_SG = 0.2
 
 # CLUSTERS SETTINGS
-NET_OCC = 5
+NET_OCC = 10 # 5
 
 # OUTPUT FILES
-OUT_DIR = ROOT_PATH + '/out_clusters_v2'
+OUT_DIR = ROOT_PATH + '/out_density'
 TEM_DIR = OUT_DIR + '/tem'
 TOMOS_DIR = OUT_DIR + '/tomos'
 
@@ -106,7 +112,9 @@ for tomod_id in range(NTOMOS):
         model_codes.append(protein.get_mmer_id())
 
     # Network generation
-    pol_l_generator, pol_s_generator = PGenHelixFiber(), SGenUniform()
+    pol_l_generator = PGenHelixFiber()
+    if PROP_LIST is None: pol_s_generator = SGenUniform()
+    else: pol_s_generator = SGenProp(PROP_LIST)
     net_sawlc = NetSAWLCInter(voi, VOI_VSIZE, surf_diams, model_surfs, protein.get_pmer_l_max(),
                               pol_l_generator, pol_s_generator, NET_OCC, protein.get_pmer_over_tol(),
                               poly=None, svols=model_masks, codes=model_codes, compaq=5.5)
@@ -122,6 +130,18 @@ for tomod_id in range(NTOMOS):
     else:
         poly_vtp = hold_vtp
     synth_tomo.add_network(net_sawlc, 'Protein')
+
+    # Tomogram statistics
+    print('\t-TOMOGRAM', str(tomod_id), 'DENSITY STATISTICS:')
+    total_counts, total_vol = 0, 0
+    prot_counts = net_sawlc.count_proteins()
+    voi_vol = voi.sum() * VOI_VSIZE**3
+    for id in range(len(PROTEINS_LIST)):
+        prot_vol = pp.poly_volume(model_surfs[id]) * prot_counts[id]
+        print('\t\t+Protein', id, ':', prot_counts[id], '#, ', prot_vol, 'A**3, ', 100. * (prot_vol / voi_vol), '%')
+        total_counts += prot_counts[id]
+        total_vol += prot_vol
+    print('\t\t+Total:', total_counts, '#, ', voi_vol, 'A**3, ', 100. * (total_vol / voi_vol), '%')
 
     # DEBUG
     lio.write_mrc(voi.astype(np.float32), ROOT_PATH + '/hold_voi.mrc')

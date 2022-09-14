@@ -9,7 +9,7 @@ import scipy as sp
 
 from polnet.poly import *
 from polnet.polymer import SAWLC, SAWLCPoly, HelixFiber
-from polnet.lrandom import SGen, SGenUniform, SGenFixed, PGenHelixFiber, PGenHelixFiberB
+from polnet.lrandom import SGen, SGenUniform, SGenFixed, SGenProp, PGenHelixFiber, PGenHelixFiberB
 from abc import ABC, abstractmethod
 
 
@@ -44,7 +44,7 @@ class Network(ABC):
     def add_polymer(self, polymer):
         self.__pl.append(polymer)
         self.__pl_occ += 100. * (polymer.get_vol() / self.__vol)
-        print('Occ: ', self.__pl_occ)
+        # print('Occ: ', self.__pl_occ)
 
     @abstractmethod
     def build_network(self):
@@ -168,6 +168,23 @@ class Network(ABC):
                                         prefilter=False)
                 # hold_svol = tomo_rotate(hold_svol, trans[1], mode='constant', cval=hold_svol.min())
         insert_svol_tomo(hold_svol, self.__voi, tot_v, merge='min')
+
+
+    def count_proteins(self):
+        """
+        Genrates output statistics for this network
+        :return: a dictionary with the number of proteins for protein id
+        """
+        counts = dict()
+        for pl in self.__pl:
+            ids = pl.get_mmer_ids()
+            for id in ids:
+                try:
+                    counts[id] += 1
+                except KeyError:
+                    counts[id] = 0
+        return counts
+
 
 
 class NetSAWLC(Network):
@@ -342,7 +359,7 @@ class NetSAWLCInter(Network):
         """
 
         # Computes the maximum number of tries
-        prev_id = 0
+        mmer_id = None
         c_try = 0
         n_tries = math.ceil(self._Network__vol) # math.ceil(self._Network__vol / poly_volume(self.__m_surfs[prev_id]))
 
@@ -355,8 +372,8 @@ class NetSAWLCInter(Network):
                              self._Network__voi.shape[1] * self._Network__v_size * random.random(),
                              self._Network__voi.shape[2] * self._Network__v_size * random.random()))
             max_length = self.__gen_pol_lengths.gen_length(0, self.__max_p_length)
-            mmer_id = self.__gen_seq_mmers.gen_next_mmer_id(len(self.__m_surfs))
-            prev_id = mmer_id
+            if mmer_id is None:
+                mmer_id = self.__gen_seq_mmers.gen_next_mmer_id(len(self.__m_surfs))
             if self.__poly is None:
                 hold_polymer = SAWLC(self.__l_lengths[mmer_id], self.__m_surfs[mmer_id], p0, id0=mmer_id,
                                      code0=self.__codes[mmer_id])
@@ -367,13 +384,16 @@ class NetSAWLCInter(Network):
                                                         self.__over_tolerance):
                 continue
             self.add_monomer_to_voi(hold_polymer.get_monomer(-1), self._Network__svol[mmer_id])
+            prev_id = mmer_id
+            mmer_id = None
 
             # Polymer loop
             cont_pol, hold_compaq = 0, self.__compaq
             not_finished = True
             while (hold_polymer.get_total_len() < max_length) and not_finished:
 
-                mmer_id = self.__gen_seq_mmers.gen_next_mmer_id(len(self.__m_surfs))
+                if mmer_id is None:
+                    mmer_id = self.__gen_seq_mmers.gen_next_mmer_id(len(self.__m_surfs))
 
                 if self.__compaq is None:
                     monomer_data = hold_polymer.gen_new_monomer(self.__over_tolerance, self._Network__voi,
@@ -401,6 +421,7 @@ class NetSAWLCInter(Network):
                                                  id=mmer_id, code=self.__codes[mmer_id])
                         self.add_monomer_to_voi(hold_polymer.get_monomer(-1), self._Network__svol[mmer_id])
                         prev_id = mmer_id
+                        mmer_id = None
                         cont_pol, hold_compaq = 0, 0
                         hold_occ = self._Network__pl_occ + 100. * (hold_polymer.get_vol() / self._Network__vol)
                         if hold_occ >= self.__occ:
