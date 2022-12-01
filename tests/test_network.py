@@ -83,7 +83,8 @@ class TestNetSAWLC(TestCase):
         pol_l_generator = PGenHelixFiber()
 
         # Network generation
-        net_sawlc = NetSAWLC(voi, VOI_VSIZE, PMER_L*surf_diam, model_surf, PMER_L_MAX, pol_l_generator, PMER_OCC, PMER_OVER_TOL)
+        net_sawlc = NetSAWLC(voi, VOI_VSIZE, PMER_L*surf_diam, model_surf, PMER_L_MAX, pol_l_generator, PMER_OCC,
+                             PMER_OVER_TOL, svol=model < MMER_ISO)
         net_sawlc.build_network()
 
         # Density tomogram generation

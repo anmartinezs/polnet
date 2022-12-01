@@ -241,22 +241,29 @@ class NetSAWLC(Network):
 
         # Computes the maximum number of tries
         c_try = 0
-        n_tries = math.ceil(self._Network__vol) # math.ceil(self._Network__vol / poly_volume(self.__m_surf))
+        if self.__poly:
+            n_tries = self.__poly.GetNumberOfPoints()
+        else:
+            n_tries = math.ceil(self._Network__vol) # math.ceil(self._Network__vol / poly_volume(self.__m_surf))
 
         # Network loop
         while (c_try <= n_tries) and (self._Network__pl_occ < self.__occ):
 
             # Polymer initialization
             c_try += 1
-            p0 = np.asarray((self._Network__voi.shape[0] * self._Network__v_size * random.random(),
-                             self._Network__voi.shape[1] * self._Network__v_size * random.random(),
-                             self._Network__voi.shape[2] * self._Network__v_size * random.random()))
+            if self.__poly:
+                p0 = np.asarray(self.__poly.GetPoint(random.randint(0, n_tries)))
+            else:
+                p0 = np.asarray((self._Network__voi.shape[0] * self._Network__v_size * random.random(),
+                                 self._Network__voi.shape[1] * self._Network__v_size * random.random(),
+                                 self._Network__voi.shape[2] * self._Network__v_size * random.random()))
             max_length = self.__gen_pol_lengths.gen_length(0, self.__max_p_length)
             if self.__poly is None:
                 hold_polymer = SAWLC(self.__l_length, self.__m_surf, p0)
             else:
                 hold_polymer = SAWLCPoly(self.__poly, self.__l_length, self.__m_surf, p0)
-            if hold_polymer.get_monomer(-1).overlap_voi(self._Network__voi, self._Network__v_size):
+            if hold_polymer.get_monomer(-1).overlap_voi(self._Network__voi, self._Network__v_size,
+                                                        over_tolerance=self._NetSAWLC__over_tolerance):
                 continue
             self.add_monomer_to_voi(hold_polymer.get_monomer(-1), self._Network__svol)
 
@@ -288,8 +295,9 @@ class NetSAWLC(Network):
 
             # Updating polymer
             self.add_polymer(hold_polymer)
-            # print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
-            #       ' and length ' + str(hold_polymer.get_total_len()))
+            print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
+                  ', length ' + str(hold_polymer.get_total_len()) + ' and occupancy ' +
+                  str(self._Network__pl_occ) + '%')
 
 
 class NetSAWLCInter(Network):
@@ -431,8 +439,8 @@ class NetSAWLCInter(Network):
 
             # Updating polymer
             self.add_polymer(hold_polymer)
-            # print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
-            #       ' and length ' + str(hold_polymer.get_total_len()))
+            print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
+                  ', length ' + str(hold_polymer.get_total_len()) + ' and occupancy ' + str(self._Network__pl_occ) + '%')
 
 
 class NetHelixFiber(Network):
@@ -608,8 +616,8 @@ class NetHelixFiberB(Network):
             else:
                 self.add_polymer(hold_polymer)
                 self.__p_branches.append(list())
-            # print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
-            #       ' and length ' + str(hold_polymer.get_total_len()) + ': occupancy ' + str(self._Network__pl_occ))
+            print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
+                  ' and length ' + str(hold_polymer.get_total_len()) + ': occupancy ' + str(self._Network__pl_occ))
 
     def get_branch_list(self):
         """

@@ -641,7 +641,7 @@ class SAWLCPoly(Polymer):
         # hold_q = np.asarray((1, 0., 0., 1.), dtype=np.float32)
         hold_monomer.rotate_q(hold_q)
         hold_monomer.translate(self._Polymer__p)
-        self.add_monomer(self._Polymer__p, np.asarray((0., 0., 0.)), hold_q, hold_monomer, id=id0, code0=code0)
+        self.add_monomer(self._Polymer__p, np.asarray((0., 0., 0.)), hold_q, hold_monomer, id=id0, code=code0)
 
     def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1):
         """
@@ -858,6 +858,7 @@ class FiberUnitSDimer(FiberUnit):
 
         # Input parsing
         sph_rad_v = self.__sph_rad / self.__v_size
+        sph_rad_v2 = sph_rad_v * sph_rad_v * 0.5625 # (0.75*rad)^2
 
         # Generating the grid
         self.__tomo = np.zeros(shape=(self.__size, self.__size, self.__size), dtype=np.float32)
@@ -871,19 +872,30 @@ class FiberUnitSDimer(FiberUnit):
         Z += .5
         # X, Y, Z = X.astype(np.float16), Y.astype(np.float16), X.astype(np.float16)
 
+        # from polnet import lio
+
         # Generate the first unit
         Yh = Y + sph_rad_v
-        R = np.abs(X * X + Yh * Yh + Z * Z)
+        R = X * X + Yh * Yh + Z * Z - sph_rad_v2
+
+        # lio.write_mrc(R.astype(np.float32), '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all/hold_R1.mrc')
+
         self.__tomo += 1. / (1. + np.exp(-R))
+
+        # lio.write_mrc(self.__tomo.astype(np.float32), '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all/hold_R2.mrc')
 
         # Generate the second unit
         Yh = Y - sph_rad_v
-        R = np.abs(X * X + Yh * Yh + Z * Z)
+        R = X * X + Yh * Yh + Z * Z - sph_rad_v2
         self.__tomo += 1. / (1. + np.exp(-R))
 
         # Generating the surfaces
         self.__tomo = lin_map(self.__tomo, lb=1, ub=0) # self.__tomo = lin_map(self.__tomo, lb=0, ub=1)
         self.__surf = iso_surface(self.__tomo, .25) # self.__surf = iso_surface(self.__tomo, .75)
+
+        # lio.write_mrc(self.__tomo, '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all/hold_funit1.mrc')
+        # lio.save_vtp(self.__surf, '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all/hold_funit1.vtp')
+
         self.__surf = poly_scale(self.__surf, self.__v_size)
         self.__surf = poly_translate(self.__surf, -.5 * self.__v_size * (np.asarray(self.__tomo.shape)-.5))
 
@@ -923,6 +935,7 @@ class MTUnit(FiberUnit):
 
         # Input parsing
         sph_rad_v, mt_rad_v = self.__sph_rad / self.__v_size, self.__mt_rad / self.__v_size
+        sph_rad_v2 = sph_rad_v * sph_rad_v * 0.25  # (0.9*rad)^2
 
         # Generating the grid
         self.__tomo = np.zeros(shape=(self.__size, self.__size, self.__size), dtype=np.float32)
@@ -942,17 +955,28 @@ class MTUnit(FiberUnit):
         ang = ang_step
         while ang <= 2. * np.pi:
             # Generate the unit
+            # x, y = mt_rad_v * math.cos(ang), mt_rad_v * math.sin(ang)
             x, y = mt_rad_v * math.cos(ang), mt_rad_v * math.sin(ang)
             Xh, Yh = X + x, Y + y
-            R = np.abs(Xh * Xh + Yh * Yh + Z2)
-            self.__tomo += 1. / (1. + np.exp(-R))
+            # R = np.abs(Xh * Xh + Yh * Yh + Z2)
+            R = Xh * Xh + Yh * Yh + Z2 - sph_rad_v2
+            # from polnet import lio
+            # lio.write_mrc(R.astype(np.float32), '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all/hold_R1.mrc')
+            F = 1. / (1. + np.exp(-R))
+            mask_F = F < 0.1
+            self.__tomo += -F + 1
             ang += ang_step
 
+        # from polnet import lio
+        # lio.write_mrc(self.__tomo, '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all/hold_mtunit1.mrc')
+
         # Generating the surfaces
-        self.__tomo = lin_map(self.__tomo, lb=1, ub=0) # self.__tomo = lin_map(self.__tomo, lb=0, ub=1)
+        self.__tomo = lin_map(self.__tomo, lb=0, ub=1) # self.__tomo = lin_map(self.__tomo, lb=0, ub=1)
         self.__surf = iso_surface(self.__tomo, .25) # self.__surf = iso_surface(self.__tomo, .75)
         self.__surf = poly_scale(self.__surf, self.__v_size)
         self.__surf = poly_translate(self.__surf, -.5 * self.__v_size * (np.asarray(self.__tomo.shape) - .5))
+
+        # lio.save_vtp(self.__surf, '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all/hold_mtunit1.vtp')
 
 
 

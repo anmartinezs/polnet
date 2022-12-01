@@ -31,7 +31,7 @@ from polnet.stomo import MmerFile, SynthTomo, SetTomos
 
 # Common tomogram settings
 ROOT_PATH = '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth' # '/home/antonio/workspace/synth_tomo/riboprot'
-NTOMOS = 10 # 12
+NTOMOS = 1 # 10 # 12
 VOI_SHAPE = (1856, 1856, 464) # (400, 400, 236) # (1856, 1856, 236) # (1856, 1856, 464) # (400, 400, 464) # (924, 924, 300) # vx
 VOI_OFFS =  ((4,1852), (4,1852), (32,432)) # ((4,396), (4,396), (4,232)) # ((4,1852), (4,1852), (4,232)) # vx
 VOI_VSIZE = 2.2 # A/vx
@@ -51,7 +51,7 @@ SURF_DEC = 0.9 # Target reduction factor for surface decimation (defatul None)
 
 # Reconstruction tomograms
 TILT_ANGS = range(-60, 61, 3) # np.arange(-60, 60, 3) # at MPI-B IMOD only works for ranges
-DETECTOR_SNR = None # [.15, .25] # 0.2
+DETECTOR_SNR = 0.2 # [.15, .25] # 0.2
 MALIGN_MN = 1
 MALIGN_MX = 1.5
 MALIGN_SG = 0.2
@@ -60,7 +60,7 @@ MALIGN_SG = 0.2
 NET_OCC = 10 # 5
 
 # OUTPUT FILES
-OUT_DIR = ROOT_PATH + '/out_density'
+OUT_DIR = ROOT_PATH + '/out_rotations'
 TEM_DIR = OUT_DIR + '/tem'
 TOMOS_DIR = OUT_DIR + '/tomos'
 
@@ -163,7 +163,13 @@ for tomod_id in range(NTOMOS):
     temic.gen_tilt_series_imod(vol, TILT_ANGS, ax='Y')
     temic.add_mics_misalignment(MALIGN_MN, MALIGN_MX, MALIGN_SG)
     if DETECTOR_SNR is not None:
-        snr = round((DETECTOR_SNR[1] - DETECTOR_SNR[0])*random.random() + DETECTOR_SNR[0], 2)
+        if hasattr(DETECTOR_SNR, '__len__'):
+            if len(DETECTOR_SNR) >= 2:
+                snr = round((DETECTOR_SNR[1] - DETECTOR_SNR[0])*random.random() + DETECTOR_SNR[0], 2)
+            else:
+                snr = DETECTOR_SNR[0]
+        else:
+            snr = DETECTOR_SNR
         temic.add_detector_noise(snr)
     temic.invert_mics_den()
     temic.set_header(data='mics', p_size=(VOI_VSIZE, VOI_VSIZE, VOI_VSIZE))

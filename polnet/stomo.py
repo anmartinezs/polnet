@@ -7,6 +7,8 @@ __author__ = 'Antonio Martinez-Sanchez'
 
 import csv
 from polnet.network import Network
+from polnet.membrane import SetMembranes
+from polnet import poly as pp
 
 
 class MmerFile:
@@ -24,6 +26,7 @@ class MmerFile:
         self.__iso = None
         self.__pmer_l = None
         self.__pmer_occ = None
+        self.__pmer_np = None
         self.__pmer_l_max = None
         self.__pmer_over_tol = 0
         if in_file is not None:
@@ -44,6 +47,9 @@ class MmerFile:
     def get_pmer_occ(self):
         return self.__pmer_occ
 
+    def get_pmer_np(self):
+        return self.__pmer_np
+
     def get_pmer_l_max(self):
         return self.__pmer_l_max
 
@@ -56,12 +62,15 @@ class MmerFile:
         :param in_file: path to the input file with extension .pns
         """
 
-        assert isinstance(in_file, str) and in_file.endswith('.pns')
+        assert isinstance(in_file, str) and in_file.endswith('.pms') or in_file.endswith('.pns')
 
         # Reading input file
         with open(in_file) as file:
             for linea in file:
                 if len(linea.strip()) > 0:
+
+                    # Remove coments
+                    linea = linea.split('#', 1)[0]
 
                     # Parsing an file entry
                     var, value = linea.split('=')
@@ -79,12 +88,326 @@ class MmerFile:
                         self.__pmer_l = float(value)
                     elif var == 'PMER_OCC':
                         self.__pmer_occ = float(value)
+                    elif var == 'PMER_NP':
+                        self.__pmer_np = int(value)
                     elif var == 'PMER_L_MAX':
                         self.__pmer_l_max = float(value)
                     elif var == 'PMER_OVER_TOL':
                         self.__pmer_over_tol = float(value)
+                    # else:
+                    #     print('ERROR: (MmerFile - load_protein_file) input entry not recognized:', value)
+
+
+class MmerMbFile(MmerFile):
+    """
+    For handling protein (or monomer) files
+    """
+
+    def __init__(self, in_file):
+        """
+        Constructor
+        :param in_file: path to the input file with extension .pms
+        """
+        super().__init__(in_file)
+        self.__mmer_center = None
+        self.__mb_z_height = None
+        self.__pmer_reverse_normals = None
+        if in_file is not None:
+            self.load_mmer_mb_file(in_file)
+
+    def get_mmer_center(self):
+        return self.__mmer_center
+
+    def get_mb_z_height(self):
+        return self.__mb_z_height
+
+    def get_pmer_reverse_normals(self):
+        return self.__pmer_reverse_normals
+
+    def load_mmer_mb_file(self, in_file):
+        """
+        Load protein parameters from an input file
+        :param in_file: path to the input file with extension .pms
+        """
+
+        super().load_mmer_file(in_file)
+
+        # Reading input file
+        with open(in_file) as file:
+            for linea in file:
+                if len(linea.strip()) > 0:
+
+                    # Remove coments
+                    linea = linea.split('#', 1)[0]
+
+                    # Parsing an file entry
+                    var, value = linea.split('=')
+                    var = var.replace(' ', '')
+                    var = var.replace('\n', '')
+                    value = value.replace(' ', '')
+                    value = value.replace('\n', '')
+                    if var == 'MMER_CENTER':
+                        hold_str = value.replace('[', '')
+                        hold_str = hold_str.replace(']', '')
+                        hold_str = hold_str.split(',')
+                        self.__mmer_center = [float(hold_str[0]), float(hold_str[1]), float(hold_str[2])]
+                    elif var == 'MB_Z_HEIGHT':
+                        self.__mb_z_height = int(value)
+                    elif var == 'PMER_REVERSE_NORMALS':
+                        self.__pmer_reverse_normals = bool(value)
+
+
+
+
+class MbFile:
+    """
+    For handling membrane configuration files
+    """
+
+    def __init__(self):
+        self.__type = None
+        self.__occ = None
+        self.__thick_rg = None
+        self.__layer_s_rg = None
+        self.__max_ecc = None
+        self.__over_tol = None
+        self.__min_rad = None
+
+    def get_type(self):
+        return self.__type
+
+    def get_occ(self):
+        return self.__occ
+
+    def get_thick_rg(self):
+        return self.__thick_rg
+
+    def get_layer_s_rg(self):
+        return self.__layer_s_rg
+
+    def get_max_ecc(self):
+        return self.__max_ecc
+
+    def get_over_tol(self):
+        return self.__over_tol
+
+    def get_min_rad(self):
+        return self.__min_rad
+
+    def load_mb_file(self, in_file):
+        """
+        Load protein parameters from an input file
+        :param in_file: path to the input file with extension .mbs
+        """
+
+        assert isinstance(in_file, str) and in_file.endswith('.mbs')
+
+        # Reading input file
+        with open(in_file) as file:
+            for linea in file:
+                if len(linea.strip()) > 0:
+
+                    # Remove coments
+                    linea = linea.split('#', 1)[0]
+
+                    # Parsing an file entry
+                    var, value = linea.split('=')
+                    var = var.replace(' ', '')
+                    var = var.replace('\n', '')
+                    value = value.replace(' ', '')
+                    value = value.replace('\n', '')
+                    if var == 'MB_TYPE':
+                        self.__type = value
+                    elif var == 'MB_OCC':
+                        self.__occ = float(value)
+                    elif var == 'MB_THICK_RG':
+                        value_0 = value[value.index('(')+1:value.index(',')]
+                        value_1 = value[value.index(',')+1:value.index(')')]
+                        self.__thick_rg = (float(value_0), float(value_1))
+                    elif var == 'MB_LAYER_S_RG':
+                        value_0 = value[value.index('(') + 1:value.index(',')]
+                        value_1 = value[value.index(',') + 1:value.index(')')]
+                        self.__layer_s_rg = (float(value_0), float(value_1))
+                    elif var == 'MB_MAX_ECC':
+                        self.__max_ecc = float(value)
+                    elif var == 'MB_OVER_TOL':
+                        self.__over_tol = float(value)
+                    elif var == 'MB_MIN_RAD':
+                        self.__min_rad = float(value)
                     else:
                         print('ERROR: (MmerFile - load_protein_file) input entry not recognized:', value)
+
+
+class HelixFile:
+    """
+    For handling helicoidal structures configuration files
+    """
+
+    def __init__(self):
+        self.__type = None
+        self.__occ = None
+        self.__min_p_len = None
+        self.__mmer_rad = None
+        self.__hp_len = None
+        self.__mz_len = None
+        self.__mz_len_f = None
+        self.__thick_rg = None
+        self.__over_tol = None
+
+    def get_type(self):
+        return self.__type
+
+    def get_occ(self):
+        return self.__occ
+
+    def get_thick_rg(self):
+        return self.__thick_rg
+
+    def get_min_p_len(self):
+        return self.__min_p_len
+
+    def get_mmer_rad(self):
+        return self.__mmer_rad
+
+    def get_hp_len(self):
+        return self.__hp_len
+
+    def get_mz_len(self):
+        return self.__mz_len
+
+    def get_mz_len_f(self):
+        return self.__mz_len_f
+
+    def get_over_tol(self):
+        return self.__over_tol
+
+    def load_hx_file(self, in_file):
+        """
+        Load protein parameters from an input file
+        :param in_file: path to the input file with extension .hns
+        """
+
+        assert isinstance(in_file, str) and in_file.endswith('.hns')
+
+        # Reading input file
+        with open(in_file) as file:
+            for linea in file:
+                if len(linea.strip()) > 0:
+
+                    # Remove coments
+                    linea = linea.split('#', 1)[0]
+
+                    # Parsing an file entry
+                    var, value = linea.split('=')
+                    var = var.replace(' ', '')
+                    var = var.replace('\n', '')
+                    value = value.replace(' ', '')
+                    value = value.replace('\n', '')
+                    if var == 'HLIX_TYPE':
+                        self.__type = value
+                    if var == 'HLIX_PMER_OCC':
+                        self.__occ = float(value)
+                    elif var == 'HLIX_MIN_P_LEN':
+                        self.__min_p_len = float(value)
+                    elif var == 'HLIX_HP_LEN':
+                        self.__hp_len = float(value)
+                    elif var == 'HLIX_MZ_LEN':
+                        self.__mz_len = float(value)
+                    elif var == 'HLIX_MZ_LEN_F':
+                        self.__mz_len_f = float(value)
+                    elif var == 'HLIX_MMER_RAD':
+                        self.__mmer_rad = float(value)
+                    elif var == 'HLIX_OVER_TOL':
+                        self.__over_tol = float(value)
+
+
+class MTFile(HelixFile):
+    """
+    For handling microtubular structures configuration files (inherits from Helix)
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.__rad = None
+        self.__nunits = None
+
+    def get_rad(self):
+        return self.__rad
+
+    def get_nunits(self):
+        return self.__nunits
+
+    def load_mt_file(self, in_file):
+        """
+        Load protein parameters from an input file
+        :param in_file: path to the input file with extension .mbs
+        """
+
+        super().load_hx_file(in_file)
+
+        # Reading input file
+        with open(in_file) as file:
+            for linea in file:
+                if len(linea.strip()) > 0:
+
+                    # Remove coments
+                    linea = linea.split('#', 1)[0]
+
+                    # Parsing an file entry
+                    var, value = linea.split('=')
+                    var = var.replace(' ', '')
+                    var = var.replace('\n', '')
+                    value = value.replace(' ', '')
+                    value = value.replace('\n', '')
+                    if var == 'MT_RAD':
+                        self.__rad = float(value)
+                    elif var == 'MT_NUNITS':
+                        self.__nunits = float(value)
+
+
+class ActinFile(HelixFile):
+    """
+    For handling actin-like structures configuration files (inherits from Helix)
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.__bprop = None
+        self.__p_branch = None
+
+    def get_bprop(self):
+        return self.__bprop
+
+    def get_p_branch(self):
+        return self.__p_branch
+
+    def load_ac_file(self, in_file):
+        """
+        Load protein parameters from an input file
+        :param in_file: path to the input file with extension .mbs
+        """
+
+        super().load_hx_file(in_file)
+
+        # Reading input file
+        with open(in_file) as file:
+            for linea in file:
+                if len(linea.strip()) > 0:
+
+                    # Remove coments
+                    linea = linea.split('#', 1)[0]
+
+                    # Parsing an file entry
+                    var, value = linea.split('=')
+                    var = var.replace(' ', '')
+                    var = var.replace('\n', '')
+                    value = value.replace(' ', '')
+                    value = value.replace('\n', '')
+                    if var == 'A_BPROP':
+                        self.__bprop = float(value)
+                    elif var == 'A_MAX_P_BRANCH':
+                        self.__p_branch = float(value)
+
 
 
 class SynthTomo:
@@ -96,7 +419,7 @@ class SynthTomo:
     def __init__(self):
         self.__den = None
         self.__tomo = None
-        self.__mic = None
+        self.__mics = None
         self.__poly = None
         self.__motifs = list()
 
@@ -104,7 +427,7 @@ class SynthTomo:
         return self.__den
 
     def get_mics(self):
-        return self.__mic
+        return self.__mics
 
     def get_poly(self):
         return self.__poly
@@ -131,12 +454,12 @@ class SynthTomo:
     def get_motif_list(self):
         return self.__motifs
 
-    def add_network(self, net, m_type, lbl=None, code=None):
+    def add_network(self, net, m_type, lbl, code=None):
         """
-        Add al motifs within the input network to the synthetic tomogram
+        Add all motifs within the input network to the synthetic tomogram
         :param net: a network object instance
         :param m_type: string with the type of monomers contained in the network
-        :param lbl: integer label, if None (default) it is taken from monomer information
+        :param lbl: integer label
         :param code: string code for the network monomers, if None (default) it is taken from monomer information
         """
         assert issubclass(type(net), Network)
@@ -145,16 +468,38 @@ class SynthTomo:
         if (code is not None): assert isinstance(code, str)
         for pmer_id, pmer in enumerate(net.get_pmers_list()):
             for mmer_id in range(pmer.get_num_monomers()):
-                if lbl is None:
-                    hold_lbl = pmer.get_mmer_id(mmer_id)
-                else:
-                    hold_lbl = pmer.get_mmer_code(mmer_id)
                 if code is None:
                     hold_code = pmer.get_mmer_code(mmer_id)
                 else:
-                    hold_code = pmer.get_mmer_code(mmer_id)
-                self.__motifs.append(list((m_type, hold_lbl, hold_code, pmer_id,
+                    hold_code = code
+                self.__motifs.append(list((m_type, lbl, hold_code, pmer_id,
                                            pmer.get_mmer_center(mmer_id), pmer.get_mmer_rotation(mmer_id))))
+
+    def add_set_mbs(self, set_mbs, m_type, lbl, code, dec=None):
+        """
+        Membrane surface point coordinates are added to the tomogram motif list
+        In rotations the normal vector to each point is stored as: X->Q0, Y->Q1 , Z->Q2 and 0->Q3
+        :param set_mbs: a membrane set object instance
+        :param m_type: string with the type of motif contained in the network
+        :param lbl: integer label
+        :param code: string code for membrane
+        :param dec: if not None (default) the membrane points are decimated according this factor
+        """
+        assert issubclass(type(set_mbs), SetMembranes)
+        assert isinstance(m_type, str)
+        assert isinstance(lbl, int)
+        assert isinstance(code, str)
+
+        poly_vtp = set_mbs.get_vtp()
+        if dec is not None:
+            poly_vtp = pp.poly_decimate(poly_vtp)
+
+        n_points = poly_vtp.GetNumberOfPoints()
+        normals = poly_vtp.GetPointData().GetNormals()
+        for i in range(n_points):
+            x, y, z = poly_vtp.GetPoint(i)
+            q0, q1, q2 = normals.GetTuple(i)
+            self.__motifs.append(list((m_type, lbl, code, i, [x, y, z], [q0, q1, q2, 0])))
 
 
 class SetTomos:

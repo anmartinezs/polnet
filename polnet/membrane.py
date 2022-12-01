@@ -457,7 +457,7 @@ class SetMembranes:
         Get the tomogram with the membranes within the VOI
         :return: an ndarray
         """
-        return self.__voi * self.__tomo
+        return np.invert(self.__voi) * self.__tomo
 
     def get_gtruth(self):
         """
