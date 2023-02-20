@@ -87,7 +87,12 @@ class MmerFile:
                     elif var == 'PMER_L':
                         self.__pmer_l = float(value)
                     elif var == 'PMER_OCC':
-                        self.__pmer_occ = float(value)
+                        try:
+                            self.__pmer_occ = float(value)
+                        except ValueError:
+                            value_0 = value[value.index('(') + 1:value.index(',')]
+                            value_1 = value[value.index(',') + 1:value.index(')')]
+                            self.__pmer_occ = (float(value_0), float(value_1))
                     elif var == 'PMER_NP':
                         self.__pmer_np = int(value)
                     elif var == 'PMER_L_MAX':
@@ -172,6 +177,7 @@ class MbFile:
         self.__max_ecc = None
         self.__over_tol = None
         self.__min_rad = None
+        self.__den_cf_rg = None
 
     def get_type(self):
         return self.__type
@@ -193,6 +199,9 @@ class MbFile:
 
     def get_min_rad(self):
         return self.__min_rad
+
+    def get_den_cf_rg(self):
+        return self.__den_cf_rg
 
     def load_mb_file(self, in_file):
         """
@@ -219,7 +228,12 @@ class MbFile:
                     if var == 'MB_TYPE':
                         self.__type = value
                     elif var == 'MB_OCC':
-                        self.__occ = float(value)
+                        try:
+                            self.__occ = float(value)
+                        except ValueError:
+                            value_0 = value[value.index('(') + 1:value.index(',')]
+                            value_1 = value[value.index(',') + 1:value.index(')')]
+                            self.__occ = (float(value_0), float(value_1))
                     elif var == 'MB_THICK_RG':
                         value_0 = value[value.index('(')+1:value.index(',')]
                         value_1 = value[value.index(',')+1:value.index(')')]
@@ -234,6 +248,10 @@ class MbFile:
                         self.__over_tol = float(value)
                     elif var == 'MB_MIN_RAD':
                         self.__min_rad = float(value)
+                    elif var == 'MB_DEN_CF_RG':
+                        value_0 = value[value.index('(') + 1:value.index(',')]
+                        value_1 = value[value.index(',') + 1:value.index(')')]
+                        self.__den_cf_rg = (float(value_0), float(value_1))
                     else:
                         print('ERROR: (MmerFile - load_protein_file) input entry not recognized:', value)
 
@@ -245,6 +263,7 @@ class HelixFile:
 
     def __init__(self):
         self.__type = None
+        self.__l = None
         self.__occ = None
         self.__min_p_len = None
         self.__mmer_rad = None
@@ -253,9 +272,14 @@ class HelixFile:
         self.__mz_len_f = None
         self.__thick_rg = None
         self.__over_tol = None
+        self.__den_cf_rg = None
+        self.__min_nmmer = None
 
     def get_type(self):
         return self.__type
+
+    def get_l(self):
+        return self.__l
 
     def get_occ(self):
         return self.__occ
@@ -281,6 +305,12 @@ class HelixFile:
     def get_over_tol(self):
         return self.__over_tol
 
+    def get_den_cf_rg(self):
+        return self.__den_cf_rg
+
+    def get_min_nmmer(self):
+        return self.__min_nmmer
+
     def load_hx_file(self, in_file):
         """
         Load protein parameters from an input file
@@ -305,8 +335,15 @@ class HelixFile:
                     value = value.replace('\n', '')
                     if var == 'HLIX_TYPE':
                         self.__type = value
-                    if var == 'HLIX_PMER_OCC':
-                        self.__occ = float(value)
+                    elif var == 'HLIX_PMER_L':
+                        self.__l = float(value)
+                    elif var == 'HLIX_PMER_OCC':
+                        try:
+                            self.__occ = float(value)
+                        except ValueError:
+                            value_0 = value[value.index('(') + 1:value.index(',')]
+                            value_1 = value[value.index(',') + 1:value.index(')')]
+                            self.__occ = (float(value_0), float(value_1))
                     elif var == 'HLIX_MIN_P_LEN':
                         self.__min_p_len = float(value)
                     elif var == 'HLIX_HP_LEN':
@@ -319,6 +356,12 @@ class HelixFile:
                         self.__mmer_rad = float(value)
                     elif var == 'HLIX_OVER_TOL':
                         self.__over_tol = float(value)
+                    elif var == 'HLIX_DEN_CF_RG':
+                        value_0 = value[value.index('(') + 1:value.index(',')]
+                        value_1 = value[value.index(',') + 1:value.index(')')]
+                        self.__den_cf_rg = (float(value_0), float(value_1))
+                    elif var == 'HLIX_MIN_NMMER':
+                        self.__min_nmmer = int(value)
 
 
 class MTFile(HelixFile):

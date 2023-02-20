@@ -12,38 +12,82 @@ from polnet.polymer import SAWLC, SAWLCPoly, HelixFiber
 from polnet.lrandom import SGen, SGenUniform, SGenFixed, SGenProp, PGenHelixFiber, PGenHelixFiberB
 from abc import ABC, abstractmethod
 
+NET_TYPE_STR = 'net_type'
+
 
 class Network(ABC):
     """
     General class for a network of polymers
     """
 
-    def __init__(self, voi, v_size, svol=None):
+    def __init__(self, voi, v_size, svol=None, mb_area=0):
         """
         Construction
         :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers
         :param v_size: voxel size (default 1)
         :param svol: monomer subvolume (or list of) as a numpy ndarray (default None)
+        :param mb_area: total membrane area within the same VOI as the network (deftault None)
         """
         self.set_voi(voi)
         self.__vol = (self.__voi > 0).sum() * v_size * v_size * v_size
         self.__v_size = v_size
         self.__pl_occ = 0
         self.__pl = list()
+        self.__pl_nmmers = list()
         self.__svol = svol
         if self.__svol is not None:
             if not hasattr(svol, '__len__'):
                 assert isinstance(self.__svol, np.ndarray)
+        self.__min_nmmer = 1
+        if mb_area is not None:
+            self.__mb_area = float(mb_area)
+        else:
+            self.__mb_area = 0
+
+    def set_min_nmmer(self, min_nmmer):
+        """
+        Set a minimum number of monomers for the generated filaments
+        :param min_nmmer: integer with the minimum number of monomenrs per filament
+        :return:
+        """
+        self.__min_nmmer = int(min_nmmer)
+
 
     def get_pmers_list(self):
         return self.__pl
 
+    def get_num_pmers(self):
+        """
+        :return: the number of polymers in the network
+        """
+        return len(self.__pl)
+
+    def get_num_mmers(self):
+        """
+        :return: the number of monomers in the network
+        """
+        count_mmers = 0
+        for pl in self.__pl:
+            count_mmers += pl.get_num_mmers()
+        return count_mmers
+
     def get_polymer_occupancy(self):
         return self.__pl_occ
 
-    def add_polymer(self, polymer):
+    def add_polymer(self, polymer, occ_mode='volume'):
+        """
+        Add a new polymer to the network
+        :param polymer: polymer to add
+        :param occ_mode: occupancy mode, valid: 'volume' (default), 'area' for membrane-bound polymer
+        :return:
+        """
+        assert (occ_mode == 'volume') or (occ_mode == 'area')
         self.__pl.append(polymer)
-        self.__pl_occ += 100. * (polymer.get_vol() / self.__vol)
+        self.__pl_nmmers.append(polymer.get_num_mmers())
+        if occ_mode == 'volume':
+            self.__pl_occ += 100. * (polymer.get_vol() / self.__vol)
+        else:
+            self.__pl_occ += 100. * (polymer.get_area() / self.__mb_area)
         # print('Occ: ', self.__pl_occ)
 
     @abstractmethod
@@ -172,7 +216,7 @@ class Network(ABC):
 
     def count_proteins(self):
         """
-        Genrates output statistics for this network
+        Genrrates output statistics for this network
         :return: a dictionary with the number of proteins for protein id
         """
         counts = dict()
@@ -205,7 +249,7 @@ class NetSAWLC(Network):
         lengths for polymers
         :param occ: occupancy threshold in percentage [0, 100]%
         :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0, in range [0,1))
-        :param poly: it allows to restrict monomer localizations to a polydata
+        :param poly: it allows to restrict monomer localizations to a polydata (e.g. a membrane)
         :param svol: monomer subvolume as a numpy ndarray (default None)
         :param off_svol: offset coordinates in voxels for shifting sub-volume monomer center coordinates (default None)
         :param tries_mmer: number of tries to place a monomer before starting a new polymer
@@ -232,6 +276,9 @@ class NetSAWLC(Network):
         self.__occ, self.__over_tolerance = occ, over_tolerance
         self.__poly = poly
         self.__tries_mmer = tries_mmer
+        self.__poly_area = None
+        if self.__poly is not None:
+            self.__poly_area = poly_surface_area(self.__poly)
 
     def build_network(self):
         """
@@ -294,10 +341,13 @@ class NetSAWLC(Network):
                         not_finished = False
 
             # Updating polymer
-            self.add_polymer(hold_polymer)
-            print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
-                  ', length ' + str(hold_polymer.get_total_len()) + ' and occupancy ' +
-                  str(self._Network__pl_occ) + '%')
+            if self.__poly is None:
+                self.add_polymer(hold_polymer, occ_mode='volume')
+            else:
+                self.add_polymer(hold_polymer, occ_mode='area')
+            # print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
+            #       ', length ' + str(hold_polymer.get_total_len()) + ' and occupancy ' +
+            #       str(self._Network__pl_occ) + '%')
 
 
 class NetSAWLCInter(Network):
@@ -439,8 +489,8 @@ class NetSAWLCInter(Network):
 
             # Updating polymer
             self.add_polymer(hold_polymer)
-            print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
-                  ', length ' + str(hold_polymer.get_total_len()) + ' and occupancy ' + str(self._Network__pl_occ) + '%')
+            # print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
+            #       ', length ' + str(hold_polymer.get_total_len()) + ' and occupancy ' + str(self._Network__pl_occ) + '%')
 
 
 class NetHelixFiber(Network):
@@ -518,9 +568,10 @@ class NetHelixFiber(Network):
                         not_finished = False
 
             # Updating polymer
-            self.add_polymer(hold_polymer)
-            # print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
-            #       ' and length ' + str(hold_polymer.get_total_len()) + ': occupancy ' + str(self._Network__pl_occ))
+            if hold_polymer.get_num_mmers() >= self._Network__min_nmmer:
+                self.add_polymer(hold_polymer)
+                # print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
+                #       ' and length ' + str(hold_polymer.get_total_len()) + ': occupancy ' + str(self._Network__pl_occ))
 
 
 class NetHelixFiberB(Network):
@@ -609,15 +660,16 @@ class NetHelixFiberB(Network):
                         not_finished = False
 
             # Updating polymer
-            if branch is not None:
-                self.add_polymer(hold_polymer)
-                self.__p_branches.append(list())
-                self.__add_branch(hold_polymer, branch)
-            else:
-                self.add_polymer(hold_polymer)
-                self.__p_branches.append(list())
-            print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
-                  ' and length ' + str(hold_polymer.get_total_len()) + ': occupancy ' + str(self._Network__pl_occ))
+            if hold_polymer.get_num_mmers() >= self._Network__min_nmmer:
+                if branch is not None:
+                    self.add_polymer(hold_polymer)
+                    self.__p_branches.append(list())
+                    self.__add_branch(hold_polymer, branch)
+                else:
+                    self.add_polymer(hold_polymer)
+                    self.__p_branches.append(list())
+                # print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
+                #       ' and length ' + str(hold_polymer.get_total_len()) + ': occupancy ' + str(self._Network__pl_occ))
 
     def get_branch_list(self):
         """
@@ -641,7 +693,7 @@ class NetHelixFiberB(Network):
 
         # Polymers loop
         p_type_l = vtk.vtkIntArray()
-        p_type_l.SetName('type')
+        p_type_l.SetName(NET_TYPE_STR)
         p_type_l.SetNumberOfComponents(1)
         for pol in self._Network__pl:
             app_flt_l.AddInputData(pol.get_skel())
@@ -653,7 +705,7 @@ class NetHelixFiberB(Network):
 
         # Branches loop
         p_type_v = vtk.vtkIntArray()
-        p_type_v.SetName('type')
+        p_type_v.SetName(NET_TYPE_STR)
         p_type_v.SetNumberOfComponents(1)
         for i, branch in enumerate(self.get_branch_list()):
             app_flt_v.AddInputData(branch.get_vtp())
@@ -671,6 +723,30 @@ class NetHelixFiberB(Network):
 
         return app_flt.GetOutput()
 
+    def get_branches_vtp(self, shape_vtp=None):
+        """
+        Get Branches as a vtkPolyData with points
+        :param shape_vtp: if None (default) the a point is returned, otherwise this shape is used
+                          TODO: so far only isotropic shapes are recommended and starting monomer tangent is not considered yet
+        :return: a vtkPolyData
+        """
+
+        # Initialization
+        app_flt_l, app_flt_v, app_flt = vtk.vtkAppendPolyData(), vtk.vtkAppendPolyData(), vtk.vtkAppendPolyData()
+
+        # Branches loop
+        for i, branch in enumerate(self.get_branch_list()):
+            app_flt_v.AddInputData(branch.get_vtp(shape_vtp))
+            # print('Point ' + str(i) + ': ' + str(branch.get_point()))
+        app_flt_v.Update()
+        out_vtp_v = app_flt_v.GetOutput()
+
+        # Merging branches and polymers
+        app_flt.AddInputData(out_vtp_v)
+        app_flt.Update()
+
+        return app_flt.GetOutput()
+
     def __gen_random_branch(self):
         """
         Generates a position point randomly for a branch on the filament network, no more than one branch per polymer
@@ -680,7 +756,7 @@ class NetHelixFiberB(Network):
         # Loop for polymers
         count, branch = 0, None
         while (count < len(self._Network__pl)) and (branch is None):
-            hold_pid = random.randint(0, len(self._Network__pl)-1)
+            hold_pid = random.choices(range(0, len(self._Network__pl)), weights=self._Network__pl_nmmers)[0]
             if len(self.__p_branches[hold_pid]) < self.__max_p_branch:
                 hold_pol = self._Network__pl[hold_pid]
                 hold_mid = random.randint(0, len(hold_pol._Polymer__m) - 1)
@@ -758,7 +834,16 @@ class Branch:
         """
         return self.__t_pmer_id
 
-    def get_vtp(self):
-        return point_to_poly(self.get_point())
+    def get_vtp(self, shape_vtp=None):
+        """
+        Gets a polydata with the branch shape
+        :param shape_vtp: if None (default) the a point is returned, otherwise this shape is used
+                          TODO: so far only isotropic shapes are recommended and starting monomer tangent is not considered yet
+        :return:
+        """
+        if shape_vtp is None:
+            return point_to_poly(self.get_point())
+        else:
+            return poly_translate(shape_vtp, self.get_point())
 
 

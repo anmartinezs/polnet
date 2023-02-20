@@ -173,10 +173,17 @@ class Monomer:
     def get_vol(self):
         """
         Get the polymer volume
-        :param fast: if True (default) the volume monomer is only computed once
         :return: the computed volume
         """
         return poly_volume(self.__m_surf)
+
+    def get_area(self):
+        """
+        Get the polymer area projected on a surface (currently only a plane containing the center, the monomer is
+        approximated as ssphere)
+        :return: the computed area
+        """
+        return poly_diam(self.__m_surf) * np.pi * .5
 
     def get_copy(self):
         """
@@ -297,6 +304,12 @@ class Polymer(ABC):
         self.__ids = list()
         self.__codes = list()
 
+    def get_num_mmers(self):
+        """
+        :return: the number of monomers
+        """
+        return len(self.__ids)
+
     def get_mmer_ids(self):
         """
         :return: the list of mmer ids
@@ -319,26 +332,32 @@ class Polymer(ABC):
         """
         return self.__codes[m_id]
 
-    def get_vol(self, fast=True):
+    def get_vol(self):
         """
         Get the polymer volume
-        :param fast: if True (default) the volume monomer is only computed once
         :return: the computed volume
         """
-        if fast:
-            vol = 0
-            if len(self.__m) == 0:
-                return vol
-            else:
-                vol = self.__m[0].get_vol()
-                for m in self.__m[1:]:
-                    vol += m.get_vol()
-                return vol
-        else:
-            vol = 0
-            for m in self.__m:
-                vol += m.compute_vol()
+        vol = 0
+        if len(self.__m) == 0:
             return vol
+        else:
+            for m in self.__m:
+                vol += m.get_vol()
+            return vol
+
+    def get_area(self, mode='sphere'):
+        """
+        Get the polymer area proyeced in a surface
+        :param mode: computations mode, valid: 'sphere' each monomer is approximated to a sphere
+        :return: the computed volume
+        """
+        area = 0
+        if len(self.__m) == 0:
+            return area
+        else:
+            for m in self.__m:
+                area += m.get_area()
+            return area
 
     def get_total_len(self):
         return self.__t_length
@@ -762,7 +781,7 @@ class HelixFiber(Polymer):
 
         # Avoid forbidden regions
         if voi is not None:
-            if hold_m.overlap_voi(voi, v_size):
+            if hold_m.overlap_voi(voi, v_size, over_tolerance=over_tolerance):
                 return None
         # Self-avoiding and network avoiding
         if branch is None:
@@ -796,6 +815,7 @@ class HelixFiber(Polymer):
         assert self.__b >= 0
 
         # Compute helix a parameter from k and b
+        # print(1-4.*k*self.__b*self.__b)
         self.__a = (1 + math.sqrt(1-4.*k*self.__b*self.__b)) / (2. * k)
         assert self.__a > 0
 
@@ -916,7 +936,7 @@ class MTUnit(FiberUnit):
         assert (sph_rad > 0) and (mt_rad > 0) and (n_units > 0) and (v_size > 0)
         self.__sph_rad, self.__mt_rad, self.__n_units, self.__v_size = float(sph_rad), float(mt_rad), int(n_units),\
                                                                        float(v_size)
-        self.__size = int(math.ceil(6. * (sph_rad / v_size)))
+        self.__size = int(math.ceil(6. * (sph_rad / v_size))) + 4
         if self.__size % 2 != 0:
             self.__size += 1
         self.__tomo, self.__surf = None, None

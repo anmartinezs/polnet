@@ -12,18 +12,19 @@ import numpy as np
 from polnet import lio, affine
 
 
-ROOT_DIR = '/fs/pool/pool-lucic2/antonio/polnet/riboprot/templates/mb_mrcs_2.2A'
+ROOT_DIR = '/fs/pool/pool-lucic2/antonio/polnet/riboprot/templates/mb_mrcs_10A'
 
 # Input list of MRCs to process
-in_mrc_l = ['5wek_mbz_align.mrc', '5wek_mbz_align.mrc', '5wek_mbz_align.mrc', '5wek_mbz_align.mrc', '5wek_mbz_align.mrc', '5wek_mbz_align.mrc', '5wek_mbz_align.mrc']
+in_mrc_l = ['5wek_mbz_align.mrc', '4pe5_mbz_align.mrc', '5ide_mbz_align.mrc', '5gjv_mbz_align.mrc',
+            '5kxi_mbz_align.mrc', '5tj6_mbz_align.mrc', '5tqq_mbz_align.mrc', '5vai_mbz_align.mrc']
 shift_x = 0 # vx
 shift_y = 0 # vx
-shift_z = 12 # vx
-vsize = 2.2 # A/vx
+shift_z = 2 # vx
+vsize = 10 # A/vx
 
 
 # Output directory
-out_dir = '../mb_mrcs_2.2A'
+out_dir = '../mb_mrcs_10A'
 
 
 # Loop for PDBs

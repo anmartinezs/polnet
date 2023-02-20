@@ -220,7 +220,7 @@ def tomo_rotate(tomo, q, center=None, active=True, order=3, mode='constant', cva
     assert hasattr(q, '__len__') and (len(q) == 4)
     if center is None:
         # center = np.round(.5 * np.asarray(tomo.shape, dtype=np.float32))
-        center = .5 * np.asarray(tomo.shape, dtype=np.float32)
+        center = .5 * (np.asarray(tomo.shape, dtype=np.float32) - 1)
     else:
         assert isinstance(tomo, np.ndarray) and (len(center) == 3)
 

@@ -97,6 +97,13 @@ class SurfGen(ABC):
     Abstract class for modeling 3D parametric surface random parameter generators
     """
 
+    def gen_den_cf(self, low, high):
+        """
+        Generates a uniform random real number between two input values
+        :return:
+        """
+        return random.uniform(low, high)
+
     @abstractmethod
     def gen_parameters(self):
         raise NotImplemented
@@ -264,3 +271,24 @@ class SGenProp(SGen):
         """
         return random.choices(self.__mmer_ids, weights=self.__props, k=1)[0]
 
+
+class OccGen():
+    """
+    Class for model the random (uniform) generation of occupancies
+    """
+
+    def __init__(self, occ_rg):
+        """
+        Constructor
+        :param occ_rg: range for occupancy
+        """
+        assert hasattr(occ_rg, '__len__') and (len(occ_rg) == 2) and (occ_rg[0] <= occ_rg[1])
+        assert (occ_rg[0] >= 0) and (occ_rg[1] <= 100)
+        self.__occ_rg = occ_rg
+
+    def gen_occupancy(self):
+        """
+        Generates randomly an occupancy value
+        :return: a float with the generated occupancy
+        """
+        return random.uniform(self.__occ_rg[0], self.__occ_rg[1])

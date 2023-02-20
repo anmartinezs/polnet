@@ -173,8 +173,6 @@ class MbEllipsoid(Mb):
         R_i = ((X - p0_v[0]) / a_v) ** 2 + ((Y - p0_v[1]) / b_v) ** 2 + ((Z - p0_v[2]) / c_v) ** 2
         R_i = tomo_rotate(R_i, self._Mb__rot_q, mode='reflect')
         self._Mb__surf = iso_surface(R_i, 1)
-        # from polnet import lio
-        # lio.write_mrc(R_i.astype(np.float32), './out/hold.mrc')
         add_sfield_to_poly(self._Mb__surf, self._Mb__mask, 'mb_mask', dtype='int', interp='NN', mode='points')
         # lio.save_vtp(self._Mb__surf, './out/hold.vtp')
         self._Mb__surf = poly_threshold(self._Mb__surf, 'mb_mask', mode='points', low_th=.5)
@@ -254,14 +252,19 @@ class MbSphere(Mb):
         R_o = ((X - p0_v[0]) / ao_v_p1) ** 2 + ((Y - p0_v[1]) / ao_v_p1) ** 2 + ((Z - p0_v[2]) / ao_v_p1) ** 2
         R_i = ((X - p0_v[0]) / ao_v_m1) ** 2 + ((Y - p0_v[1]) / ao_v_m1) ** 2 + ((Z - p0_v[2]) / ao_v_m1) ** 2
         G = tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0)
+        # R = (X - p0_v[0])**2 + (Y - p0_v[1])**2 + (Z - p0_v[2])**2
+        # G = tomo_rotate(np.logical_and(R >= ao_v_m1**2, R <= ao_v_p1**2), self._Mb__rot_q, order=0)
 
         # Inner layer
         R_o = ((X - p0_v[0]) / ai_v_p1) ** 2 + ((Y - p0_v[1]) / ai_v_p1) ** 2 + ((Z - p0_v[2]) / ai_v_p1) ** 2
         R_i = ((X - p0_v[0]) / ai_v_m1) ** 2 + ((Y - p0_v[1]) / ai_v_m1) ** 2 + ((Z - p0_v[2]) / ai_v_m1) ** 2
         G += tomo_rotate(np.logical_and(R_i >= 1, R_o <= 1), self._Mb__rot_q, order=0)
+        # G += tomo_rotate(np.logical_and(R >= ai_v_m1**2, R_o <= ai_v_p1**2), self._Mb__rot_q, order=0)
 
         # Smoothing
-        self._Mb__tomo = lin_map(density_norm(sp.ndimage.gaussian_filter(G.astype(float), s_v), inv=True), ub=0, lb=1)
+        # TODO: is it required the density_norm() having lin_map()?
+        # self._Mb__tomo = lin_map(density_norm(sp.ndimage.gaussian_filter(G.astype(float), s_v), inv=True), ub=0, lb=1)
+        self._Mb__tomo = lin_map(-1 * sp.ndimage.gaussian_filter(G.astype(float), s_v), ub=0, lb=1)
 
 
 class MbTorus(Mb):
@@ -457,7 +460,8 @@ class SetMembranes:
         Get the tomogram with the membranes within the VOI
         :return: an ndarray
         """
-        return np.invert(self.__voi) * self.__tomo
+        # return np.invert(self.__voi) * self.__tomo
+        return self.__tomo
 
     def get_gtruth(self):
         """
@@ -473,6 +477,13 @@ class SetMembranes:
         :return: a vtkPolyData
         """
         return self.__surfs
+
+    def get_num_mbs(self):
+        """
+        Get the number of membranes in the set
+        :return: an integer with the number of membranes
+        """
+        return self.__count_mbs
 
     def check_overlap(self, mb, over_tolerance):
         """

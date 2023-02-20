@@ -161,6 +161,18 @@ def poly_volume(poly):
     return mass.GetVolume()
 
 
+def poly_surface_area(poly):
+    """
+    Computes the surface area of polydata
+    :param poly: input vtkPolyData
+    :return: the volume computed
+    """
+    assert isinstance(poly, vtk.vtkPolyData)
+    mass = vtk.vtkMassProperties()
+    mass.SetInputData(poly)
+    return mass.GetSurfaceArea()
+
+
 def add_sfield_to_poly(poly, sfield, name, dtype='float', interp='NN', mode='points'):
     """
     Add the values of a scalar field to a vtkPolyData object as point property
@@ -237,23 +249,36 @@ def merge_polys(poly_1, poly_2):
     return app_flt.GetOutput()
 
 
-def add_label_to_poly(poly, lbl, p_name):
+def add_label_to_poly(poly, lbl, p_name, mode='cell'):
     """
     Add a label to all cells in a poly_data
     :param poly: input poly_data
     :param lbl: label (integer) value
-    :p_name: property name used for labels, if not exist in poly_dota is created
+    :param p_name: property name used for labels, if not exist in poly_dota is created
+    :param mode: selected wheter the label is added to cells ('cell'), points ('point') or both ('both')
     """
+    assert (mode == 'cell') or (mode == 'point') or (mode == 'both')
     assert isinstance(poly, vtk.vtkPolyData)
     lbl, p_name = int(lbl), str(p_name)
-    arr = vtk.vtkIntArray()
-    n_cells = poly.GetNumberOfCells()
-    arr.SetName(p_name)
-    arr.SetNumberOfComponents(1)
-    arr.SetNumberOfValues(n_cells)
-    for i in range(n_cells):
-        arr.SetValue(i, lbl)
-    poly.GetCellData().AddArray(arr)
+
+    if mode == 'cell' or mode == 'both':
+        arr = vtk.vtkIntArray()
+        n_cells = poly.GetNumberOfCells()
+        arr.SetName(p_name)
+        arr.SetNumberOfComponents(1)
+        arr.SetNumberOfValues(n_cells)
+        for i in range(n_cells):
+            arr.SetValue(i, lbl)
+        poly.GetCellData().AddArray(arr)
+    elif mode == 'cell' or mode == 'both':
+        arr = vtk.vtkIntArray()
+        n_points = poly.GetNumberOfPoints()
+        arr.SetName(p_name)
+        arr.SetNumberOfComponents(1)
+        arr.SetNumberOfValues(n_points)
+        for i in range(n_points):
+            arr.SetValue(i, lbl)
+        poly.GetPointData().AddArray(arr)
 
 
 def points_to_poly_spheres(points, rad):
