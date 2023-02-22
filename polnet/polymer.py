@@ -183,7 +183,7 @@ class Monomer:
         approximated as ssphere)
         :return: the computed area
         """
-        return poly_diam(self.__m_surf) * np.pi * .5
+        return poly_diam(self.__m_surf) * np.pi * np.pi * .25
 
     def get_copy(self):
         """
@@ -694,7 +694,7 @@ class SAWLCPoly(Polymer):
         if self.overlap_polymer(hold_m, over_tolerance=over_tolerance):
             return None
         elif voi is not None:
-            if hold_m.overlap_voi(voi, v_size):
+            if hold_m.overlap_voi(voi, v_size, over_tolerance=over_tolerance):
                 return None
 
         return r, t, q, hold_m

@@ -20,7 +20,7 @@ class Network(ABC):
     General class for a network of polymers
     """
 
-    def __init__(self, voi, v_size, svol=None, mb_area=0):
+    def __init__(self, voi, v_size, svol=None):
         """
         Construction
         :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers
@@ -39,10 +39,8 @@ class Network(ABC):
             if not hasattr(svol, '__len__'):
                 assert isinstance(self.__svol, np.ndarray)
         self.__min_nmmer = 1
-        if mb_area is not None:
-            self.__mb_area = float(mb_area)
-        else:
-            self.__mb_area = 0
+        self.__poly_area = 0
+        self.__pmer_fails = 0
 
     def set_min_nmmer(self, min_nmmer):
         """
@@ -52,6 +50,8 @@ class Network(ABC):
         """
         self.__min_nmmer = int(min_nmmer)
 
+    def get_pmer_fails(self):
+        return self.__pmer_fails
 
     def get_pmers_list(self):
         return self.__pl
@@ -87,7 +87,7 @@ class Network(ABC):
         if occ_mode == 'volume':
             self.__pl_occ += 100. * (polymer.get_vol() / self.__vol)
         else:
-            self.__pl_occ += 100. * (polymer.get_area() / self.__mb_area)
+            self.__pl_occ += 100. * (polymer.get_area() / self._Network__poly_area)
         # print('Occ: ', self.__pl_occ)
 
     @abstractmethod
@@ -237,7 +237,7 @@ class NetSAWLC(Network):
     """
 
     def __init__(self, voi, v_size, l_length, m_surf, max_p_length, gen_pol_lengths, occ, over_tolerance=0,
-                 poly=None, svol=None, tries_mmer=100):
+                 poly=None, svol=None, tries_mmer=20, tries_pmer=100):
         """
         Construction
         :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers
@@ -253,6 +253,7 @@ class NetSAWLC(Network):
         :param svol: monomer subvolume as a numpy ndarray (default None)
         :param off_svol: offset coordinates in voxels for shifting sub-volume monomer center coordinates (default None)
         :param tries_mmer: number of tries to place a monomer before starting a new polymer
+        :param tries_pmer: number of tries to place a polymer
         """
 
         # Initialize abstract varibles
@@ -267,7 +268,8 @@ class NetSAWLC(Network):
         assert (over_tolerance >= 0) and (over_tolerance <= 100)
         if poly is not None:
             assert isinstance(poly, vtk.vtkPolyData)
-        assert tries_mmer > 0
+        assert tries_mmer >= 1
+        assert tries_pmer >= 1
 
         # Variables assignment
         self.__l_length, self.__m_surf = l_length, m_surf
@@ -275,10 +277,11 @@ class NetSAWLC(Network):
         self.__gen_pol_lengths = gen_pol_lengths
         self.__occ, self.__over_tolerance = occ, over_tolerance
         self.__poly = poly
-        self.__tries_mmer = tries_mmer
+        self.__tries_mmer = int(tries_mmer)
+        self.__tries_pmer = int(tries_pmer)
         self.__poly_area = None
         if self.__poly is not None:
-            self.__poly_area = poly_surface_area(self.__poly)
+            self._Network__poly_area = poly_surface_area(self.__poly)
 
     def build_network(self):
         """
@@ -286,20 +289,16 @@ class NetSAWLC(Network):
         :return:
         """
 
-        # Computes the maximum number of tries
         c_try = 0
-        if self.__poly:
-            n_tries = self.__poly.GetNumberOfPoints()
-        else:
-            n_tries = math.ceil(self._Network__vol) # math.ceil(self._Network__vol / poly_volume(self.__m_surf))
+        self._Network__pmer_fails = 0
 
         # Network loop
-        while (c_try <= n_tries) and (self._Network__pl_occ < self.__occ):
+        while (c_try <= self.__tries_pmer) and (self._Network__pl_occ < self.__occ):
 
             # Polymer initialization
             c_try += 1
             if self.__poly:
-                p0 = np.asarray(self.__poly.GetPoint(random.randint(0, n_tries)))
+                p0 = np.asarray(self.__poly.GetPoint(random.randint(0, self.__poly.GetNumberOfPoints())))
             else:
                 p0 = np.asarray((self._Network__voi.shape[0] * self._Network__v_size * random.random(),
                                  self._Network__voi.shape[1] * self._Network__v_size * random.random(),
@@ -310,12 +309,13 @@ class NetSAWLC(Network):
             else:
                 hold_polymer = SAWLCPoly(self.__poly, self.__l_length, self.__m_surf, p0)
             if hold_polymer.get_monomer(-1).overlap_voi(self._Network__voi, self._Network__v_size,
-                                                        over_tolerance=self._NetSAWLC__over_tolerance):
+                                                        over_tolerance=self.__over_tolerance):
+                self._Network__pmer_fails += 1
                 continue
             self.add_monomer_to_voi(hold_polymer.get_monomer(-1), self._Network__svol)
 
             # Polymer loop
-            cont_pol = 0
+            cont_pol = 1
             not_finished = True
             while (hold_polymer.get_total_len() < max_length) and not_finished:
                 monomer_data = hold_polymer.gen_new_monomer(self.__over_tolerance, self._Network__voi,
@@ -343,11 +343,15 @@ class NetSAWLC(Network):
             # Updating polymer
             if self.__poly is None:
                 self.add_polymer(hold_polymer, occ_mode='volume')
+                c_try = 0
             else:
                 self.add_polymer(hold_polymer, occ_mode='area')
+                c_try = 0
             # print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
             #       ', length ' + str(hold_polymer.get_total_len()) + ' and occupancy ' +
             #       str(self._Network__pl_occ) + '%')
+
+        print('Exit with c_try=' + str(c_try) + ' and c_fails=' + str(self._Network__pmer_fails))
 
 
 class NetSAWLCInter(Network):

@@ -39,7 +39,7 @@ from polnet.membrane import SetMembranes
 
 # Common tomogram settings
 ROOT_PATH = '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth' #  '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all' # '/home/antonio/workspace/synth_tomo/riboprot'
-RANGE_OCCUPANCIES = np.linspace(1, 20, 8) # 12
+RANGE_OCCUPANCIES = np.linspace(1, 35, 8) # 12
 VOI_SHAPE = (500, 500, 200) # vx or a path to a mask (1-foreground, 0-background) tomogram
 VOI_OFFS =  ((4,496), (4,496), (4,196)) # ((4,396), (4,396), (4,232)) # ((4,1852), (4,1852), (32,432)) # ((4,1852), (4,1852), (4,232)) # vx
 VOI_VSIZE = 10 # 2.2 # A/vx
@@ -52,7 +52,7 @@ PROTEINS_LIST = ['in_10A/4v4r_10A.pns', 'in_10A/3j9i_10A.pns', 'in_10A/4v4r_50S_
                  'in_10A/6utj_10A.pns', 'in_10A/5mrc_10A.pns', 'in_10A/4v94_10A.pns', 'in_10A/4cr2_10A.pns',
                  'in_10A/3qm1_10A.pns', 'in_10A/3h84_10A.pns', 'in_10A/3gl1_10A.pns', 'in_10A/3d2f_10A.pns',
                  'in_10A/3cf3_10A.pns', 'in_10A/2cg9_10A.pns', 'in_10A/1u6g_10A.pns', 'in_10A/1s3x_10A.pns',
-                 'in_10A/1qvr_10A.pns', 'in_10A/1bxn_10A.pns', 'in_10A/1bxn_10A.pns']
+                 'in_10A/1qvr_10A.pns', 'in_10A/1bxn_10A.pns']
 
 MB_PROTEINS_LIST = [] # ['in_10A/mb_5wek_10A.pms', 'in_10A/mb_4pe5_10A.pms', 'in_10A/mb_5ide_10A.pms',
                     # 'in_10A/mb_5gjv_10A.pms', 'in_10A/mb_5kxi_10A.pms', 'in_10A/mb_5tj6_10A.pms',

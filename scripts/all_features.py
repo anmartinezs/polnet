@@ -45,6 +45,8 @@ VOI_SHAPE = (1000, 1000, 250) # (400, 400, 236) # vx or a path to a mask (1-fore
 VOI_OFFS =  ((4,996), (4,996), (4,246)) # ((4,396), (4,396), (4,232)) # ((4,1852), (4,1852), (32,432)) # ((4,1852), (4,1852), (4,232)) # vx
 VOI_VSIZE = 10 # 2.2 # A/vx
 GTRUTH_POINTS_RAD = 35 # nm
+MMER_TRIES = 20
+PMER_TRIES = 100
 
 # Lists with the features to simulate
 MEMBRANES_LIST = ['in_mbs/sphere.mbs', 'in_mbs/ellipse.mbs', 'in_mbs/toroid.mbs' ]
@@ -78,7 +80,7 @@ MALIGN_MX = 1.5
 MALIGN_SG = 0.2
 
 # OUTPUT FILES
-OUT_DIR = ROOT_PATH + '/out_all_10tomos' # '/only_actin' # '/out_rotations'
+OUT_DIR = ROOT_PATH + '/out_all_5tomos' # '/only_actin' # '/out_rotations'
 TEM_DIR = OUT_DIR + '/tem'
 TOMOS_DIR = OUT_DIR + '/tomos'
 
@@ -346,7 +348,7 @@ for tomod_id in range(NTOMOS):
             pol_s_generator = SGenProp(PROP_LIST)
         net_sawlc = NetSAWLC(voi, VOI_VSIZE, protein.get_pmer_l() * surf_diam, model_surf, protein.get_pmer_l_max(),
                              pol_l_generator, hold_occ, protein.get_pmer_over_tol(), poly=None,
-                             svol=model < protein.get_iso())
+                             svol=model < protein.get_iso(), tries_mmer=MMER_TRIES, tries_pmer=PMER_TRIES)
         # net_sawlc = NetSAWLCInter(voi, VOI_VSIZE, surf_diams, model_surfs, protein.get_pmer_l_max(),
         #                           pol_l_generator, pol_s_generator, protein.get_pmer_occ(), protein.get_pmer_over_tol(),
         #                           poly=None, svols=model_masks, codes=model_codes, compaq=5.5)
@@ -428,7 +430,7 @@ for tomod_id in range(NTOMOS):
                 mbs_vtp = pp.poly_reverse_normals(mbs_vtp)
             net_sawlc = NetSAWLC(voi, VOI_VSIZE, protein.get_pmer_l() * surf_diam, model_surf, protein.get_pmer_l_max(),
                                  pol_l_generator, hold_occ, protein.get_pmer_over_tol(), poly=mbs_vtp,
-                                 svol=model < protein.get_iso())
+                                 svol=model < protein.get_iso(), tries_mmer=MMER_TRIES, tries_pmer=PMER_TRIES)
             # net_sawlc = NetSAWLCInter(voi, VOI_VSIZE, protein.get_pmer_l() * surf_diam, model_surf, protein.get_pmer_l_max(),
             #                      pol_l_generator, protein.get_pmer_occ(), protein.get_pmer_over_tol(), poly=mb_poly,
             #                      svol=model < protein.get_iso())
