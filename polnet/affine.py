@@ -230,26 +230,61 @@ def tomo_rotate(tomo, q, center=None, active=True, order=3, mode='constant', cva
     if not active:
         R = R.T
 
+    try:
+        import jax
+
+        # Jax version (it should be faster when GPU available)
+
         # Compute grid
-    X, Y, Z = np.meshgrid(np.arange(tomo.shape[0]), np.arange(tomo.shape[1]), np.arange(tomo.shape[2]),
-                          indexing='ij')
+        X, Y, Z = jax.numpy.meshgrid(np.arange(tomo.shape[0]), np.arange(tomo.shape[1]), np.arange(tomo.shape[2]),
+                              indexing='ij')
 
-    # From indices to coordinates
-    X, Y, Z = (X - center[0]).astype(np.float32), (Y - center[1]).astype(np.float32), (Z - center[2]).astype(np.float32)
+        # From indices to coordinates
+        X, Y, Z = (X - center[0]).astype(np.float32), (Y - center[1]).astype(np.float32), (Z - center[2]).astype(
+            np.float32)
 
-    # Grid rotation
-    Xr = X * R[0, 0] + Y * R[1, 0] + Z * R[2, 0]
-    Yr = X * R[0, 1] + Y * R[1, 1] + Z * R[2, 1]
-    Zr = X * R[0, 2] + Y * R[1, 2] + Z * R[2, 2]
+        # Grid rotation
+        Xr = X * R[0, 0] + Y * R[1, 0] + Z * R[2, 0]
+        Yr = X * R[0, 1] + Y * R[1, 1] + Z * R[2, 1]
+        Zr = X * R[0, 2] + Y * R[1, 2] + Z * R[2, 2]
 
-    # From coordinates to indices
-    X, Y, Z = Xr + center[0], Yr + center[1], Zr + center[2]
+        # From coordinates to indices
+        X, Y, Z = Xr + center[0], Yr + center[1], Zr + center[2]
 
-    # Re-mapping (interpolation)
-    ts = tomo.size
-    inds = np.zeros(shape=(3, ts), dtype=np.float32)
-    inds[0, :], inds[1, :], inds[2, :] = X.reshape(ts), Y.reshape(ts), Z.reshape(ts)
-    tomo_r = spnd.interpolation.map_coordinates(tomo, inds, order=order, mode=mode, cval=cval, prefilter=prefilter)
+        # Re-mapping (interpolation)
+        ts = tomo.size
+        inds = np.zeros(shape=(3, ts), dtype=np.float32)
+        inds[0, :], inds[1, :], inds[2, :] = X.reshape(ts), Y.reshape(ts), Z.reshape(ts)
+        # Jax does not support orders beyond 1
+        if order > 1:
+            order = 1
+        tomo_r = jax.scipy.ndimage.map_coordinates(tomo, inds, order=order, mode=mode, cval=cval)
+        tomo_r = np.array(tomo_r)
+
+    except ImportError:
+
+        # Scipy versions
+
+        # Compute grid
+        X, Y, Z = np.meshgrid(np.arange(tomo.shape[0]), np.arange(tomo.shape[1]), np.arange(tomo.shape[2]),
+                              indexing='ij')
+
+        # From indices to coordinates
+        X, Y, Z = (X - center[0]).astype(np.float32), (Y - center[1]).astype(np.float32), (Z - center[2]).astype(np.float32)
+
+        # Grid rotation
+        Xr = X * R[0, 0] + Y * R[1, 0] + Z * R[2, 0]
+        Yr = X * R[0, 1] + Y * R[1, 1] + Z * R[2, 1]
+        Zr = X * R[0, 2] + Y * R[1, 2] + Z * R[2, 2]
+
+        # From coordinates to indices
+        X, Y, Z = Xr + center[0], Yr + center[1], Zr + center[2]
+
+        # Re-mapping (interpolation)
+        ts = tomo.size
+        inds = np.zeros(shape=(3, ts), dtype=np.float32)
+        inds[0, :], inds[1, :], inds[2, :] = X.reshape(ts), Y.reshape(ts), Z.reshape(ts)
+        tomo_r = spnd.interpolation.map_coordinates(tomo, inds, order=order, mode=mode, cval=cval, prefilter=prefilter)
 
     return tomo_r.reshape(tomo.shape)
 

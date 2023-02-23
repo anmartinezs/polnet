@@ -391,7 +391,7 @@ for occ in RANGE_OCCUPANCIES:
             model_surf = iso_surface(model, protein.get_iso(), closed=False, normals=None)
             center = protein.get_mmer_center()  # .5 * np.asarray(model.shape, dtype=float)
             if center is None:
-                center = .5 * (np.asarray(model.shape, dtype=np.float) - 1)
+                center = .5 * (np.asarray(model.shape, dtype=float) - 1)
                 off = np.asarray((.0, .0, .0))
             else:
                 center = np.asarray(center)

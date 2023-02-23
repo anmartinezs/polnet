@@ -351,7 +351,7 @@ class NetSAWLC(Network):
             #       ', length ' + str(hold_polymer.get_total_len()) + ' and occupancy ' +
             #       str(self._Network__pl_occ) + '%')
 
-        print('Exit with c_try=' + str(c_try) + ' and c_fails=' + str(self._Network__pmer_fails))
+        # print('Exit with c_try=' + str(c_try) + ' and c_fails=' + str(self._Network__pmer_fails))
 
 
 class NetSAWLCInter(Network):

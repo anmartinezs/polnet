@@ -6,8 +6,10 @@ I/O functions
 __author__ = 'Antonio Martinez-Sanchez'
 
 import vtk
+import csv
 import mrcfile
 import numpy as np
+import pandas as pd
 
 
 def load_mrc(fname, mmap=False, no_saxes=True):
@@ -96,3 +98,44 @@ def load_poly(fname):
     reader.Update()
 
     return reader.GetOutput()
+
+
+def load_csv_into_tomo_tables(in_csv_file):
+    """
+    Load a CSV file as a dictionary of tables, one for each density
+    :param in_csv_file: input CSV file path
+    :return: a dictionary where each density path is an entry for a table, each table contains all particles of single
+             density
+    """
+    tables_df = pd.read_csv(in_csv_file, delimiter='\t', names=['Density Micrographs', 'PolyData', 'Tomo3D', 'Type',
+                                                                 'Label', 'Code', 'Polymer', 'X', 'Y', 'Z',
+                                                                 'Q1', 'Q2', 'Q3', 'Q4'], header=0)
+    den_tomos = set(tables_df['Tomo3D'].tolist())
+    tables_dic = dict().fromkeys(den_tomos)
+    for key in tables_dic:
+        tables_dic[key] = dict().fromkeys(tables_df.columns.tolist())
+        for kkey in tables_dic[key]:
+            tables_dic[key][kkey] = list()
+    for row in tables_df.iterrows():
+        key = row[1]['Tomo3D']
+        for item, value in row[1].items():
+            tables_dic[key][item].append(value)
+    return tables_dic
+
+
+def write_table(table, out_file):
+    """
+    Store a table in a CSV file
+    :param table: input table dictionary
+    :param out_file: path for the output file
+    :return:
+    """
+    with open(out_file, 'w', newline='') as csv_file:
+        fieldnames = list(table.keys())
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames, delimiter='\t')
+        writer.writeheader()
+        for row in range(len(table[fieldnames[0]])):
+            dic_row = dict().fromkeys(fieldnames)
+            for key in fieldnames:
+                dic_row[key] = table[key][row]
+            writer.writerow(dic_row)

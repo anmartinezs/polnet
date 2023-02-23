@@ -39,8 +39,8 @@ from polnet.membrane import SetMembranes
 ##### Input parameters
 
 # Common tomogram settings
-ROOT_PATH = '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth' #  '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all' # '/home/antonio/workspace/synth_tomo/riboprot'
-NTOMOS = 10 # 12
+ROOT_PATH = '/media/martinez/Sistema/Users/Antonio/workspace/data/polnet' #  '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all' # '/home/antonio/workspace/synth_tomo/riboprot'
+NTOMOS = 2 # 12
 VOI_SHAPE = (1000, 1000, 250) # (400, 400, 236) # vx or a path to a mask (1-foreground, 0-background) tomogram
 VOI_OFFS =  ((4,996), (4,996), (4,246)) # ((4,396), (4,396), (4,232)) # ((4,1852), (4,1852), (32,432)) # ((4,1852), (4,1852), (4,232)) # vx
 VOI_VSIZE = 10 # 2.2 # A/vx
@@ -55,7 +55,7 @@ PROTEINS_LIST = ['in_10A/4v4r_10A.pns', 'in_10A/3j9i_10A.pns', 'in_10A/4v4r_50S_
                  'in_10A/6utj_10A.pns', 'in_10A/5mrc_10A.pns', 'in_10A/4v94_10A.pns', 'in_10A/4cr2_10A.pns',
                  'in_10A/3qm1_10A.pns', 'in_10A/3h84_10A.pns', 'in_10A/3gl1_10A.pns', 'in_10A/3d2f_10A.pns',
                  'in_10A/3cf3_10A.pns', 'in_10A/2cg9_10A.pns', 'in_10A/1u6g_10A.pns', 'in_10A/1s3x_10A.pns',
-                 'in_10A/1qvr_10A.pns', 'in_10A/1bxn_10A.pns', 'in_10A/1bxn_10A.pns']
+                 'in_10A/1qvr_10A.pns', 'in_10A/1bxn_10A.pns']
 
 MB_PROTEINS_LIST = ['in_10A/mb_5wek_10A.pms', 'in_10A/mb_4pe5_10A.pms', 'in_10A/mb_5ide_10A.pms',
                     'in_10A/mb_5gjv_10A.pms', 'in_10A/mb_5kxi_10A.pms', 'in_10A/mb_5tj6_10A.pms',
@@ -80,7 +80,7 @@ MALIGN_MX = 1.5
 MALIGN_SG = 0.2
 
 # OUTPUT FILES
-OUT_DIR = ROOT_PATH + '/out_all_5tomos' # '/only_actin' # '/out_rotations'
+OUT_DIR = ROOT_PATH + '/out_all_tomos_1-2' # '/only_actin' # '/out_rotations'
 TEM_DIR = OUT_DIR + '/tem'
 TOMOS_DIR = OUT_DIR + '/tomos'
 
@@ -131,7 +131,7 @@ for tomod_id in range(NTOMOS):
     count_mbs, hold_den = 0, None
     for p_id, p_file in enumerate(MEMBRANES_LIST):
 
-        print('PROCESSING FILE:', p_file)
+        print('\tPROCESSING FILE:', p_file)
 
         # Loading the membrane file
         memb = MbFile()
@@ -202,7 +202,7 @@ for tomod_id in range(NTOMOS):
     count_actins, count_mts = 0, 0
     for p_id, p_file in enumerate(HELIX_LIST):
 
-        print('PROCESSING FILE:', p_file)
+        print('\tPROCESSING FILE:', p_file)
 
         # Loading the helix file
         helix = HelixFile()
@@ -308,7 +308,7 @@ for tomod_id in range(NTOMOS):
     model_surfs, models, model_masks, model_codes = list(), list(), list(), list()
     for p_id, p_file in enumerate(PROTEINS_LIST):
 
-        print('PROCESSING FILE:', p_file)
+        print('\tPROCESSING FILE:', p_file)
 
         # Loading the protein
         protein = MmerFile(ROOT_PATH + '/' + p_file)
@@ -387,7 +387,7 @@ for tomod_id in range(NTOMOS):
         model_surfs, surf_diams, models, model_masks, model_codes = list(), list(), list(), list(), list()
         for p_id, p_file in enumerate(MB_PROTEINS_LIST):
 
-            print('PROCESSING FILE:', p_file)
+            print('\tPROCESSING FILE:', p_file)
 
             # Loading the membrane protein
             protein = MmerMbFile(ROOT_PATH + '/' + p_file)
@@ -406,7 +406,7 @@ for tomod_id in range(NTOMOS):
             model_surf = iso_surface(model, protein.get_iso(), closed=False, normals=None)
             center = protein.get_mmer_center()  # .5 * np.asarray(model.shape, dtype=float)
             if center is None:
-                center = .5 * (np.asarray(model.shape, dtype=np.float) - 1)
+                center = .5 * (np.asarray(model.shape, dtype=float) - 1)
                 off = np.asarray((.0, .0, .0))
             else:
                 center = np.asarray(center)
@@ -464,16 +464,16 @@ for tomod_id in range(NTOMOS):
             entity_id += 1
 
     # Tomogram statistics
-    print('\t-TOMOGRAM', str(tomod_id), 'DENSITY STATISTICS:')
-    print('\t\t+Membranes:', count_mbs, '#, ', mb_voxels * vx_um3, 'um**3, ', 100. * (mb_voxels / voi_voxels), '%')
-    print('\t\t+Actin:', count_actins, '#, ', ac_voxels * vx_um3, 'um**3, ', 100. * (ac_voxels / voi_voxels), '%')
-    print('\t\t+Microtublues:', count_mts, '#, ', mt_voxels * vx_um3, 'um**3, ', 100. * (mt_voxels / voi_voxels), '%')
-    print('\t\t+Proteins:', count_prots, '#, ', cp_voxels * vx_um3, 'um**3, ', 100. * (cp_voxels / voi_voxels), '%')
-    print('\t\t+Membrane proteins:', count_mb_prots, '#, ', mp_voxels * vx_um3, 'um**3, ', 100. * (mp_voxels / voi_voxels), '%')
+    print('\t\t-TOMOGRAM', str(tomod_id), 'DENSITY STATISTICS:')
+    print('\t\t\t+Membranes:', count_mbs, '#, ', mb_voxels * vx_um3, 'um**3, ', 100. * (mb_voxels / voi_voxels), '%')
+    print('\t\t\t+Actin:', count_actins, '#, ', ac_voxels * vx_um3, 'um**3, ', 100. * (ac_voxels / voi_voxels), '%')
+    print('\t\t\t+Microtublues:', count_mts, '#, ', mt_voxels * vx_um3, 'um**3, ', 100. * (mt_voxels / voi_voxels), '%')
+    print('\t\t\t+Proteins:', count_prots, '#, ', cp_voxels * vx_um3, 'um**3, ', 100. * (cp_voxels / voi_voxels), '%')
+    print('\t\t\t+Membrane proteins:', count_mb_prots, '#, ', mp_voxels * vx_um3, 'um**3, ', 100. * (mp_voxels / voi_voxels), '%')
     counts_total = count_mbs + count_actins + count_mts + count_prots + count_mb_prots
     total_voxels = mb_voxels + ac_voxels + mt_voxels + cp_voxels + mp_voxels
-    print('\t\t+Total:', counts_total, '#, ', total_voxels * vx_um3, 'um**3, ', 100. * (total_voxels / voi_voxels), '%')
-    print('\t\t+Time for generation: ', (time.time() - hold_time) / 60, 'mins')
+    print('\t\t\t+Total:', counts_total, '#, ', total_voxels * vx_um3, 'um**3, ', 100. * (total_voxels / voi_voxels), '%')
+    print('\t\t\t+Time for generation: ', (time.time() - hold_time) / 60, 'mins')
 
     # Storing simulated density results
     tomo_den_out = TOMOS_DIR + '/tomo_den_' + str(tomod_id) + '.mrc'

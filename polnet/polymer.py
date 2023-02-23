@@ -183,7 +183,8 @@ class Monomer:
         approximated as ssphere)
         :return: the computed area
         """
-        return poly_diam(self.__m_surf) * np.pi * np.pi * .25
+        diam = poly_diam(self.__m_surf)
+        return np.pi * diam * diam * .25
 
     def get_copy(self):
         """
