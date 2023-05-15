@@ -399,7 +399,7 @@ def poly_decimate(poly, dec):
     """
     Decimate a vtkPolyData
     :param poly: input vtkPolyData
-    :param dec: Specify the desired reduction in the total number of polygons, default None (not applied)
+    :param dec: Specify the desired reduction in the total number of polygons
                (e.g., if TargetReduction is set to 0.9,
                this filter will try to reduce the data set to 10% of its original size).
     :return: the input poly filtered

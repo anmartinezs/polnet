@@ -31,9 +31,9 @@ GTRUTH_VTP_LBLS = 'gt_labels'
 GTRUTH_POINTS_RAD = 35 # nm
 
 # NetSAWLC settings
-MMER_MRC = './in/emd_5225_13.68A_30.mrc'
+MMER_MRC = './in/5mrc.mrc'
 RIBO_MMER_ISO = .543
-RIBO_MMER_MRC = './in/emd_5225_13.68A_30.mrc'
+RIBO_MMER_MRC = './in/5mrc.mrc'
 RIBO_PMER_L = 1.2 # Number of times wrt MMER diameters
 RIBO_PMER_OCC = 1 # 5 # %
 PMER_L_MAX = 3000

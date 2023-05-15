@@ -264,6 +264,7 @@ def tomo_rotate(tomo, q, center=None, active=True, order=3, mode='constant', cva
     except ImportError:
 
         # Scipy versions
+        print('Warning: GPU acceleration by using JAX is not enabled for rotations!')
 
         # Compute grid
         X, Y, Z = np.meshgrid(np.arange(tomo.shape[0]), np.arange(tomo.shape[1]), np.arange(tomo.shape[2]),

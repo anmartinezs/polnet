@@ -16,7 +16,7 @@ VOI_OFF = 4 # vx
 VOI_VSIZE = 13.68 # A/vx
 
 # NetSAWLC settings
-MMER_MRC = './in/emd_5225_13.68A_30.mrc'
+MMER_MRC = './in/5mrc.mrc'
 MMER_ISO = .543
 PMER_L = 1.2 # Number of times wrt MMER diameters
 PMER_OCC = 1 # 5 # %

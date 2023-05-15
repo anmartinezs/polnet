@@ -1,7 +1,14 @@
 
 from unittest import TestCase
 
-from polnet.membrane import SetMembranes
+import scipy as sp
+import matplotlib
+import matplotlib.pyplot as plt
+
+font = {'size'   : 11}
+matplotlib.rc('font', **font)
+
+from polnet.membrane import SetMembranes, MbTorus, MbEllipsoid, MbSphere
 from polnet.network import NetSAWLC, PGenHelixFiber
 from polnet.lrandom import EllipGen, SphGen, TorGen
 from polnet.polymer import MB_DOMAIN_FIELD_STR
@@ -11,14 +18,14 @@ from polnet.utils import *
 from polnet.affine import *
 
 # Common settings
-VOI_SHAPE = (400, 400, 150) # (924, 924, 300) # vx
+VOI_SHAPE = (500, 500, 200) # (924, 924, 300) # vx
 VOI_OFF = 4 # vx
-VOI_VSIZE = 13.68 # A/vx
+VOI_VSIZE = 10 # A/vx
 
 # Generic settings for membranes
 MB_OCC = 0.002 # %
 MB_THICK_RG = (25, 35) # A
-MB_LAYER_S_RG = (5, 10) # A
+MB_LAYER_S_RG = (0.5, 1) # A
 MB_MAX_ECC = .75
 MB_OVER_TOL = 1e-8
 MB_MIN_RAD = 75 # A
@@ -58,10 +65,18 @@ NET_TOMO_OUT = './out/mb_sawlc_net_tomo.mrc'
 MB_POLY_OUT = './out/mb_poly.vtp'
 NET_VOI_OUT = './out/mb_sawlc_voi.mrc'
 
+# Fixed membranes
+MBS_FIX_OUT = './out/mbs_fix.vtp'
+MBS_FIX_TOMO_OUT = './out/mbs_fix_den.mrc'
+MBS_FIX_GTRUTH_OUT = './out/mbs_fix_den.mrc'
+MBS_FIX_VOI = './out/mbs_fix_voi.mrc'
+
+# Profile
+PRO_FIG_OUT = './out/mb_profile.png'
 
 class TestMembranes(TestCase):
 
-    def test_build_network(self):
+    def test_build_set(self):
 
         # return
 
@@ -144,6 +159,8 @@ class TestMembranes(TestCase):
 
     def test_ellip_surf(self):
 
+        # return
+
         ellipsoid = vtk.vtkParametricEllipsoid()
         ellipsoid.SetXRadius(1)
         ellipsoid.SetYRadius(0.25)
@@ -172,4 +189,73 @@ class TestMembranes(TestCase):
         # ellipsoidMapper.SetInputConnection(ellipsoidSource.GetOutputPort())
         # ellipsoidMapper.SetScalarRange(-0.5, 0.5)
 
+    def test_fixed_membranes(self):
 
+        # return
+
+        # Generate the VOI
+        voi = np.ones(shape=VOI_SHAPE, dtype=bool)
+        voi[VOI_OFF:VOI_SHAPE[0] - VOI_OFF, VOI_OFF:VOI_SHAPE[1] - VOI_OFF, VOI_OFF:VOI_SHAPE[2] - VOI_OFF] = True
+
+        # Generate the membranes
+        voi_shape_A = np.asarray(VOI_SHAPE) * VOI_VSIZE
+        mb_torus = MbTorus(VOI_SHAPE, v_size=VOI_VSIZE, center=(0, 0, .5*voi_shape_A[2]),
+                           thick=30, layer_s=1, rad_a=2000, rad_b=500)
+        mb_ellip = MbEllipsoid(voi.shape, v_size=VOI_VSIZE,
+                               center=(.5*voi_shape_A[0], .75*voi_shape_A[1], .5*voi_shape_A[2]),
+                               thick=30, layer_s=1,
+                               a=(3.5/8)*voi_shape_A[0], b=(1/8)*voi_shape_A[1], c=(3/8)*voi_shape_A[2])
+        mb_sph_1 = MbSphere(VOI_SHAPE, v_size=VOI_VSIZE,
+                            center=((5 / 8) * voi_shape_A[0], (1 / 8) * voi_shape_A[1], .5 * voi_shape_A[2]),
+                            thick=30, layer_s=1, rad=250)
+        mb_sph_2 = MbSphere(VOI_SHAPE, v_size=VOI_VSIZE,
+                            center=((7 / 8) * voi_shape_A[0], (1 / 8) * voi_shape_A[1], .5 * voi_shape_A[2]),
+                            thick=30, layer_s=1, rad=250)
+        mb_sph_3 = MbSphere(VOI_SHAPE, v_size=VOI_VSIZE,
+                            center=((5 / 8) * voi_shape_A[0], (3 / 8) * voi_shape_A[1], .5 * voi_shape_A[2]),
+                            thick=30, layer_s=1, rad=250)
+        mb_sph_4 = MbSphere(VOI_SHAPE, v_size=VOI_VSIZE,
+                            center=((7 / 8) * voi_shape_A[0], (3 / 8) * voi_shape_A[1], .5 * voi_shape_A[2]),
+                            thick=30, layer_s=1, rad=250)
+
+        # Membrane merging
+        tomo_den = np.zeros(shape=VOI_SHAPE, dtype=np.float32)
+        tomo_lbl = np.zeros(shape=VOI_SHAPE, dtype=np.int16)
+        poly_vtp, appender = vtk.vtkPolyData(), vtk.vtkAppendPolyData()
+        in_mbs = [mb_torus, mb_ellip, mb_sph_1, mb_sph_2, mb_sph_3, mb_sph_4]
+        for mb in in_mbs:
+            # Density tomogram insertion
+            mb.insert_density_svol(tomo_den, merge='max', mode='tomo')
+            # Ground Truth
+            mb.insert_density_svol(tomo_lbl, merge='max', mode='mask')
+            # VOI
+            mb.insert_density_svol(voi, merge='min', mode='voi')
+            # Surfaces insertion
+            appender.AddInputData(mb.get_vtp())
+            appender.Update()
+        poly_vtp = poly_scale(appender.GetOutput(), VOI_VSIZE)
+
+        # Save the output
+        save_vtp(poly_vtp, MBS_FIX_OUT)
+        write_mrc(tomo_den, MBS_FIX_TOMO_OUT, v_size=VOI_VSIZE, dtype=np.float32)
+        write_mrc(tomo_lbl, MBS_FIX_GTRUTH_OUT, v_size=VOI_VSIZE, dtype=np.float32)
+        write_mrc(voi, MBS_FIX_VOI, v_size=VOI_VSIZE, dtype=np.float32)
+
+    def test_mb_profile(self):
+
+        # return
+
+        # Generating the profile
+        R = np.linspace(-2.5*MB_THICK_RG[1], 2.5*MB_THICK_RG[1], int(math.ceil(3*MB_THICK_RG[1]/VOI_VSIZE)))
+        li = - MB_THICK_RG[1]
+        Li = np.logical_and(R >= li - VOI_VSIZE, R <= li + VOI_VSIZE).astype(float)
+        lo = MB_THICK_RG[1]
+        Lo = np.logical_and(R >= lo - VOI_VSIZE, R <= lo + VOI_VSIZE).astype(float)
+        L = sp.ndimage.gaussian_filter(Li + Lo, MB_LAYER_S_RG[1])
+
+        # Saving the result
+        plt.plot(R, L, linewidth=3)
+        plt.ylabel('$L$')
+        plt.xlabel('$R(\\vec{n})$ [$\\mathrm{\\AA}$]')
+        plt.savefig(PRO_FIG_OUT)
+        plt.close()

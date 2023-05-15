@@ -663,18 +663,23 @@ class SAWLCPoly(Polymer):
         hold_monomer.translate(self._Polymer__p)
         self.add_monomer(self._Polymer__p, np.asarray((0., 0., 0.)), hold_q, hold_monomer, id=id0, code=code0)
 
-    def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1):
+    def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1, fix_dst=None):
         """
         Generates a new monomer for the polymer according to the specified random model
         :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0)
         :param voi: VOI to define forbidden regions (default None, not applied)
         :param v_size: VOI voxel size, it must be greater than 0 (default 1)
+        :param fix_dst: allows to set the distance for the new monomer externally (default None)
         :return: a 4-tuple with monomer center point, associated tangent vector, rotated quaternion and monomer,
                  return None in case the generation has failed
         """
 
         # Translation
-        r = gen_uni_s2_sample_on_poly(self._Polymer__r[-1], self.__l, 2, self.__poly)
+        if fix_dst is None:
+            hold_l = self.__l
+        else:
+            hold_l = fix_dst
+        r = gen_uni_s2_sample_on_poly(self._Polymer__r[-1], hold_l, 2, self.__poly)
         if r is None:
             return None
         r = np.asarray(r)
@@ -706,7 +711,8 @@ class HelixFiber(Polymer):
     Class for modelling a random helical flexible fiber
     """
 
-    def __init__(self, l_length, m_surf, p_length, hp_length, mz_length, z_length_f=0, p0=(0, 0, 0), vz=(0, 0, 1)):
+    def __init__(self, l_length, m_surf, p_length, hp_length, mz_length, z_length_f=0, p0=(0, 0, 0), vz=(0, 0, 1),
+                 rot_rand=True):
         """
         Constructor
         :param l_length: link length
@@ -714,13 +720,15 @@ class HelixFiber(Polymer):
         :param p_length: persistence length
         :param hp_length: helix period length (distance required by azimuthal angle to cover 360deg)
         :param mz_length: monomer z-length
-        :param z_length_f: z-length or helix elevation
+        :param z_length_f: helix elevation factor or slope
         :param p0: starting point (default origin (0,0,0))
         :param vz: reference vector for z-axis (default (0, 0, 1)
+        :param rot_rand: if True (default) the rotation of the first monomer (and consequently its tangent) is
+                         generated randomly, otherwise it is set to fit vz
         """
         super(HelixFiber, self).__init__(m_surf)
         assert (l_length > 0) and (p_length > 0) and (z_length_f >= 0) and (hp_length > 0) and (mz_length > 0)
-        self.__l, self.__lp, self.__lz = l_length, p_length, l_length * z_length_f
+        self.__l, self.__lp, self.__lz = l_length, p_length, z_length_f
         self.__hp, self.__mz_length = hp_length, mz_length
         self.__hp_astep = (360. * self.__mz_length) / self.__hp
         self.__compute_helical_parameters()
@@ -728,27 +736,39 @@ class HelixFiber(Polymer):
         self.__vz = np.asarray(vz, dtype=float)
         # Curve state member variables
         self.__ct, self.__za, self.__rq = 0., 0., np.asarray((1., 0., 0., 0.)) # z-aligned curve time (considering speed 1)
-        self.set_reference(p0, vz)
+        self.set_reference(np.asarray(p0), self.__vz, rot_rand=rot_rand)
 
-    def set_reference(self, p0=(0., 0., 0.), vz=(0., 0., 1.)):
+    def set_reference(self, p0=(0., 0., 0.), vz=(0., 0., 1.), rot_rand=True):
         """
-        Initializes the chain with the specified point input point, if points were introduced before the are forgotten
+        Initializes the chain with the specified input point, if points are introduced before they will be forgotten
         :param p0: starting point
-        :param vz: z-axis reference vector for helicoidal parametrization
+        :param vz: z-axis reference vector for helicoid parametrization
+        :param rot_rand: if True (default) the rotation of the first monomer (and consequently its tangent) is
+                         generated randomly, otherwise it is set to fit vz
         :return:
         """
         assert hasattr(p0, '__len__') and (len(p0) == 3)
         self._Polymer__p = np.asarray(p0)
-        self.__rq = gen_rand_unit_quaternion()
+        vzr = vz / vector_module(vz)
+        if rot_rand:
+            t = gen_uni_s2_sample(np.asarray((0., 0., 0.)), 1.)
+            M = vect_to_zmat(t, mode='passive')
+            self.__rq = rot_to_quat(M)
+        else:
+            self.__rq = np.asarray((1., 0., 0., 0.))
+        t = self.__compute_tangent(self.__ct)
+        t = t * (self.__mz_length / vector_module(t))
+        self.__ct += self.__l
+        q1 = angle_axis_to_quat(self.__za, t[0], t[1], t[2])
+        M = vect_to_zmat(t, mode='passive')
+        q = rot_to_quat(M)
+        hold_q = quat_mult(q, q1)
+        # vzr *= self.__mz_length
         hold_monomer = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
-        vzr = gen_uni_s2_sample(np.asarray((0., 0., 0.)), 1.)
-        M = vect_to_zmat(vzr, mode='passive')
-        hold_q = rot_to_quat(M)
-        vzr /= vector_module(vzr)
-        vzr *= self.__mz_length
         hold_monomer.rotate_q(hold_q)
         hold_monomer.translate(p0)
-        self.add_monomer(p0, vzr, hold_q, hold_monomer)
+        # self.__rq = hold_q
+        self.add_monomer(p0, t, hold_q, hold_monomer)
 
     def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1, net=None, branch=None):
         """
@@ -766,7 +786,7 @@ class HelixFiber(Polymer):
         hold_m = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
 
         # Rotation
-        t = self._Polymer__t[-1] + self.__compute_tangent(self.__ct)
+        t = self.__compute_tangent(self.__ct)
         t = t * (self.__mz_length / vector_module(t))
         self.__za = wrap_angle(self.__za + self.__hp_astep)
         q1 = angle_axis_to_quat(self.__za, t[0], t[1], t[2])
@@ -811,14 +831,11 @@ class HelixFiber(Polymer):
         # Compute curvature from persistence
         k = math.acos(math.exp(-self.__l / self.__lp)) / self.__l
 
-        # Compute helix b parameter from z-length and persistence
-        self.__b = self.__lz / self.__lp
-        assert self.__b >= 0
+        # Compute circular parameter, a, from curvature
+        self.__a = 1 / k
 
-        # Compute helix a parameter from k and b
-        # print(1-4.*k*self.__b*self.__b)
-        self.__a = (1 + math.sqrt(1-4.*k*self.__b*self.__b)) / (2. * k)
-        assert self.__a > 0
+        # Compute Z-axis elevation from the circular parameter
+        self.__b = self.__lz * self.__a
 
     def __compute_tangent(self, t):
         """
@@ -827,9 +844,9 @@ class HelixFiber(Polymer):
         :return: returns the normalized tangent vector (3 elements array)
         """
         sq = math.sqrt(self.__a * self.__a + self.__b * self.__b)
-        # s = sq * t
         s = t
-        t = (1. / sq) * np.asarray((self.__b, -self.__a * math.sin(s / sq), self.__a * math.cos(s / sq)))
+        s_sq = s / sq
+        t = (1. / sq) * np.asarray((-self.__a * math.sin(s_sq), self.__a * math.cos(s_sq), self.__b))
         return rot_vect_quat(t, self.__rq)
 
 

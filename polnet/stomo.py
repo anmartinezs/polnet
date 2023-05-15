@@ -535,7 +535,7 @@ class SynthTomo:
 
         poly_vtp = set_mbs.get_vtp()
         if dec is not None:
-            poly_vtp = pp.poly_decimate(poly_vtp)
+            poly_vtp = pp.poly_decimate(poly_vtp, dec)
 
         n_points = poly_vtp.GetNumberOfPoints()
         normals = poly_vtp.GetPointData().GetNormals()

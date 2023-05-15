@@ -213,7 +213,6 @@ class Network(ABC):
                 # hold_svol = tomo_rotate(hold_svol, trans[1], mode='constant', cval=hold_svol.min())
         insert_svol_tomo(hold_svol, self.__voi, tot_v, merge='min')
 
-
     def count_proteins(self):
         """
         Genrrates output statistics for this network
@@ -228,7 +227,6 @@ class Network(ABC):
                 except KeyError:
                     counts[id] = 0
         return counts
-
 
 
 class NetSAWLC(Network):
@@ -319,7 +317,8 @@ class NetSAWLC(Network):
             not_finished = True
             while (hold_polymer.get_total_len() < max_length) and not_finished:
                 monomer_data = hold_polymer.gen_new_monomer(self.__over_tolerance, self._Network__voi,
-                                                            self._Network__v_size)
+                                                            self._Network__v_size,
+                                                            fix_dst=self.__gen_pol_lengths.gen_length(self.__l_length, 2*self.__l_length))
 
                 cont_pol += 1
 
@@ -596,7 +595,7 @@ class NetHelixFiberB(Network):
         :param occ: occupancy threshold in percentage [0, 100]%
         :param min_p_len: minimum persistence length
         :param hp_len: helix period length
-        :param mz_len: monomer length is z-axis
+        :param mz_len: monomer length in z-axis
         :param mz_len_f: maximum length factor in z-axis
         :param b_prob: branching probability, checked every time a new monomer is added
         :param max_p_branch: maximum number of branches per polymer, if 0 (default) then no branches are generated

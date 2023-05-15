@@ -39,8 +39,8 @@ from polnet.membrane import SetMembranes
 ##### Input parameters
 
 # Common tomogram settings
-ROOT_PATH = '/media/martinez/Sistema/Users/Antonio/workspace/data/polnet' #  '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all' # '/home/antonio/workspace/synth_tomo/riboprot'
-NTOMOS = 2 # 12
+ROOT_PATH = '/home/martinez/workspace/pycharm_proj/polnet/data' # '/media/martinez/Sistema/Users/Antonio/workspace/data/polnet' #  '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all' # '/home/antonio/workspace/synth_tomo/riboprot'
+NTOMOS = 1 # 12
 VOI_SHAPE = (1000, 1000, 250) # (400, 400, 236) # vx or a path to a mask (1-foreground, 0-background) tomogram
 VOI_OFFS =  ((4,996), (4,996), (4,246)) # ((4,396), (4,396), (4,232)) # ((4,1852), (4,1852), (32,432)) # ((4,1852), (4,1852), (4,232)) # vx
 VOI_VSIZE = 10 # 2.2 # A/vx
@@ -50,6 +50,8 @@ PMER_TRIES = 100
 
 # Lists with the features to simulate
 MEMBRANES_LIST = ['in_mbs/sphere.mbs', 'in_mbs/ellipse.mbs', 'in_mbs/toroid.mbs' ]
+
+HELIX_LIST = ['in_helix/mt.hns', 'in_helix/actin.hns']
 
 PROTEINS_LIST = ['in_10A/4v4r_10A.pns', 'in_10A/3j9i_10A.pns', 'in_10A/4v4r_50S_10A.pns', 'in_10A/4v4r_30S_10A.pns',
                  'in_10A/6utj_10A.pns', 'in_10A/5mrc_10A.pns', 'in_10A/4v94_10A.pns', 'in_10A/4cr2_10A.pns',
@@ -61,8 +63,6 @@ MB_PROTEINS_LIST = ['in_10A/mb_5wek_10A.pms', 'in_10A/mb_4pe5_10A.pms', 'in_10A/
                     'in_10A/mb_5gjv_10A.pms', 'in_10A/mb_5kxi_10A.pms', 'in_10A/mb_5tj6_10A.pms',
                     'in_10A/mb_5tqq_10A.pms', 'in_10A/mb_5vai_10A.pms']
 
-HELIX_LIST = ['in_helix/mt.hns', 'in_helix/actin.hns']
-
 # Proportions list, specifies the proportion for each protein, this proportion is tried to be achieved but no guaranteed
 # The toal sum of this list must be 1
 PROP_LIST = None # [.4, .6]
@@ -70,7 +70,7 @@ if PROP_LIST is not None:
     assert sum(PROP_LIST) == 1
 
 DIST_OFF = 5 # A / vx
-SURF_DEC = 0.9 # Target reduction factor for surface decimation (defatul None)
+SURF_DEC = 0.9 # Target reduction factor for surface decimation (default None)
 
 # Reconstruction tomograms
 TILT_ANGS = range(-60, 61, 3) # np.arange(-60, 60, 3) # at MPI-B IMOD only works for ranges
@@ -80,7 +80,7 @@ MALIGN_MX = 1.5
 MALIGN_SG = 0.2
 
 # OUTPUT FILES
-OUT_DIR = ROOT_PATH + '/out_all_tomos_1-2' # '/only_actin' # '/out_rotations'
+OUT_DIR = ROOT_PATH + '/../../../data/polnet_test' # '/out_all_tomos_9-10' # '/only_actin' # '/out_rotations'
 TEM_DIR = OUT_DIR + '/tem'
 TOMOS_DIR = OUT_DIR + '/tomos'
 
@@ -198,7 +198,6 @@ for tomod_id in range(NTOMOS):
         mbs_vtp.DeepCopy(poly_vtp)
 
     # Loop for Helicoidal structures
-    br_vtp, hold_br_vtp, hold_br_skel_vtp = None, None, None
     count_actins, count_mts = 0, 0
     for p_id, p_file in enumerate(HELIX_LIST):
 
@@ -231,8 +230,6 @@ for tomod_id in range(NTOMOS):
                 net_helix.set_min_nmmer(helix.get_min_nmmer())
             net_helix.build_network()
         elif helix.get_type() == 'actin':
-
-            br_vtp = pp.points_to_poly_spheres(points=[[0, 0, 0],], rad=helix.get_mmer_rad())
             helix = ActinFile()
             helix.load_ac_file(ROOT_PATH + '/' + p_file)
             # Fiber unit generation
@@ -248,6 +245,9 @@ for tomod_id in range(NTOMOS):
             if helix.get_min_nmmer() is not None:
                 net_helix.set_min_nmmer(helix.get_min_nmmer())
             net_helix.build_network()
+            # Geting branches poly
+            br_vtp = pp.points_to_poly_spheres(points=[[0, 0, 0], ], rad=helix.get_mmer_rad())
+            lio.save_vtp(net_helix.get_branches_vtp(shape_vtp=br_vtp), TOMOS_DIR + '/poly_br_' + str(tomod_id) + '.vtp')
         else:
             print('ERROR: Helicoidal type', helix.get_type(), 'not recognized!')
             sys.exit()
@@ -285,21 +285,12 @@ for tomod_id in range(NTOMOS):
             pp.add_label_to_poly(hold_skel_vtp, LBL_AC, 'Type', mode='both')
             count_actins += net_helix.get_num_pmers()
             ac_voxels += (tomo_lbls == entity_id).sum()
-            # # Adding branches to the vtps but as separated type
-            # hold_br_vtp, hold_br_skel_vtp = net_helix.get_branches_vtp(br_vtp), net_helix.get_branches_vtp()
-            # pp.add_label_to_poly(hold_br_vtp, entity_id, 'Entity', mode='both')
-            # pp.add_label_to_poly(hold_br_skel_vtp, entity_id, 'Entity', mode='both')
-            # pp.add_label_to_poly(hold_br_vtp, LBL_BR, 'Type', mode='both')
-            # pp.add_label_to_poly(hold_br_skel_vtp, LBL_BR, 'Type', mode='both')
         if poly_vtp is None:
             poly_vtp = hold_vtp
             skel_vtp = hold_skel_vtp
         else:
             poly_vtp = pp.merge_polys(poly_vtp, hold_vtp)
             skel_vtp = pp.merge_polys(skel_vtp, hold_skel_vtp)
-            # if helix.get_type() == 'actin':
-            #     poly_vtp = pp.merge_polys(poly_vtp, hold_br_vtp)
-            #     skel_vtp = pp.merge_polys(skel_vtp, hold_br_skel_vtp)
         synth_tomo.add_network(net_helix, 'Helix', entity_id, code=helix.get_type())
         entity_id += 1
 
