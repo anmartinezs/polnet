@@ -33,7 +33,7 @@ symbols and acronyms correspond with the definitions in the **main publication**
 
 ## Main publication (Citation)
 
-[1] Martinez-Sanchez A., Jasnin M. and Phelipeau H. "Simulating the cellular context in synthetic datasets for cryo-electron tomography" *In preparation*
+[1] Martinez-Sanchez A., Jasnin M. and Phelippeau H. "Simulating the cellular context in synthetic datasets for cryo-electron tomography" *In preparation*
 
 
 
