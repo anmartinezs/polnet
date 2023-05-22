@@ -6,6 +6,7 @@ Python package for generating synthetic datasets of the cellular context for Cry
 * Get the python code package from github: https://github.com/anmartinezs/polnet.git
 * Install all requirements (using pip or conda): see requirements.txt file (JAX is optional).
 * Install **IMOD**, PolNet may call to some of its standalone commands: https://bio3d.colorado.edu/imod/doc/guide.html
+* **EMAN2** is required to generate macromolecular templates.
 
 ### Installation notes
 
@@ -32,7 +33,7 @@ symbols and acronyms correspond with the definitions in the **main publication**
 
 ## Main publication (Citation)
 
-[1] Martinez-Sanchez A., Jasnin M. and Phellipeau H. "Simulating the cellular context in synthetic datasets for cryo-electron tomography" *In preparation*
+[1] Martinez-Sanchez A., Jasnin M. and Phelipeau H. "Simulating the cellular context in synthetic datasets for cryo-electron tomography" *In preparation*
 
 
 
