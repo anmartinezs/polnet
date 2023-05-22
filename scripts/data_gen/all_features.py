@@ -21,6 +21,7 @@ monomers
 
 __author__ = 'Antonio Martinez-Sanchez'
 
+import os
 import sys
 import time
 import random
@@ -39,7 +40,7 @@ from polnet.membrane import SetMembranes
 ##### Input parameters
 
 # Common tomogram settings
-ROOT_PATH = '/home/martinez/workspace/pycharm_proj/polnet/data' # '/media/martinez/Sistema/Users/Antonio/workspace/data/polnet' #  '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all' # '/home/antonio/workspace/synth_tomo/riboprot'
+ROOT_PATH = os.getcwd() + '/../data'
 NTOMOS = 1 # 12
 VOI_SHAPE = (1000, 1000, 250) # (400, 400, 236) # vx or a path to a mask (1-foreground, 0-background) tomogram
 VOI_OFFS =  ((4,996), (4,996), (4,246)) # ((4,396), (4,396), (4,232)) # ((4,1852), (4,1852), (32,432)) # ((4,1852), (4,1852), (4,232)) # vx
@@ -311,7 +312,12 @@ for tomod_id in range(NTOMOS):
 
         # Genrate the SAWLC network associated to the input protein
         # Polymer parameters
-        model = lio.load_mrc(protein.get_mmer_svol())
+        # To read macromolecular models first we try to find the absolute path and secondly the relative to ROOT_PATH
+        try:
+            model = lio.load_mrc(protein.get_mmer_svol())
+        except FileNotFoundError:
+            model = lio.load_mrc(ROOT_PATH + '/' + protein.get_mmer_svol())
+        # model = lio.load_mrc(ROOT_PATH + '/' + protein.get_mmer_svol())
         model = lin_map(model, lb=0, ub=1)
         model = vol_cube(model)
         model_mask = model < protein.get_iso()
@@ -390,7 +396,11 @@ for tomod_id in range(NTOMOS):
 
             # Insert membrane bound densities in a Polymer
             # Polymer parameters
-            model = lio.load_mrc(protein.get_mmer_svol())
+            # To read macromolecular models first we try to find the absolute path and secondly the relative to ROOT_PATH
+            try:
+                model = lio.load_mrc(protein.get_mmer_svol())
+            except FileNotFoundError:
+                model = lio.load_mrc(ROOT_PATH + '/' + protein.get_mmer_svol())
             model = lin_map(model, lb=0, ub=1)
             model_mask = model < protein.get_iso()
             model[model_mask] = 0

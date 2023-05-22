@@ -11,10 +11,10 @@ from unittest import TestCase
 from polnet import lio, affine, utils
 
 # Common settings
-IN_CSV = '/media/martinez/Sistema/Users/Antonio/workspace/data/polnet/out_all_tomos_5-6/tomos_motif_list.csv'
-IN_DEN_TOMO = '/media/martinez/Sistema/Users/Antonio/workspace/data/polnet/out_all_tomos_5-6/tomos/tomo_den_0.mrc'
+IN_CSV = os.getcwd() + '/../data/polnet/out_all_tomos_1-2/tomos_motif_list.csv'
+IN_DEN_TOMO = '/../data/polnet/out_all_tomos_1-2/tomos/tomo_den_0.mrc'
 IN_LABEL_CODE = 11
-IN_STRUCT_MODEL = '/media/martinez/Sistema/Users/Antonio/workspace/data/polnet/templates/mrcs_10A/5mrc.mrc'
+IN_STRUCT_MODEL = '/../data/polnet/templates/mrcs_10A/5mrc.mrc'
 VOI_VSIZE = 10 # A/vx
 
 # Paths to tomograms outputs

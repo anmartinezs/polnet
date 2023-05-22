@@ -1,5 +1,5 @@
 MMER_ID = pdb_mb_5tj6
-MMER_SVOL = /media/martinez/Sistema/Users/Antonio/workspace/data/polnet/templates/mb_mrcs_10A/5tj6_mbz_align_shift.mrc
+MMER_SVOL =/templates/mb_mrcs_10A/5tj6_mbz_align_shift.mrc
 MMER_ISO = .046
 PMER_L = 1.2 # Number of times wrt MMER diameters
 PMER_OCC = 1 # %

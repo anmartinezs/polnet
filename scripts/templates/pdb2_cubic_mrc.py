@@ -13,7 +13,7 @@ import numpy as np
 from polnet import lio
 
 
-ROOT_DIR = '/fs/pool/pool-lucic2/antonio/polnet/riboprot/templates/pdbs' # '/fs/pool/pool-lucic2/antonio/polnet/riboprot/templates/mb_pdbs'
+ROOT_DIR = os.getcwd() + '/../data/templates/pdbs'
 CMD_PDB2MRC = 'e2pdb2mrc.py'
 
 # Input list of PDBs to process

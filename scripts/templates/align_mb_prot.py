@@ -12,7 +12,7 @@ import numpy as np
 from polnet import lio, affine
 
 
-ROOT_DIR = '/fs/pool/pool-lucic2/antonio/polnet/riboprot/templates/mb_mrcs_10A'
+ROOT_DIR = os.getcwd() + '/../data/templates/mb_mrcs_10A'
 
 # Input list of MRCs to process
 in_mrc_l = ['5wek.mrc', '4pe5.mrc', '5ide.mrc', '5gjv.mrc', '5kxi.mrc', '5tj6.mrc', '5tqq.mrc', '5vai.mrc']

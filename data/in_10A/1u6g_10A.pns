@@ -1,5 +1,5 @@
 MMER_ID = pdb_1u6g
-MMER_SVOL = /media/martinez/Sistema/Users/Antonio/workspace/data/polnet/templates/mrcs_10A/1u6g.mrc
+MMER_SVOL =/templates/mrcs_10A/1u6g.mrc
 MMER_ISO = 0.1
 PMER_L = 1.2
 PMER_L_MAX = 3000
