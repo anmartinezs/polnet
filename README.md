@@ -22,6 +22,11 @@ because some hardcoded paths need to be modified.
 * **tests**: unit tests for functionalities in **polnet**. The script **tests/test_transformations.py** requires to generate at 
 least 1 output tomo with the script **scripts/all_features.py** and modified the hardcoded input paths, that is because
 the size of the input data avoid to upload them to the repository.
+* **docs**: contains a PDF with the suplementary material for [1] with the next tables:
+  + Glossary of acronyms by order of appearance in the main text.
+  + Glossary mathematical symbols defined in the main text organized by scope
+  + Table Variables used by the input files to model the generators.
+  + Table with the structures used to simulate the cellular context. 
 
 ## Generating a generic synthetic dataset
 
