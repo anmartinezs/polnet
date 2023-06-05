@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=42.0.0", "wheel", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "polnet"
+version = "0.0.1"
+dependencies = [
+    "numpy",
+    "scipy",
+    "mrcfile",
+    "jax",
+    "vtk",
+    "pandas",
+]
+
+[tool.setuptools.packages]
+find = {}  # Scan the project directory with the default parameters
+
+[tool.setuptools_scm]
+write_to = "polnet/_version.py"
+
+[tool.black]
+line-length = 79
+
+[tool.isort]
+profile = "black"
+line_length = 79
