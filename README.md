@@ -13,6 +13,12 @@ Python package for generating synthetic datasets of the cellular context for Cry
 * **mrcfile**: python package installation with conda may need adding the channel conda-forge, see instructions in: https://pypi.org/project/mrcfile/
 * **jax**: python package installation with GPU support is required for faster data generation: https://github.com/google/jax#installation
 
+To install it:
+    git clone anmartinezs/polnet
+    cd polnet
+    conda create --name polnet pip
+    pip install -e .
+
 ## Content
 
 * **polnet**: python package with the functionality for generating the synthetic data.
@@ -31,9 +37,12 @@ the size of the input data avoid to upload them to the repository.
 ## Generating a generic synthetic dataset
 
 If you want to generate a generic synthetic dataset for cryo-ET without any specific requirement, you must run the script
-**scripts/data_gen/all_features.py**, it is set up to generate a dataset with all different types of structures including
-membranes, microtubules, actin networks, 18 different cytosolic and 8 membrane-bound macromolecules.
+**scripts/data_gen/all_features.py**:
 
+    cd scripts
+    python data_gen/all_features.py
+
+It is set up to generate a dataset with all different types of structures including membranes, microtubules, actin networks, 18 different cytosolic and 8 membrane-bound macromolecules.
 Input configuration files for geometry and transformation generators, as well as the macromolecular models are available
 under **data** folder.
 
