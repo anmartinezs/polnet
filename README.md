@@ -14,6 +14,7 @@ Python package for generating synthetic datasets of the cellular context for Cry
 * **jax**: python package installation with GPU support is required for faster data generation: https://github.com/google/jax#installation
 
 To install it:
+
     git clone anmartinezs/polnet
     cd polnet
     conda create --name polnet pip
