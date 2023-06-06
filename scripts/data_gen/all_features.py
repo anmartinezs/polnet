@@ -40,7 +40,7 @@ from polnet.membrane import SetMembranes
 ##### Input parameters
 
 # Common tomogram settings
-ROOT_PATH = os.getcwd() + '/../data'
+ROOT_PATH = os.path.realpath(os.getcwd() + '/../data')
 NTOMOS = 1 # 12
 VOI_SHAPE = (1000, 1000, 250) # (400, 400, 236) # vx or a path to a mask (1-foreground, 0-background) tomogram
 VOI_OFFS =  ((4,996), (4,996), (4,246)) # ((4,396), (4,396), (4,232)) # ((4,1852), (4,1852), (32,432)) # ((4,1852), (4,1852), (4,232)) # vx
@@ -81,9 +81,13 @@ MALIGN_MX = 1.5
 MALIGN_SG = 0.2
 
 # OUTPUT FILES
-OUT_DIR = ROOT_PATH + '/../../../data/polnet_test' # '/out_all_tomos_9-10' # '/only_actin' # '/out_rotations'
+OUT_DIR = os.path.realpath(ROOT_PATH + '/../data_generated/polnet_test') # '/out_all_tomos_9-10' # '/only_actin' # '/out_rotations'
+os.makedirs(OUT_DIR, exist_ok=True)
+
 TEM_DIR = OUT_DIR + '/tem'
 TOMOS_DIR = OUT_DIR + '/tomos'
+os.makedirs(TOMOS_DIR, exist_ok=True)
+os.makedirs(TEM_DIR, exist_ok=True)
 
 # OUTPUT LABELS
 LBL_MB = 1
