@@ -367,7 +367,7 @@ class SetMembranes:
 
         # Variables assignment
         self.__voi = voi
-        self.__vol = self.__voi.sum() * v_size * v_size * v_size
+        self.__vol = float(self.__voi.sum()) * v_size * v_size * v_size # without the float cast it may raise overflow warining in Windows
         self.__v_size = v_size
         self.__tomo, self.__gtruth = np.zeros(shape=voi.shape, dtype=np.float16), \
                                      np.zeros(shape=voi.shape, dtype=bool)

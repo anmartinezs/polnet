@@ -29,7 +29,7 @@ class Network(ABC):
         :param mb_area: total membrane area within the same VOI as the network (deftault None)
         """
         self.set_voi(voi)
-        self.__vol = (self.__voi > 0).sum() * v_size * v_size * v_size
+        self.__vol = float((self.__voi > 0).sum()) * v_size * v_size * v_size # withou the float cast is my raise overflow warning in Windows
         self.__v_size = v_size
         self.__pl_occ = 0
         self.__pl = list()
