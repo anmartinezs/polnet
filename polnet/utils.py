@@ -622,3 +622,15 @@ def gen_shpere_mask(shape, radius, center=None):
     y_mat = y_mat.astype(np.float32) - center[1]
     z_mat = z_mat.astype(np.float32) - center[2]
     return x_mat * x_mat + y_mat * y_mat + z_mat * z_mat <= radius * radius
+
+
+def tomo_crop_non_zeros(tomo):
+    """
+    Crop a tomogram to focus on non-zero volumes
+    :param tomo: input tomogram
+    :return: the cropped tomogram with bound fitted to non-zero volume
+    """
+    coords = np.argwhere(tomo > 0)
+    x_min, y_min, z_min = coords.min(axis=0)
+    x_max, y_max, z_max = coords.max(axis=0)
+    return tomo[x_min:x_max + 1, y_min:y_max + 1, z_min:z_max + 1]

@@ -10,10 +10,10 @@ import time
 import subprocess
 
 import numpy as np
-from polnet import lio
+from polnet import lio, utils
 
 
-ROOT_DIR = os.getcwd() + '/../data/templates/pdbs'
+ROOT_DIR = os.getcwd() + '/../../data/templates/pdbs'
 CMD_PDB2MRC = 'e2pdb2mrc.py'
 
 # Input list of PDBs to process
@@ -39,14 +39,17 @@ for in_pdb in in_pdb_l:
     # First command: guess minimal dimension
     cmd_1 = [CMD_PDB2MRC,]
     cmd_1 += ['--apix', str(v_size)]
+    cmd_1 += ['--res', str(res)]
+    cmd_1 += ['--center']
     cmd_1 += [ROOT_DIR + '/' + in_pdb]
     hold_out_mrc = ROOT_DIR + '/' + out_dir + '/' + os.path.splitext(os.path.split(in_pdb)[1])[0] + '_hold.mrc'
     cmd_1 += [hold_out_mrc]
-    print('\t-Running commad:', ''.join(cmd_1))
+    print('\t-Running commad:', ' '.join(cmd_1))
     subprocess.run(cmd_1)
 
     # Computing the cubic bounding box
     hold_mrc = lio.load_mrc(hold_out_mrc)
+    hold_mrc = utils.tomo_crop_non_zeros(hold_mrc)
     max_dim = str(np.asarray(hold_mrc.shape).max() + 2*offset)
     cubic_shape = [max_dim, max_dim, max_dim]
 
@@ -55,6 +58,7 @@ for in_pdb in in_pdb_l:
     cmd_2 += ['--box', max_dim + ',' + max_dim + ',' + max_dim]
     cmd_2 += ['--apix', str(v_size)]
     cmd_2 += ['--res', str(res)]
+    cmd_2 += ['--center']
     cmd_2 += [ROOT_DIR + '/' + in_pdb]
     out_mrc = ROOT_DIR + '/' + out_dir + '/' + os.path.splitext(os.path.split(in_pdb)[1])[0] + '.mrc'
     cmd_2 += [out_mrc]
