@@ -16,6 +16,9 @@ from scipy.spatial.transform import Rotation as spR
 
 PI_2 = 2 * np.pi
 LOW_VALUE = 0.000001
+# Super-fibonacci constants
+PHI = np.sqrt(2.0)
+PSI = 1.533751168755204288118041
 
 # FUNCTIONS
 
@@ -487,3 +490,27 @@ def tomo_shift(tomo, shift):
     j = np.complex(0, 1)
     img = np.fft.fftn(tomo)
     return np.real(np.fft.ifftn(img * np.exp(-2.*np.pi*j*X)))
+
+
+def uniform_sampling_so3(n):
+    """
+    Generates uniform samples on SO3 following the deterministic approach propossed in:
+    M. Alexa, "Super-Fibonacci Spirals: Fast, Low-Discrepancy Sampling of SO(3)," 2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), New Orleans, LA, USA, 2022, pp. 8281-8290, doi: 10.1109/CVPR52688.2022.00811.
+    :param n: number of samples
+    :return: a numpy array with the output samples [n_samp, 4] as unit quaternions
+    """
+
+    Q = np.empty(shape=(n, 4), dtype=float)
+
+    for i in range(n):
+        s = i + 0.5
+        r = np.sqrt(s / n)
+        R = np.sqrt(1.0 - s / n)
+        alpha = 2.0 * np.pi * s / PHI
+        beta = 2.0 * np.pi * s / PSI
+        Q[i, 0] = r * np.sin(alpha)
+        Q[i, 1] = r * np.cos(alpha)
+        Q[i, 2] = R * np.sin(beta)
+        Q[i, 3] = R * np.cos(beta)
+
+    return Q

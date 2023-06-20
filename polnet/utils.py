@@ -598,3 +598,27 @@ def vol_cube(vol, off=0):
         off_vol[off_2:off_2+cube_dim, off_2:off_2+cube_dim, off_2:off_2+cube_dim] = out_vol
         out_vol = off_vol
     return out_vol
+
+
+def gen_shpere_mask(shape, radius, center=None):
+    """
+    Generates a binary mask with a sphere
+    :param shape: 3D shape of the output numpy array
+    :param radius: sphere radius
+    :param center: sphere center, if None (default) then the center of the output numpy array
+    :return: a 3D numpy array
+    """
+    assert hasattr(shape, '__len__') and (len(shape) == 3)
+    assert shape[0] > 0 and shape[1] > 0 and shape[2] > 0
+    if center is None:
+        center = .5 * np.asarray(shape)
+    else:
+        assert hasattr(center, '__len__') and (len(center) == 3)
+        assert center[0] > 0 and center[1] > 0 and center[2] > 0
+        center = np.asarray(center)
+
+    x_mat, y_mat, z_mat = np.meshgrid(range(shape[0]), range(shape[1]), range(shape[2]), indexing='ij')
+    x_mat = x_mat.astype(np.float32) - center[0]
+    y_mat = y_mat.astype(np.float32) - center[1]
+    z_mat = z_mat.astype(np.float32) - center[2]
+    return x_mat * x_mat + y_mat * y_mat + z_mat * z_mat <= radius * radius
