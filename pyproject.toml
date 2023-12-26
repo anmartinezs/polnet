@@ -12,6 +12,8 @@ dependencies = [
     "jax",
     "vtk",
     "pandas",
+    "pynrrd",
+    "scikit-image"
 ]
 
 [tool.setuptools.packages]

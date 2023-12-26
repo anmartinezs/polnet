@@ -86,9 +86,24 @@ class Mb(ABC):
         """
         return self.__surf
 
+    def masking(self, mask):
+        """
+        Removes membrane voxels in an external mask
+        :param mask: the input external mask, binary ndarray with the same shape as the membrane tomogram, tomogram
+        voxels at mask 0-valued positions will be set to 0
+        :return: None
+        """
+        assert isinstance(mask, np.ndarray) and mask.dtype == bool
+        assert len(mask.shape) == len(self.__tomo.shape) and mask.shape == self.__tomo.shape
+        mask_ids = np.invert(mask)
+        self.__tomo[mask_ids] = 0
+        self.__mask[mask_ids] = False
+        self.__surf = poly_mask(self.__surf, mask)
+
+
     def insert_density_svol(self, tomo, merge='max', mode='tomo', grow=0):
         """
-        Insert a the membrane into a tomogram
+        Insert a membrane into a tomogram
         :param tomo: tomogram where m_svol is added
         :param merge: merging mode, valid: 'min' (default), 'max', 'sum' and 'insert'
         :param mode: determines which data are inserted, valid: 'tomo' (default), 'mask' and 'voi'
@@ -340,7 +355,8 @@ class SetMembranes:
     Class for modelling a set of membranes within a tomogram
     """
 
-    def __init__(self, voi, v_size, gen_rnd_surfs, param_rg, thick_rg, layer_rg, occ, over_tolerance=0, voi_grow=0):
+    def __init__(self, voi, v_size, gen_rnd_surfs, param_rg, thick_rg, layer_rg, occ, over_tolerance=0, bg_voi=None,
+                 grow=0):
         """
         Construction
         :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for membranes
@@ -352,7 +368,9 @@ class SetMembranes:
         :param layer_s: lipid layer range (2-tuple)
         :param occ: occupancy threshold in percentage [0, 100]%
         :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0, in range [0,1))
-        :param voi_grow: number of voxels to grow the ground truth for generating the VOI (default 0)
+        :param bg_voi: background VOI (Default None), if present membrane areas in this VOI will be removed and
+        :param grow: number of voxel to grow the VOI
+        not considered for overlapping. It must be binary with the same shape of voi
         """
 
         # Input parsing
@@ -363,10 +381,15 @@ class SetMembranes:
         assert hasattr(layer_rg, '__len__') and (len(layer_rg) == 2) and (layer_rg[0] <= layer_rg[1])
         assert (occ >= 0) and (occ <= 100)
         assert (over_tolerance >= 0) and (over_tolerance <= 100)
-        assert (voi_grow >= 0)
+        if bg_voi is not None:
+            assert isinstance(bg_voi, np.ndarray) and (bg_voi.dtype == bool)
+            assert len(voi.shape) == len(bg_voi.shape) and voi.shape == bg_voi.shape
+        assert grow >= 0
 
         # Variables assignment
         self.__voi = voi
+        if bg_voi is not None:
+            self.__bg_voi = bg_voi
         self.__vol = float(self.__voi.sum()) * v_size * v_size * v_size # without the float cast it may raise overflow warining in Windows
         self.__v_size = v_size
         self.__tomo, self.__gtruth = np.zeros(shape=voi.shape, dtype=np.float16), \
@@ -376,7 +399,7 @@ class SetMembranes:
         self.__gen_rnd_surfs = gen_rnd_surfs
         self.__param_rg, self.__thick_rg, self.__layer_rg = param_rg, thick_rg, layer_rg
         self.__occ, self.__over_tolerance = occ, over_tolerance
-        self.__voi_grow = int(voi_grow)
+        self.__grow = grow
 
     def get_vol(self):
         return self.__vol
@@ -430,8 +453,12 @@ class SetMembranes:
                     print('ERROR: not valid random surface parameters generator: ' + str(self.__gen_rnd_surfs.__class__))
                     raise MbError
 
+                # Background masking
+                if self.__bg_voi is not None:
+                    hold_mb.masking(self.__bg_voi)
+
                 # Insert membrane
-                self.insert_mb(hold_mb, merge='max', over_tolerance=self.__over_tolerance, check_vol=True, grow=self.__voi_grow)
+                self.insert_mb(hold_mb, merge='max', over_tolerance=self.__over_tolerance, check_vol=True, grow=self.__grow)
                 if verbosity:
                     print('Membrane ' + str(count_mb) + ', total occupancy: ' + str(self.get_mb_occupancy()) +
                           ', volume: ' + str(hold_mb.get_vol()) + ', thickness: ' + str(hold_mb.get_thick()) +
@@ -487,14 +514,15 @@ class SetMembranes:
 
     def check_overlap(self, mb, over_tolerance):
         """
-        Determines if the membrane overlaps with any within the membranes set
+        Determines if the membrane overlaps with any member within the membranes set
         :param mb: input Membrane to check for the overlapping
         :param over_tolerance: overlapping tolerance (percentage of membrane voxel overlapping)
         """
         mb_mask = mb.get_mask()
         #tomo_mb = np.zeros(shape=mb_mask.shape, dtype=bool)
         # mb.insert_density_svol(tomo_mb, merge='max')
-        tomo_over = np.logical_and(mb_mask, self.__gtruth)
+        # tomo_over = np.logical_and(mb_mask, self.__gtruth)
+        tomo_over = np.logical_and(mb_mask, np.logical_not(self.__voi))
         if 100. * (tomo_over.sum() / self.get_vol()) > over_tolerance:
             return True
         return False
@@ -518,7 +546,7 @@ class SetMembranes:
         :param over_tolerance: overlapping tolerance (percentage of membrane voxel overlapping), if None then disabled
         :param check_vol: if True (default) the input membrane volume is check and if equal to zero then the membrane
                           is not inserted and MbError is raised
-        :param grow: number of voxel to grow the VOI (default 0)
+        :param grow: number of voxel to grow the membrane tomogram to insert (default 0), only used in 'voi' mode
         :return: raises a ValueError if the membrane is not inserted
         """
         if check_vol and (mb.get_vol() <= 0):

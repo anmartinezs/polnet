@@ -26,6 +26,7 @@ import sys
 import time
 import random
 
+import numpy as np
 from polnet.utils import *
 from polnet import lio
 from polnet import tem
@@ -40,8 +41,8 @@ from polnet.membrane import SetMembranes
 ##### Input parameters
 
 # Common tomogram settings
-ROOT_PATH = os.path.realpath(os.getcwd() + '/../data')
-NTOMOS = 1 # 12
+ROOT_PATH = os.path.realpath(os.getcwd() + '/../../data')
+NTOMOS = 10 # 12
 VOI_SHAPE = (1000, 1000, 250) # (400, 400, 236) # vx or a path to a mask (1-foreground, 0-background) tomogram
 VOI_OFFS =  ((4,996), (4,996), (4,246)) # ((4,396), (4,396), (4,232)) # ((4,1852), (4,1852), (32,432)) # ((4,1852), (4,1852), (4,232)) # vx
 VOI_VSIZE = 10 # 2.2 # A/vx
@@ -81,7 +82,7 @@ MALIGN_MX = 1.5
 MALIGN_SG = 0.2
 
 # OUTPUT FILES
-OUT_DIR = os.path.realpath(ROOT_PATH + '/../data_generated/polnet_test') # '/out_all_tomos_9-10' # '/only_actin' # '/out_rotations'
+OUT_DIR = os.path.realpath(ROOT_PATH + '/data_generated/actin_low') # '/out_all_tomos_9-10' # '/only_actin' # '/out_rotations'
 os.makedirs(OUT_DIR, exist_ok=True)
 
 TEM_DIR = OUT_DIR + '/tem'
@@ -123,6 +124,7 @@ for tomod_id in range(NTOMOS):
         voi = np.zeros(shape=VOI_SHAPE, dtype=bool)
         voi[VOI_OFFS[0][0]:VOI_OFFS[0][1], VOI_OFFS[1][0]:VOI_OFFS[1][1], VOI_OFFS[2][0]:VOI_OFFS[2][1]] = True
         voi_inital_invert = np.invert(voi)
+    bg_voi = voi.copy()
     voi_voxels = voi.sum()
     tomo_lbls = np.zeros(shape=VOI_SHAPE, dtype=np.float32)
     tomo_den = np.zeros(shape=voi.shape, dtype=np.float32)
@@ -152,7 +154,7 @@ for tomod_id in range(NTOMOS):
         if memb.get_type() == 'sphere':
             mb_sph_generator = SphGen(radius_rg=(param_rg[0], param_rg[1]))
             set_mbs = SetMembranes(voi, VOI_VSIZE, mb_sph_generator, param_rg, memb.get_thick_rg(),
-                                   memb.get_layer_s_rg(), hold_occ, memb.get_over_tol())
+                                   memb.get_layer_s_rg(), hold_occ, memb.get_over_tol(), bg_voi=bg_voi)
             set_mbs.build_set(verbosity=True)
             hold_den = set_mbs.get_tomo()
             if memb.get_den_cf_rg() is not None:
@@ -160,7 +162,7 @@ for tomod_id in range(NTOMOS):
         elif memb.get_type() == 'ellipse':
             mb_ellip_generator = EllipGen(radius_rg=param_rg[:2], max_ecc=param_rg[2])
             set_mbs = SetMembranes(voi, VOI_VSIZE, mb_ellip_generator, param_rg,  memb.get_thick_rg(),
-                                   memb.get_layer_s_rg(), hold_occ, memb.get_over_tol())
+                                   memb.get_layer_s_rg(), hold_occ, memb.get_over_tol(), bg_voi=bg_voi)
             set_mbs.build_set(verbosity=True)
             hold_den = set_mbs.get_tomo()
             if memb.get_den_cf_rg() is not None:
@@ -168,7 +170,7 @@ for tomod_id in range(NTOMOS):
         elif memb.get_type() == 'toroid':
             mb_tor_generator = TorGen(radius_rg=(param_rg[0], param_rg[1]))
             set_mbs = SetMembranes(voi, VOI_VSIZE, mb_tor_generator, param_rg, memb.get_thick_rg(), memb.get_layer_s_rg(),
-                                   hold_occ, memb.get_over_tol())
+                                   hold_occ, memb.get_over_tol(), bg_voi=bg_voi)
             set_mbs.build_set(verbosity=True)
             hold_den = set_mbs.get_tomo()
             if memb.get_den_cf_rg() is not None:

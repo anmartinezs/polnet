@@ -560,7 +560,7 @@ class NetHelixFiber(Network):
             not_finished = True
             while (hold_polymer.get_total_len() < max_length) and not_finished:
                 monomer_data = hold_polymer.gen_new_monomer(self.__over_tolerance, self._Network__voi,
-                                                            self._Network__v_size)
+                                                            self._Network__v_size, net=self)
                 if monomer_data is None:
                     not_finished = False
                 else:

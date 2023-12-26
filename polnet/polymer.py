@@ -120,7 +120,7 @@ class Monomer:
         """
         Determines if the monomer overlaps a VOI, that requires the next condition:
             - Any particle on the monomer surface is within the VOI
-        :param voi: input VOI (Volume Of Interest), binary tomgram with True for VOI voxels
+        :param voi: input VOI (Volume Of Interest), binary tomogram with True for VOI voxels
         :param v_size: voxel size, it must greater than 0 (default 1)
         :param over_tolerance: maximum overlap allowed (default 0)
         :return: True if the monomer overlaps the VOI, False otherwise
@@ -267,7 +267,7 @@ class Monomer:
         for pmer in net.get_pmers_list():
             for mmer in pmer.get_mmers_list():
                 dist = points_distance(self.get_center_mass(), mmer.get_center_mass())
-                if dist <= self.get_diameter():
+                if dist <= self.get_diameter() * 1.2:
                     poly_b = mmer.get_vtp()
                     count, n_points = 0., poly_b.GetNumberOfPoints()
                     n_points_if = 1. / float(n_points)
@@ -776,7 +776,7 @@ class HelixFiber(Polymer):
         :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0)
         :param voi: VOI to define forbidden regions (default None, not applied)
         :param v_size: VOI voxel size, it must be greater than 0 (default 1)
-        :param net: if not None (default) it contain a network of polymer that must be avoided
+        :param net: if not None (default) it contain a network of polymers that must be avoided
         :param branch: input branch from where the current mmer starts, is avoid network avoiding at the branch,
                        only valid in net is not None (default None).
         :return: a 4-tuple with monomer center point, associated tangent vector, rotated quaternion and monomer,
@@ -1001,7 +1001,7 @@ class MTUnit(FiberUnit):
             # from polnet import lio
             # lio.write_mrc(R.astype(np.float32), '/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all/hold_R1.mrc')
             F = 1. / (1. + np.exp(-R))
-            mask_F = F < 0.1
+            # mask_F = F < 0.1
             self.__tomo += -F + 1
             ang += ang_step
 

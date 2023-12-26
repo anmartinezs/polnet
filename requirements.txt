@@ -4,3 +4,5 @@ mrcfile
 jax
 vtk
 pandas
+pynrrd
+scikit-image

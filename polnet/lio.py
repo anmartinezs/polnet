@@ -56,6 +56,16 @@ def write_mrc(tomo, fname, v_size=1, dtype=None, no_saxes=True):
         # mrc.header.ispg = 401
 
 
+def read_mrc_v_size(fname):
+    """
+    Reads the voxel size of a mrc file from its header
+    :param fname: filename of the MRC
+    :return: a 3-tuple with the voxel size in Angstrom for each dimension (X, Y, Z)
+    """
+    with mrcfile.mmap(fname) as mrc:
+        return (mrc.voxel_size['x'], mrc.voxel_size['y'], mrc.voxel_size['z'])
+
+
 def save_vtp(poly, fname):
     """
     Store data vtkPolyData as a .vtp file
