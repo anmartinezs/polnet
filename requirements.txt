@@ -6,3 +6,6 @@ vtk
 pandas
 pynrrd
 scikit-image
+jupyter
+wget
+ipyfilechooser

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "polnet"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
     "numpy",
     "scipy",
@@ -13,7 +13,10 @@ dependencies = [
     "vtk",
     "pandas",
     "pynrrd",
-    "scikit-image"
+    "scikit-image",
+    "jupyter",
+    "wget",
+    "ipyfilechooser"
 ]
 
 [tool.setuptools.packages]
