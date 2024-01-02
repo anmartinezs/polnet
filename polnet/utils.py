@@ -515,7 +515,9 @@ def poly_threshold(poly, p_name, mode='points', low_th=None, hi_th=None):
     else:
         th_flt.SetInputArrayToProcess(0, 0, 0, vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, p_name)
     # th_flt.ThresholdByUpper(.5)
-    th_flt.ThresholdBetween(low_th, hi_th)
+    # th_flt.ThresholdBetween(low_th, hi_th)
+    th_flt.SetLowerThreshold(low_th)
+    th_flt.SetUpperThreshold(hi_th)
     th_flt.AllScalarsOff()
     th_flt.Update()
 
