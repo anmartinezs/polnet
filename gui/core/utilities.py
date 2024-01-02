@@ -96,7 +96,7 @@ def create_axis_mrc(mb_size, zaxis_rad, vsize, files_path, out_dir, scale_factor
     mb_size_vx, zaxis_rad_vx = mb_size / vsize, zaxis_rad / vsize
     for in_mrc in files_path:
         tomo = lio.load_mrc(in_mrc)
-        tomo= skimage.transform.rescale(tomo, scale=2, order=0, anti_aliasing=True)
+        tomo= skimage.transform.rescale(tomo, scale=scale_factor, order=0, anti_aliasing=True)
         # Constructing the reference subvolume
         center = .5 * (np.asarray(tomo.shape, dtype=np.float32) - 1)
         X, Y, Z = np.meshgrid(np.arange(tomo.shape[0]), np.arange(tomo.shape[1]), np.arange(tomo.shape[2]), indexing='ij')
