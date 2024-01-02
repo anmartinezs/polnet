@@ -244,7 +244,7 @@ def protein_to_axis(membrane_path, axis_path, x, y, v_size, outpath):
     transform_filter_initial.SetInputConnection(reader.GetOutputPort())
     transform_filter_initial.SetTransform(transform_initial)
     transform_filter_initial.Update()
-    print("Iniitial Rotation: ", transform_initial.GetOrientation())
+    print("Initial Rotation: ", transform_initial.GetOrientation())
     
     # Calculo centro de masas
     center_mass_o = vtk.vtkCenterOfMass()

@@ -12,7 +12,10 @@ def add_cloud_gauss(tomo, coords, g_std, value):
     :param value: Atomic number as mult factor
     :return: a np.ndarray with the added Guassian density
     """
-    
+
+    import time
+
+    hold_time = time.time()
     # Mark Gaussian centers
     hold_tomo = np.zeros(shape=tomo.shape, dtype=np.float32)
     for coord in coords:
@@ -20,7 +23,9 @@ def add_cloud_gauss(tomo, coords, g_std, value):
         # Detect limits
         if 0 <= x < tomo.shape[0] and 0 <= y < tomo.shape[1] and 0 <= z < tomo.shape[2]:
             hold_tomo[x, y, z] = 1
-       
+    print('\t\t-Time placing atoms:', time.time() - hold_time, 'secs')
+
+    hold_time = time.time()
     # Building Guassian model
     nx, ny, nz = (tomo.shape[0] - 1) * .5, (tomo.shape[1] - 1) * .5, (tomo.shape[2] - 1) * .5
     if (nx % 1) == 0:
@@ -51,16 +56,23 @@ def add_cloud_gauss(tomo, coords, g_std, value):
     X = X.astype(np.float32, copy=False)
     Y = Y.astype(np.float32, copy=False)
     Z = Z.astype(np.float32, copy=False)
-    
     R = np.sqrt(X * X + Y * Y + Z * Z)
+    del X
+    del Y
+    del Z
     gauss = (1/(g_std*g_std*g_std*math.sqrt(2*np.pi))) * np.exp(-R / (2. * g_std * g_std))
-    
+    print('\t\t-Time building Gaussian model:', time.time() - hold_time, 'secs')
+
+    hold_time = time.time()
     # Convolution
     tomo_conv = np.fft.fftshift(np.real(np.fft.ifftn(np.fft.fftn(hold_tomo) * np.fft.fftn(gauss))))
+    # import scipy
+    # tomo_conv = scipy.fft.fftshift(scipy.real(scipy.fft.ifftn(scipy.fft.fftn(hold_tomo) * scipy.fft.fftn(gauss))))
 
     # Add influence
     tomo_conv *= value
-    # Adding the Gaussina to the input tomogram
+    print('\t\t-Time convolution:', time.time() - hold_time, 'secs')
+    # Adding the Gaussian to the input tomogram
     return tomo_conv
 
 
@@ -77,7 +89,8 @@ def pdb_2_mrc(file_name, output_file, apix, offset, het, selected_atoms, model):
     :param selected_atoms: List of protein to include in the tomogram (None to include all).
     :param model: Model number in the PDB file to use (None to include all models).
     """
-    
+
+    print('Processing PDB:', file_name)
     
     # HO is a hydrogen attached to an oxygen. 'W' is water (infrequently found)
     atomdefs={'H':(1.0,1.00794),'HO':(1.0,1.00794),'C':(6.0,12.0107),'A':(7.0,14.00674),'N':(7.0,14.00674),'O':(8.0,15.9994),'P':(15.0,30.973761),'K':(19.0,39.0983),'S':(16.0,32.066),'W':(18.0,1.00794*2.0+15.9994),'AU':(79.0,196.96655) }
@@ -139,19 +152,21 @@ def pdb_2_mrc(file_name, output_file, apix, offset, het, selected_atoms, model):
     
     # Calculate center of mass
     cm = np.mean(coords, axis=0)  
-    print(cm)
+    print('\tCenter of mass:', cm)
 
-    # Calculate box size 
+    # Calculate box size
+    print('\tOffset:', offset)
     axis_size = np.ceil((amax - amin + 2 * offset)).astype(np.int32) 
     max_dimension = np.max(axis_size)
     box_size = [max_dimension, max_dimension, max_dimension]
-    print("Initial box size:", box_size)
+    print("\tInitial box size:", box_size)
 
     tomo_final = np.zeros((box_size[0], box_size[1], box_size[2]), dtype=np.float32)
     
     # Modify coordinates
     for key, coord_list in atoms.items():
         # Use scalar dimensions
+        print("\tAdding atoms:", str(key))
         tomo_size = np.zeros((box_size[0], box_size[1], box_size[2]), dtype=np.float32)
         c = np.array(coord_list, dtype=np.float32) 
         c -= cm
@@ -163,9 +178,10 @@ def pdb_2_mrc(file_name, output_file, apix, offset, het, selected_atoms, model):
         tomo_final += tomo_size
         
     # Apply transform
+    print("\tRescaling...")
     tomo_final = skimage.transform.rescale(tomo_final, scale=1/apix, order=0, anti_aliasing = True)
     tomo_final = tomo_final.astype(np.float32)
-    print("Final box size: ", tomo_final.shape)
+    print("\tFinal box size: ", tomo_final.shape)
     
     #tipificar
     tomo_final -= tomo_final.mean()

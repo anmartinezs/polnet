@@ -37,7 +37,7 @@ def widgets_convert_to_mrc():
     apix_widget = widgets.BoundedFloatText(value=10, min=0, step=0.0001, description="VSIZE:")
     apix_widget.style.description_width = 'initial' 
     
-    offset_widget = widgets.BoundedFloatText(value=30, min=0, step=0.0001, description="OFFSET:")
+    offset_widget = widgets.BoundedFloatText(value=20, min=0, step=1, description="OFFSET:")
     offset_widget.style.description_width = 'initial' 
     
     het_widget = widgets.Checkbox(value=False, description="Include HETATM atoms")
@@ -173,16 +173,16 @@ def widgets_create_axis():
 
 def widgets_align():
     """
-    Widgets to select mmolecules params
+    Widgets to select molecules params
     :return: tuple with all widgets created
     """
 
     custom_width = '550px'
    
-    title = widgets.Label(value="Introduce a membrane and an axis ")
+    title = widgets.Label(value="Introduce a reference membrane membrane and a protein:")
     upload_protein_button = widgets.Button(description="Select membrane file")
     dropdown_1 = widgets.Dropdown(value = None, layout={'width': custom_width})
-    upload_axis_button = widgets.Button(description="Select axis file")
+    upload_axis_button = widgets.Button(description="Select protein file")
     dropdown_2 = widgets.Dropdown(value = None, layout={'width': custom_width})
     exec_button = widgets.Button(description="Exec")
     vsize_widget = widgets.BoundedFloatText(value=10, min=0, step=0.001, description="Voxel size:")

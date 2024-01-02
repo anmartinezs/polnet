@@ -7,5 +7,6 @@ pandas
 pynrrd
 scikit-image
 jupyter
+jupyterlab
 wget
 ipyfilechooser
