@@ -83,7 +83,7 @@ def convert_to_mrc(file_paths, destination_path,apix, offset, het, selected_atom
         window_convert_to_mrc(output)
           
 
-def create_axis_mrc(mb_size, zaxis_rad, vsize, files_path, out_dir):   
+def create_axis_mrc(mb_size, zaxis_rad, vsize, files_path, out_dir, scale_factor):   
     """
     Create an mrc axis for membrane proteins
     :param mb_size: membrane size in amstrongs
@@ -91,11 +91,12 @@ def create_axis_mrc(mb_size, zaxis_rad, vsize, files_path, out_dir):
     :param vsize: voxel size
     :param files_path: files to create axis
     :param out_dir: path where save the files
+    :param scale_factor: to resize the tomo box size
     """
     mb_size_vx, zaxis_rad_vx = mb_size / vsize, zaxis_rad / vsize
     for in_mrc in files_path:
         tomo = lio.load_mrc(in_mrc)
-        tomo= skimage.transform.rescale(tomo, scale=2, order=0, anti_aliasing=True)
+        tomo= skimage.transform.rescale(tomo, scale=scale_factor, order=0, anti_aliasing=True)
         # Constructing the reference subvolume
         center = .5 * (np.asarray(tomo.shape, dtype=np.float32) - 1)
         X, Y, Z = np.meshgrid(np.arange(tomo.shape[0]), np.arange(tomo.shape[1]), np.arange(tomo.shape[2]), indexing='ij')
@@ -336,3 +337,30 @@ def files_selected(files_path, files_label):
     
     files_label.value = text
 
+
+def check_dir(dir_path, path):
+    """
+    Check correct out dir
+    :param dir_path: path selected by user
+    :param path: default path 
+    :return: correct path
+    """
+    if dir_path == None:
+        dir_path = path
+    return dir_path
+
+
+def check_prop_list(check_box, prop_list):
+    """
+    Check widget prop list
+    :param check_box: boolean to see it is active
+    :param prop_list: to get the value
+    :return: prop list value
+    """
+    if check_box:
+        return prop_list
+    else:
+        return None
+        
+    
+    
