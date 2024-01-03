@@ -252,11 +252,13 @@ class Monomer:
 
         return False
 
-    def overlap_net(self, net, over_tolerance=0):
+    def overlap_net(self, net, over_tolerance=0, max_dist=None):
         """
         Determines if the monomer overlaps with another momonmer in a network
         :param mmer: input monomer to check overlap with self
         :param over_tolerance: maximum overlap allowed (default 0)
+        :param max_dist: allows to externally set a maximum distance (in A) to seach for collisions, otherwise 1.2 monomer
+                         diameter is used
         :return: True if overlapping, otherwise False
         """
         # Initialization
@@ -267,7 +269,11 @@ class Monomer:
         for pmer in net.get_pmers_list():
             for mmer in pmer.get_mmers_list():
                 dist = points_distance(self.get_center_mass(), mmer.get_center_mass())
-                if dist <= self.get_diameter() * 1.2:
+                if max_dist is None:
+                    max_dist_h = self.get_diameter() * 1.2
+                else:
+                    max_dist_h = max_dist
+                if dist <= max_dist_h:
                     poly_b = mmer.get_vtp()
                     count, n_points = 0., poly_b.GetNumberOfPoints()
                     n_points_if = 1. / float(n_points)
@@ -770,7 +776,7 @@ class HelixFiber(Polymer):
         # self.__rq = hold_q
         self.add_monomer(p0, t, hold_q, hold_monomer)
 
-    def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1, net=None, branch=None):
+    def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1, net=None, branch=None, max_dist=None):
         """
         Generates a new monomer according the flexible fiber model
         :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0)
@@ -779,6 +785,8 @@ class HelixFiber(Polymer):
         :param net: if not None (default) it contain a network of polymers that must be avoided
         :param branch: input branch from where the current mmer starts, is avoid network avoiding at the branch,
                        only valid in net is not None (default None).
+        :param max_dist: allows to externally set a maximum distance (in A) to search for collisions for network
+                         overlapping, otherwise 1.2 monomer diameter is used
         :return: a 4-tuple with monomer center point, associated tangent vector, rotated quaternion and monomer,
                  return None in case the generation has failed
         """
@@ -809,7 +817,7 @@ class HelixFiber(Polymer):
             if self.overlap_polymer(hold_m, over_tolerance=over_tolerance):
                 return None
             if net is not None:
-                if hold_m.overlap_net(net, over_tolerance=over_tolerance):
+                if hold_m.overlap_net(net, over_tolerance=over_tolerance, max_dist=max_dist):
                     return None
         else:
             branch_dst = points_distance(branch.get_point(), hold_m.get_center_mass())

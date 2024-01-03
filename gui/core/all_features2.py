@@ -13,8 +13,8 @@ from polnet.stomo import MmerFile, MbFile, SynthTomo, SetTomos, HelixFile, MTFil
 from polnet.lrandom import EllipGen, SphGen, TorGen, PGenHelixFiberB, PGenHelixFiber, SGenUniform, SGenProp, OccGen
 from polnet.membrane import SetMembranes
 
-def all_features2(NTOMOS, VOI_SHAPE, VOI_OFFS, VOI_VSIZE, GTRUTH_POINTS_RAD, MMER_TRIES, PMER_TRIES,
-                  MEMBRANES_LIST, HELIX_LIST, PROTEINS_LIST, MB_PROTEINS_LIST, PROP_LIST, DIST_OFF, SURF_DEC,
+def all_features2(NTOMOS, VOI_SHAPE, VOI_OFFS, VOI_VSIZE, MMER_TRIES, PMER_TRIES,
+                  MEMBRANES_LIST, HELIX_LIST, PROTEINS_LIST, MB_PROTEINS_LIST, PROP_LIST, SURF_DEC,
                   TILT_ANGS, DETECTOR_SNR, MALIGN_MN, MALIGN_MX, MALIGN_SG):
 
     # Common tomogram settings
