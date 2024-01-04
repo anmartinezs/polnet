@@ -235,7 +235,8 @@ def protein_to_axis(membrane_path, axis_path, x, y, v_size, outpath):
    
     reader2, iso2, iso_mapper2, iso_actor2 = create_poly_mrc(axis_path)
     iso_actor2.GetProperty().SetColor(0.6, 0.6, 0.6)  # Color gris claro
-
+    iso_actor2.PickableOff()
+    
     actor_matrix_initial = iso_actor.GetMatrix()
     transform_initial = vtk.vtkTransform()
     transform_initial.SetMatrix(actor_matrix_initial)
@@ -276,7 +277,7 @@ def protein_to_axis(membrane_path, axis_path, x, y, v_size, outpath):
         key = obj.GetKeySym().lower()
         text = keys.get(key, "No function for this key")
         text_actor.SetInput(text)
-        if text.lower() == "position saved":
+        if text.lower() == "position saved (s)":
             
             actor_matrix = iso_actor.GetMatrix()
             transform = vtk.vtkTransform()
@@ -368,7 +369,7 @@ def visualize_helix(data, x, y, path):
 
     outline_actor = vtk.vtkActor()
     outline_actor.SetMapper(outline_mapper)
-    outline_actor.GetProperty().SetColor(1.0, 1.0, 0.7)  # Color amarillo  # Color del bounding box
+    outline_actor.GetProperty().SetColor(0.5, 0.5, 0.5)  #   # Color del bounding box 1.0, 1.0, 0.7
 
     ren.AddActor(outline_actor)
 

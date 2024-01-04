@@ -13,7 +13,7 @@ from polnet.stomo import MmerFile, MbFile, SynthTomo, SetTomos, HelixFile, MTFil
 from polnet.lrandom import EllipGen, SphGen, TorGen, PGenHelixFiberB, PGenHelixFiber, SGenUniform, SGenProp, OccGen
 from polnet.membrane import SetMembranes
 
-def all_features2(NTOMOS, VOI_SHAPE, VOI_OFFS, VOI_VSIZE, MMER_TRIES, PMER_TRIES,
+def all_features2(NTOMOS, VOI_SHAPE, OUT_DIR, VOI_OFFS, VOI_VSIZE, MMER_TRIES, PMER_TRIES,
                   MEMBRANES_LIST, HELIX_LIST, PROTEINS_LIST, MB_PROTEINS_LIST, PROP_LIST, SURF_DEC,
                   TILT_ANGS, DETECTOR_SNR, MALIGN_MN, MALIGN_MX, MALIGN_SG):
 
@@ -23,7 +23,7 @@ def all_features2(NTOMOS, VOI_SHAPE, VOI_OFFS, VOI_VSIZE, MMER_TRIES, PMER_TRIES
         assert sum(PROP_LIST) == 1
     
     # OUTPUT FILES
-    OUT_DIR = os.path.realpath(ROOT_PATH + '/../data_generated/polnet_test') # '/out_all_tomos_9-10' # '/only_actin' # '/out_rotations'
+    #OUT_DIR = os.path.realpath(ROOT_PATH + '/../data_generated/polnet_test') # '/out_all_tomos_9-10' # '/only_actin' # '/out_rotations'
     os.makedirs(OUT_DIR, exist_ok=True)
     
     TEM_DIR = OUT_DIR + '/tem'

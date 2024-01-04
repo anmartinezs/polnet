@@ -154,21 +154,26 @@ def widgets_create_axis():
     vsize_widget.style.description_width = 'initial' 
     
     save_button = widgets.Button(description="Save", layout=widgets.Layout(margin='8px 0 0 0'))
+
+    scale_factor_widget = widgets.BoundedFloatText(value=2, min=1.5, step=0.001, max=3, description="Scale factor:")
+    scale_factor_widget.style.description_width = 'initial' 
     
     labels = {
         'mb_size_widget': "Positive integer value in Angstroms ",
         'zaxis_rad_widget': "Positive integer value",
         'vsize_widget': "Positive integer value",
+        'scale_factor_widget': "Scale axis size"
     }
     
     widgets_and_labels = [
         widgets.HBox([mb_size_widget, widgets.Label(value=labels['mb_size_widget'])]),
         widgets.HBox([zaxis_rad_widget, widgets.Label(value=labels['zaxis_rad_widget'])]),
         widgets.HBox([vsize_widget, widgets.Label(value=labels['vsize_widget'])]),
+        widgets.HBox([scale_factor_widget, widgets.Label(value=labels['scale_factor_widget'])]),
     ]
 
     display(title, widgets.HBox([select_files_button,dropdown_1]),  widgets.VBox(widgets_and_labels), file_destination_widget, save_button)
-    return mb_size_widget, zaxis_rad_widget, vsize_widget, select_files_button, dropdown_1, save_button, file_destination_widget
+    return mb_size_widget, zaxis_rad_widget, vsize_widget, scale_factor_widget, select_files_button, dropdown_1, save_button, file_destination_widget
 
 
 def widgets_align():
@@ -180,9 +185,9 @@ def widgets_align():
     custom_width = '550px'
    
     title = widgets.Label(value="Introduce a reference membrane membrane and a protein:")
-    upload_protein_button = widgets.Button(description="Select membrane file")
+    upload_protein_button = widgets.Button(description="Select protein file")
     dropdown_1 = widgets.Dropdown(value = None, layout={'width': custom_width})
-    upload_axis_button = widgets.Button(description="Select protein file")
+    upload_axis_button = widgets.Button(description="Select membrane file")
     dropdown_2 = widgets.Dropdown(value = None, layout={'width': custom_width})
     exec_button = widgets.Button(description="Exec")
     vsize_widget = widgets.BoundedFloatText(value=10, min=0, step=0.001, description="Voxel size:")
@@ -473,15 +478,14 @@ def widgets_add_app_files():
     dropdown_mproteins = widgets.Dropdown( value=None, layout={'width': custom_width})
     hbox_mproteins = widgets.HBox([select_file_button_mproteins, dropdown_mproteins])
 
-    add_button = widgets.Button(description="Add")
-    add_button.layout.width = '200px'
+
 
     
 
     # Display
-    display(widgets.VBox([label, hbox_membrane, hbox_helix, hbox_proteins, hbox_mproteins, add_button]))
+    display(widgets.VBox([label, hbox_membrane, hbox_helix, hbox_proteins, hbox_mproteins]))
 
-    return select_file_button_membrane, dropdown_membrane, select_file_button_helix, dropdown_helix, select_file_button_proteins, dropdown_proteins, select_file_button_mproteins, dropdown_mproteins, add_button
+    return select_file_button_membrane, dropdown_membrane, select_file_button_helix, dropdown_helix, select_file_button_proteins, dropdown_proteins, select_file_button_mproteins, dropdown_mproteins
 
 
 def widgets_show_files(list1, list2, list3, list4):
@@ -511,6 +515,7 @@ def widgets_exec_app():
     Widgets to exe the app
     :return: tuple with widget created
     """
+    widget_out_dir = FileChooser(os.getcwd(), show_only_dirs=True, title="Select where you want to save the output files:")
     ntomos_widget = widgets.IntText(value=1,description='N_TOMOS:')
     ntomos_widget.style.description_width = 'initial'
 
@@ -527,17 +532,11 @@ def widgets_exec_app():
     voi_size_widget = widgets.BoundedFloatText(value=10, min=0, description='VOI_SIZE:')
     voi_size_widget.style.description_width = 'initial'
     
-    gtruth_points_rad_widget = widgets.BoundedFloatText(value=35, min = 0, description='GTRUTH_POINTS_RAD:')
-    gtruth_points_rad_widget.style.description_width = 'initial'
-    
     mmer_tries_widget = widgets.BoundedFloatText(value=20, min=0, description='MMER_TRIES:')
     mmer_tries_widget.style.description_width = 'initial'
     
     pmer_tries_widget = widgets.BoundedFloatText(value=100, min=0, max= 1000, description='PMER_TRIES:')
     pmer_tries_widget.style.description_width = 'initial'
-
-    dist_off_widget = widgets.BoundedFloatText(value=5, min=0, description='DIST_OFF:')
-    dist_off_widget.style.description_width = 'initial'
 
     surf_dec_widget = widgets.BoundedFloatText(value=0.9, min=0, description='SURF_DEC:')
     surf_dec_widget.style.description_width = 'initial'
@@ -598,13 +597,13 @@ def widgets_exec_app():
 
     hbox_voi_off= widgets.HBox([voi_off_widget_1,voi_off_widget_2,voi_off_widget_3,voi_off_widget_4,voi_off_widget_5,voi_off_widget_6])
     
-    display(ntomos_widget, hbox_voi_shape, hbox_voi_off, voi_size_widget, gtruth_points_rad_widget, mmer_tries_widget, pmer_tries_widget,
-            dist_off_widget, surf_dec_widget, malign_mn_widget, malign_mx_widget, malign_sg_widget, checkbox_widget, prop_list_widget, 
+    display(widget_out_dir, ntomos_widget, hbox_voi_shape, hbox_voi_off, voi_size_widget,  mmer_tries_widget, pmer_tries_widget,
+             surf_dec_widget, malign_mn_widget, malign_mx_widget, malign_sg_widget, checkbox_widget, prop_list_widget, 
             detector_snr_widget, hbox_tilt_angs, exec_button)
 
-    return ntomos_widget, voi_shape1, voi_shape2, voi_shape3, voi_off_widget_1, voi_off_widget_2, voi_off_widget_3, voi_off_widget_4, \
-           voi_off_widget_5, voi_off_widget_6,voi_size_widget, gtruth_points_rad_widget, mmer_tries_widget, \
-           pmer_tries_widget, dist_off_widget, surf_dec_widget, malign_mn_widget, malign_mx_widget, malign_sg_widget, checkbox_widget,  \
+    return widget_out_dir, ntomos_widget, voi_shape1, voi_shape2, voi_shape3, voi_off_widget_1, voi_off_widget_2, voi_off_widget_3, voi_off_widget_4, \
+           voi_off_widget_5, voi_off_widget_6,voi_size_widget,mmer_tries_widget, \
+           pmer_tries_widget, surf_dec_widget, malign_mn_widget, malign_mx_widget, malign_sg_widget, checkbox_widget,  \
            prop_list_widget, detector_snr_widget, widget_min, widget_max, widget_paso, exec_button
 
     

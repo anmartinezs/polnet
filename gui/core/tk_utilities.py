@@ -103,6 +103,16 @@ def window_create_membranes(path):
     tk.messagebox.showinfo("Create membrane files", f"File saved in {path}")
     root.destroy()
 
+def window_exec_app_failed():
+    """
+    Displays a error message that the execution has been failed
+    """
+    root = tk.Tk()
+    root.attributes('-topmost', True)
+    root.withdraw()  
+    tk.messagebox.showerror("empty file list", f"Remember to add at least one file first")
+    root.destroy()
+
 def add_files(list, selected_files_path):
     """
     Adds the elements from the selected_files_path to the list.
