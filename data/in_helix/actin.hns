@@ -6,7 +6,7 @@ HLIX_MIN_P_LEN = 17.7e4
 HLIX_HP_LEN = 720
 HLIX_MZ_LEN = 50 
 HLIX_MZ_LEN_F = 0.2
-HLIX_OVER_TOL = 1e-9 # In percentage
+HLIX_OVER_TOL = 0 # In percentage
 HLIX_MIN_NMMER = 15
 
 A_BPROP = 0.5

@@ -234,6 +234,33 @@ def add_sfield_to_poly(poly, sfield, name, dtype='float', interp='NN', mode='poi
         poly.GetCellData().AddArray(arr)
 
 
+def poly_mask(poly: vtk.vtkPolyData, mask: np.ndarray) -> vtk.vtkPolyData:
+    """
+    Removes the poly cells out of the mask
+    :param poly: input poly
+    :param mask: input mask
+    :return: the filtered (masked) poly
+    """
+    assert mask.dtype == bool
+    m_x, m_y, m_z = mask.shape
+    del_cell_ids = vtk.vtkIdTypeArray()
+    for i in range(poly.GetNumberOfCells()):
+        cell = vtk.vtkGenericCell()
+        poly.GetCell(i, cell)
+        pts = cell.GetPoints()
+        for j in range(pts.GetNumberOfPoints()):
+            x, y, z = pts.GetPoint(j)
+            x, y, z = int(round(x)), int(round(y)), int(round(z))
+            if x < 0 or x >= m_x or y < 0 or y >= m_y or z < 0 or z >= m_z or not mask[x, y, z]:
+                del_cell_ids.InsertNextValue(i)
+                break
+    rm_filter = vtk.vtkRemovePolyData()
+    rm_filter.AddInputData(poly)
+    rm_filter.SetCellIds(del_cell_ids)
+    rm_filter.Update()
+    return rm_filter.GetOutput()
+
+
 def merge_polys(poly_1, poly_2):
     """
     Merges two input poly_data in single one

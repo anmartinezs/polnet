@@ -26,6 +26,7 @@ import sys
 import time
 import random
 
+import numpy as np
 from polnet.utils import *
 from polnet import lio
 from polnet import tem
@@ -40,29 +41,28 @@ from polnet.membrane import SetMembranes
 ##### Input parameters
 
 # Common tomogram settings
-ROOT_PATH = os.path.realpath(os.getcwd() + '/../data')
-NTOMOS = 1 # 12
-VOI_SHAPE = (1000, 1000, 250) # (400, 400, 236) # vx or a path to a mask (1-foreground, 0-background) tomogram
-VOI_OFFS =  ((4,996), (4,996), (4,246)) # ((4,396), (4,396), (4,232)) # ((4,1852), (4,1852), (32,432)) # ((4,1852), (4,1852), (4,232)) # vx
+ROOT_PATH = os.path.realpath(os.getcwd() + '/../../data')
+NTOMOS = 2 # 12
+VOI_SHAPE = (400, 400, 236) # (1000, 1000, 250) # vx or a path to a mask (1-foreground, 0-background) tomogram
+VOI_OFFS =  ((4,396), (4,396), (4,232)) # ((4,996), (4,996), (4,246)) # ((4,1852), (4,1852), (32,432)) # ((4,1852), (4,1852), (4,232)) # vx
 VOI_VSIZE = 10 # 2.2 # A/vx
-GTRUTH_POINTS_RAD = 35 # nm
 MMER_TRIES = 20
 PMER_TRIES = 100
 
 # Lists with the features to simulate
 MEMBRANES_LIST = ['in_mbs/sphere.mbs', 'in_mbs/ellipse.mbs', 'in_mbs/toroid.mbs' ]
 
-HELIX_LIST = ['in_helix/mt.hns', 'in_helix/actin.hns']
+HELIX_LIST = ['in_helix/mt.hns',] # ['in_helix/mt.hns', 'in_helix/actin.hns']
 
-PROTEINS_LIST = ['in_10A/4v4r_10A.pns', 'in_10A/3j9i_10A.pns', 'in_10A/4v4r_50S_10A.pns', 'in_10A/4v4r_30S_10A.pns',
-                 'in_10A/6utj_10A.pns', 'in_10A/5mrc_10A.pns', 'in_10A/4v94_10A.pns', 'in_10A/4cr2_10A.pns',
-                 'in_10A/3qm1_10A.pns', 'in_10A/3h84_10A.pns', 'in_10A/3gl1_10A.pns', 'in_10A/3d2f_10A.pns',
-                 'in_10A/3cf3_10A.pns', 'in_10A/2cg9_10A.pns', 'in_10A/1u6g_10A.pns', 'in_10A/1s3x_10A.pns',
-                 'in_10A/1qvr_10A.pns', 'in_10A/1bxn_10A.pns']
+PROTEINS_LIST =  ['in_10A/4v4r_10A.pns', 'in_10A/3j9i_10A.pns', 'in_10A/4v4r_50S_10A.pns', 'in_10A/4v4r_30S_10A.pns',
+                   'in_10A/6utj_10A.pns', 'in_10A/5mrc_10A.pns', 'in_10A/4v94_10A.pns', 'in_10A/4cr2_10A.pns',
+                   'in_10A/3qm1_10A.pns', 'in_10A/3h84_10A.pns', 'in_10A/3gl1_10A.pns', 'in_10A/3d2f_10A.pns',
+                   'in_10A/3cf3_10A.pns', 'in_10A/2cg9_10A.pns', 'in_10A/1u6g_10A.pns', 'in_10A/1s3x_10A.pns',
+                   'in_10A/1qvr_10A.pns', 'in_10A/1bxn_10A.pns']
 
 MB_PROTEINS_LIST = ['in_10A/mb_5wek_10A.pms', 'in_10A/mb_4pe5_10A.pms', 'in_10A/mb_5ide_10A.pms',
-                    'in_10A/mb_5gjv_10A.pms', 'in_10A/mb_5kxi_10A.pms', 'in_10A/mb_5tj6_10A.pms',
-                    'in_10A/mb_5tqq_10A.pms', 'in_10A/mb_5vai_10A.pms']
+                      'in_10A/mb_5gjv_10A.pms', 'in_10A/mb_5kxi_10A.pms', 'in_10A/mb_5tj6_10A.pms',
+                      'in_10A/mb_5tqq_10A.pms', 'in_10A/mb_5vai_10A.pms']
 
 # Proportions list, specifies the proportion for each protein, this proportion is tried to be achieved but no guaranteed
 # The toal sum of this list must be 1
@@ -70,7 +70,6 @@ PROP_LIST = None # [.4, .6]
 if PROP_LIST is not None:
     assert sum(PROP_LIST) == 1
 
-DIST_OFF = 5 # A / vx
 SURF_DEC = 0.9 # Target reduction factor for surface decimation (default None)
 
 # Reconstruction tomograms
@@ -81,7 +80,7 @@ MALIGN_MX = 1.5
 MALIGN_SG = 0.2
 
 # OUTPUT FILES
-OUT_DIR = os.path.realpath(ROOT_PATH + '/../data_generated/polnet_test') # '/out_all_tomos_9-10' # '/only_actin' # '/out_rotations'
+OUT_DIR = os.path.realpath(ROOT_PATH + '/data_generated/gui_test') # '/out_all_tomos_9-10' # '/only_actin' # '/out_rotations'
 os.makedirs(OUT_DIR, exist_ok=True)
 
 TEM_DIR = OUT_DIR + '/tem'
@@ -123,6 +122,7 @@ for tomod_id in range(NTOMOS):
         voi = np.zeros(shape=VOI_SHAPE, dtype=bool)
         voi[VOI_OFFS[0][0]:VOI_OFFS[0][1], VOI_OFFS[1][0]:VOI_OFFS[1][1], VOI_OFFS[2][0]:VOI_OFFS[2][1]] = True
         voi_inital_invert = np.invert(voi)
+    bg_voi = voi.copy()
     voi_voxels = voi.sum()
     tomo_lbls = np.zeros(shape=VOI_SHAPE, dtype=np.float32)
     tomo_den = np.zeros(shape=voi.shape, dtype=np.float32)
@@ -152,7 +152,7 @@ for tomod_id in range(NTOMOS):
         if memb.get_type() == 'sphere':
             mb_sph_generator = SphGen(radius_rg=(param_rg[0], param_rg[1]))
             set_mbs = SetMembranes(voi, VOI_VSIZE, mb_sph_generator, param_rg, memb.get_thick_rg(),
-                                   memb.get_layer_s_rg(), hold_occ, memb.get_over_tol())
+                                   memb.get_layer_s_rg(), hold_occ, memb.get_over_tol(), bg_voi=bg_voi)
             set_mbs.build_set(verbosity=True)
             hold_den = set_mbs.get_tomo()
             if memb.get_den_cf_rg() is not None:
@@ -160,7 +160,7 @@ for tomod_id in range(NTOMOS):
         elif memb.get_type() == 'ellipse':
             mb_ellip_generator = EllipGen(radius_rg=param_rg[:2], max_ecc=param_rg[2])
             set_mbs = SetMembranes(voi, VOI_VSIZE, mb_ellip_generator, param_rg,  memb.get_thick_rg(),
-                                   memb.get_layer_s_rg(), hold_occ, memb.get_over_tol())
+                                   memb.get_layer_s_rg(), hold_occ, memb.get_over_tol(), bg_voi=bg_voi)
             set_mbs.build_set(verbosity=True)
             hold_den = set_mbs.get_tomo()
             if memb.get_den_cf_rg() is not None:
@@ -168,7 +168,7 @@ for tomod_id in range(NTOMOS):
         elif memb.get_type() == 'toroid':
             mb_tor_generator = TorGen(radius_rg=(param_rg[0], param_rg[1]))
             set_mbs = SetMembranes(voi, VOI_VSIZE, mb_tor_generator, param_rg, memb.get_thick_rg(), memb.get_layer_s_rg(),
-                                   hold_occ, memb.get_over_tol())
+                                   hold_occ, memb.get_over_tol(), bg_voi=bg_voi)
             set_mbs.build_set(verbosity=True)
             hold_den = set_mbs.get_tomo()
             if memb.get_den_cf_rg() is not None:
@@ -230,7 +230,8 @@ for tomod_id in range(NTOMOS):
             # Network generation
             net_helix = NetHelixFiber(voi, VOI_VSIZE, helix.get_l() * helix.get_mmer_rad() * 2, model_surf,
                                       pol_generator, hold_occ, helix.get_min_p_len(), helix.get_hp_len(),
-                                      helix.get_mz_len(), helix.get_mz_len_f(), helix.get_over_tol())
+                                      helix.get_mz_len(), helix.get_mz_len_f(), helix.get_over_tol(),
+                                      (helix.get_rad() + .5*helix.get_mmer_rad()) * 2.4)
             if helix.get_min_nmmer() is not None:
                 net_helix.set_min_nmmer(helix.get_min_nmmer())
             net_helix.build_network()

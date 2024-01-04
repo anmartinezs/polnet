@@ -502,7 +502,7 @@ class NetHelixFiber(Network):
     """
 
     def __init__(self, voi, v_size, l_length, m_surf, gen_hfib_params, occ, min_p_len, hp_len, mz_len, mz_len_f,
-                 over_tolerance=0):
+                 over_tolerance=0, unit_diam=None):
         """
         Construction
         :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers
@@ -513,10 +513,11 @@ class NetHelixFiber(Network):
         parametrization
         :param min_p_len: minimum persistence length
         :param hp_len: helix period length
-        :param mz_len: monomer length is z-axis
+        :param mz_len: monomer length
         :param mz_len_f: maximum length factor in z-axis
         :param occ: occupancy threshold in percentage [0, 100]%
         :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0, in range [0,1))
+        :param unit_diam: structural unit diameter
         """
 
         # Initialize abstract variables
@@ -536,6 +537,7 @@ class NetHelixFiber(Network):
         self.__occ, self.__over_tolerance = occ, over_tolerance
         self.__min_p_len, self.__hp_len = min_p_len, hp_len
         self.__mz_len, self.__mz_len_f = mz_len, mz_len_f
+        self.__unit_diam = unit_diam
 
     def build_network(self):
         """
@@ -560,7 +562,7 @@ class NetHelixFiber(Network):
             not_finished = True
             while (hold_polymer.get_total_len() < max_length) and not_finished:
                 monomer_data = hold_polymer.gen_new_monomer(self.__over_tolerance, self._Network__voi,
-                                                            self._Network__v_size)
+                                                            self._Network__v_size, net=self, max_dist=self.__unit_diam)
                 if monomer_data is None:
                     not_finished = False
                 else:
