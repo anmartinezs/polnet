@@ -65,6 +65,7 @@ def all_features2(NTOMOS, VOI_SHAPE, OUT_DIR, VOI_OFFS, VOI_VSIZE, MMER_TRIES, P
             voi = np.zeros(shape=VOI_SHAPE, dtype=bool)
             voi[VOI_OFFS[0][0]:VOI_OFFS[0][1], VOI_OFFS[1][0]:VOI_OFFS[1][1], VOI_OFFS[2][0]:VOI_OFFS[2][1]] = True
             voi_inital_invert = np.invert(voi)
+        bg_voi = voi.copy()
         voi_voxels = voi.sum()
         tomo_lbls = np.zeros(shape=VOI_SHAPE, dtype=np.float32)
         tomo_den = np.zeros(shape=voi.shape, dtype=np.float32)
@@ -94,7 +95,7 @@ def all_features2(NTOMOS, VOI_SHAPE, OUT_DIR, VOI_OFFS, VOI_VSIZE, MMER_TRIES, P
             if memb.get_type() == 'sphere':
                 mb_sph_generator = SphGen(radius_rg=(param_rg[0], param_rg[1]))
                 set_mbs = SetMembranes(voi, VOI_VSIZE, mb_sph_generator, param_rg, memb.get_thick_rg(),
-                                       memb.get_layer_s_rg(), hold_occ, memb.get_over_tol())
+                                       memb.get_layer_s_rg(), hold_occ, memb.get_over_tol(), bg_voi=bg_voi)
                 set_mbs.build_set(verbosity=True)
                 hold_den = set_mbs.get_tomo()
                 if memb.get_den_cf_rg() is not None:
@@ -102,7 +103,7 @@ def all_features2(NTOMOS, VOI_SHAPE, OUT_DIR, VOI_OFFS, VOI_VSIZE, MMER_TRIES, P
             elif memb.get_type() == 'ellipse':
                 mb_ellip_generator = EllipGen(radius_rg=param_rg[:2], max_ecc=param_rg[2])
                 set_mbs = SetMembranes(voi, VOI_VSIZE, mb_ellip_generator, param_rg,  memb.get_thick_rg(),
-                                       memb.get_layer_s_rg(), hold_occ, memb.get_over_tol())
+                                       memb.get_layer_s_rg(), hold_occ, memb.get_over_tol(), bg_voi=bg_voi)
                 set_mbs.build_set(verbosity=True)
                 hold_den = set_mbs.get_tomo()
                 if memb.get_den_cf_rg() is not None:
@@ -110,7 +111,7 @@ def all_features2(NTOMOS, VOI_SHAPE, OUT_DIR, VOI_OFFS, VOI_VSIZE, MMER_TRIES, P
             elif memb.get_type() == 'toroid':
                 mb_tor_generator = TorGen(radius_rg=(param_rg[0], param_rg[1]))
                 set_mbs = SetMembranes(voi, VOI_VSIZE, mb_tor_generator, param_rg, memb.get_thick_rg(), memb.get_layer_s_rg(),
-                                       hold_occ, memb.get_over_tol())
+                                       hold_occ, memb.get_over_tol(), bg_voi=bg_voi)
                 set_mbs.build_set(verbosity=True)
                 hold_den = set_mbs.get_tomo()
                 if memb.get_den_cf_rg() is not None:
@@ -172,7 +173,8 @@ def all_features2(NTOMOS, VOI_SHAPE, OUT_DIR, VOI_OFFS, VOI_VSIZE, MMER_TRIES, P
                 # Network generation
                 net_helix = NetHelixFiber(voi, VOI_VSIZE, helix.get_l() * helix.get_mmer_rad() * 2, model_surf,
                                           pol_generator, hold_occ, helix.get_min_p_len(), helix.get_hp_len(),
-                                          helix.get_mz_len(), helix.get_mz_len_f(), helix.get_over_tol())
+                                          helix.get_mz_len(), helix.get_mz_len_f(), helix.get_over_tol(),
+                                          (helix.get_rad() + .5*helix.get_mmer_rad()) * 2.4)
                 if helix.get_min_nmmer() is not None:
                     net_helix.set_min_nmmer(helix.get_min_nmmer())
                 net_helix.build_network()

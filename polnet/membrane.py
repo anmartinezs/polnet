@@ -388,6 +388,7 @@ class SetMembranes:
 
         # Variables assignment
         self.__voi = voi
+        self.__bg_voi = None
         if bg_voi is not None:
             self.__bg_voi = bg_voi
         self.__vol = float(self.__voi.sum()) * v_size * v_size * v_size # without the float cast it may raise overflow warining in Windows

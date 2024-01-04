@@ -1,5 +1,5 @@
 MMER_ID = pdb_6rd4
-MMER_SVOL = /templates/mb_mrcs_10A/6rd4_mbz_align_shitf.mrc
+MMER_SVOL = /templates/mb_mrcs_10A/6rd4_mbz_align_shift.mrc
 MMER_ISO = 0.5028846943575769
 PMER_L = 1.2
 PMER_L_MAX = 3000.0
