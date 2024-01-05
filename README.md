@@ -20,9 +20,9 @@ Here is how to get it installed:
 
 1. Download PolNet source code:
     ```console
-    git clone anmartinezs/polnet
+    git clone https://github.com/anmartinezs/polnet.git
     cd polnet
-   ```
+    ```
 2. Create a conda virtual environment
     ```console
     conda create --name polnet pip

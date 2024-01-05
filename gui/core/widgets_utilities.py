@@ -34,11 +34,14 @@ def widgets_convert_to_mrc():
     
     dropdown = widgets.Dropdown(value=None, layout={'width': custom_width})
     
-    apix_widget = widgets.BoundedFloatText(value=10, min=0, step=0.0001, description="VSIZE:")
-    apix_widget.style.description_width = 'initial' 
-    
+    apix_widget = widgets.BoundedFloatText(value=10, min=0, step=0.001, description="VSIZE:")
+    apix_widget.style.description_width = 'initial'
+
+    res_widget = widgets.BoundedFloatText(value=30, min=0, step=1, description="RESOLUTION:")
+    res_widget.style.description_width = 'initial'
+
     offset_widget = widgets.BoundedFloatText(value=20, min=0, step=1, description="OFFSET:")
-    offset_widget.style.description_width = 'initial' 
+    offset_widget.style.description_width = 'initial'
     
     het_widget = widgets.Checkbox(value=False, description="Include HETATM atoms")
     het_widget.style.description_width = 'initial' 
@@ -59,11 +62,11 @@ def widgets_convert_to_mrc():
     exec_button = widgets.Button(description="Convert")
     
     files_layaout = widgets.HBox([files_button, dropdown])
-    full_layout = widgets.VBox([title, files_layaout, apix_widget, offset_widget, het_widget, chains_widget, use_model_checkbox, model_widget, file_destination_widget, exec_button])
+    full_layout = widgets.VBox([title, files_layaout, apix_widget, res_widget, offset_widget, het_widget, chains_widget, use_model_checkbox, model_widget, file_destination_widget, exec_button])
     
     display(full_layout)
     
-    return apix_widget, offset_widget, het_widget, chains_widget, use_model_checkbox, model_widget, files_button, dropdown, file_destination_widget, exec_button
+    return apix_widget, res_widget, offset_widget, het_widget, chains_widget, use_model_checkbox, model_widget, files_button, dropdown, file_destination_widget, exec_button
 
 
 def widgets_mmolecules_params():

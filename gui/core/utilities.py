@@ -67,7 +67,7 @@ def create_new_pdb(upload_value):
     return new_path
     
 
-def convert_to_mrc(file_paths, destination_path,apix, offset, het, selected_atoms, model):
+def convert_to_mrc(file_paths, destination_path, apix, res, offset, het, selected_atoms, model):
     """
     convert pdb to mrc using pdb2mrc
     :param files: files selected
@@ -79,7 +79,7 @@ def convert_to_mrc(file_paths, destination_path,apix, offset, het, selected_atom
         p = os.path.basename(path)
         iden = os.path.splitext(p)[0]
         output = destination_path + iden + ".mrc"
-        pdb_2_mrc(path, output, apix, offset, het, selected_atoms, model)
+        pdb_2_mrc(path, output, apix, res, offset, het, selected_atoms, model)
         window_convert_to_mrc(output)
           
 

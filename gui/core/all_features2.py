@@ -1,5 +1,5 @@
-import os
 import sys
+import csv
 import time
 import random
 
@@ -47,6 +47,25 @@ def all_features2(NTOMOS, VOI_SHAPE, OUT_DIR, VOI_OFFS, VOI_VSIZE, MMER_TRIES, P
     # Preparing intermediate directories
     clean_dir(TEM_DIR)
     clean_dir(TOMOS_DIR)
+
+    # Save labels table
+    unit_lbl = 1
+    header_lbl_tab = ['MODEL', 'LABEL']
+    with open(OUT_DIR + '/labels_table.csv', 'w') as file_csv:
+        writer_csv = csv.DictWriter(file_csv, fieldnames=header_lbl_tab, delimiter='\t')
+        writer_csv.writeheader()
+        for i in range(len(MEMBRANES_LIST)):
+            writer_csv.writerow({header_lbl_tab[0]: MEMBRANES_LIST[i], header_lbl_tab[1]: unit_lbl})
+            unit_lbl += 1
+        for i in range(len(HELIX_LIST)):
+            writer_csv.writerow({header_lbl_tab[0]: HELIX_LIST[i], header_lbl_tab[1]: unit_lbl})
+            unit_lbl += 1
+        for i in range(len(PROTEINS_LIST)):
+            writer_csv.writerow({header_lbl_tab[0]: PROTEINS_LIST[i], header_lbl_tab[1]: unit_lbl})
+            unit_lbl += 1
+        for i in range(len(MB_PROTEINS_LIST)):
+            writer_csv.writerow({header_lbl_tab[0]: MB_PROTEINS_LIST[i], header_lbl_tab[1]: unit_lbl})
+            unit_lbl += 1
     
     # Loop for tomograms
     for tomod_id in range(NTOMOS):
