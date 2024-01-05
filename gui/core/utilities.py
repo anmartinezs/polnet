@@ -362,5 +362,44 @@ def check_prop_list(check_box, prop_list):
     else:
         return None
         
-    
+
+def up_file_priority(list, value):
+    """
+    increase priority to process file
+    :param list: list with files
+    :param value: dropdown option select
+    """
+    if len(list)>0:
+        index = list.index(value)
+        if index > 0:
+            return exchange_element(index, index - 1, list)
+        else:
+            return 0, []
+
+
+def down_file_priority(list, value):
+    """
+    Down priority to process file
+    :param list: list with files
+    :param value: dropdown option select
+    """
+    if len(list)>0:
+        index = list.index(value)
+        if index < len(list) - 1:
+            return exchange_element(index, index + 1, list)
+        else:
+            return len(list), []
+
+
+def exchange_element(index1, index2, list):
+    """
+    Exchange optios order
+    :param index1: index first position
+    :param index2: index second position
+    :param list: list to change order
+    return: tuple wwith the new value and new listoptions
+    """
+    list[index1], list[index2] = list[index2], list[index1]
+    options = list
+    return index2, options
     
