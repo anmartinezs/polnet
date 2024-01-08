@@ -14,13 +14,11 @@ from polnet.lrandom import EllipGen, SphGen, TorGen, PGenHelixFiberB, PGenHelixF
 from polnet.membrane import SetMembranes
 
 def all_features2(NTOMOS, VOI_SHAPE, OUT_DIR, VOI_OFFS, VOI_VSIZE, MMER_TRIES, PMER_TRIES,
-                  MEMBRANES_LIST, HELIX_LIST, PROTEINS_LIST, MB_PROTEINS_LIST, PROP_LIST, SURF_DEC,
+                  MEMBRANES_LIST, HELIX_LIST, PROTEINS_LIST, MB_PROTEINS_LIST, SURF_DEC,
                   TILT_ANGS, DETECTOR_SNR, MALIGN_MN, MALIGN_MX, MALIGN_SG):
 
     # Common tomogram settings
     ROOT_PATH = os.path.realpath(os.getcwd() + '/../data')
-    if PROP_LIST is not None:
-        assert sum(PROP_LIST) == 1
     
     # OUTPUT FILES
     #OUT_DIR = os.path.realpath(ROOT_PATH + '/../data_generated/polnet_test') # '/out_all_tomos_9-10' # '/only_actin' # '/out_rotations'
@@ -305,11 +303,6 @@ def all_features2(NTOMOS, VOI_SHAPE, OUT_DIR, VOI_OFFS, VOI_VSIZE, MMER_TRIES, P
     
             # Network generation
             pol_l_generator = PGenHelixFiber()
-            if PROP_LIST is None:
-                pol_s_generator = SGenUniform()
-            else:
-                assert len(PROP_LIST) == len(PROTEINS_LIST)
-                pol_s_generator = SGenProp(PROP_LIST)
             net_sawlc = NetSAWLC(voi, VOI_VSIZE, protein.get_pmer_l() * surf_diam, model_surf, protein.get_pmer_l_max(),
                                  pol_l_generator, hold_occ, protein.get_pmer_over_tol(), poly=None,
                                  svol=model < protein.get_iso(), tries_mmer=MMER_TRIES, tries_pmer=PMER_TRIES)

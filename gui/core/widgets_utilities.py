@@ -158,7 +158,7 @@ def widgets_create_axis():
     
     save_button = widgets.Button(description="Save", layout=widgets.Layout(margin='8px 0 0 0'))
 
-    scale_factor_widget = widgets.BoundedFloatText(value=2, min=1.5, step=0.001, max=3, description="Scale factor:")
+    scale_factor_widget = widgets.BoundedFloatText(value=1.5, min=1, step=0.1, max=3, description="Scale factor:")
     scale_factor_widget.style.description_width = 'initial' 
     
     labels = {
@@ -459,7 +459,7 @@ def widgets_add_app_files():
     # Widgets
     custom_width = '550px'
     
-    label = widgets.Label(value='Add membrane files ')
+    label = widgets.Label(value='Types of structures:')
     
     select_file_button_membrane = widgets.Button(description="Select membrane files")
     select_file_button_membrane.layout.width = '200px'
@@ -516,95 +516,93 @@ def widgets_exec_app():
     :return: tuple with widget created
     """
     widget_out_dir = FileChooser(os.getcwd(), show_only_dirs=True, title="Select where you want to save the output files:")
-    ntomos_widget = widgets.IntText(value=1,description='N_TOMOS:')
+    ntomos_widget = widgets.IntText(value=1,description='N_TOMOS (number of tomograms in the dataset):')
     ntomos_widget.style.description_width = 'initial'
+    ntomos_widget.layout.width = '380px'
 
-    voi_shape1 = widgets.BoundedIntText(value=400, min = 0, max= 100000, description='VOI_SHAPE:')
+    voi_shape1 = widgets.BoundedIntText(value=400, min = 0, max= 100000, description='VOI_SHAPE (Tomogram shape, voxels):')
     voi_shape1.style.description_width = 'initial'
-    voi_shape1.layout.width = '210px'
+    voi_shape1.layout.width = '310px'
     voi_shape2 = widgets.BoundedIntText(value=400, min = 0, max= 100000 )
-    voi_shape2.layout.width = '100px'
+    voi_shape2.layout.width = '80px'
     voi_shape3 = widgets.BoundedIntText(value=100, min = 0, max= 100000 )
-    voi_shape3.layout.width = '100px'
+    voi_shape3.layout.width = '80px'
 
     hbox_voi_shape = widgets.HBox([voi_shape1, voi_shape2, voi_shape3])
     
-    voi_size_widget = widgets.BoundedFloatText(value=10, min=0, description='VOI_SIZE:')
+    voi_size_widget = widgets.BoundedFloatText(value=10, min=0, description='VOI_VOXEL_SIZE (Voxel size, voxels/A):')
     voi_size_widget.style.description_width = 'initial'
+    voi_size_widget.layout.width = '350px'
     
-    mmer_tries_widget = widgets.BoundedFloatText(value=20, min=0, description='MMER_TRIES:')
+    mmer_tries_widget = widgets.BoundedFloatText(value=20, min=0, description='MMER_TRIES (Maximun number of tries for monomers):')
     mmer_tries_widget.style.description_width = 'initial'
+    mmer_tries_widget.layout.width = '400px'
     
-    pmer_tries_widget = widgets.BoundedFloatText(value=100, min=0, max= 1000, description='PMER_TRIES:')
+    pmer_tries_widget = widgets.BoundedFloatText(value=100, min=0, max= 1000, description='PMER_TRIES (Maximun number of tries for polymers):')
     pmer_tries_widget.style.description_width = 'initial'
+    pmer_tries_widget.layout.width = '390px'
 
-    surf_dec_widget = widgets.BoundedFloatText(value=0.9, min=0, description='SURF_DEC:')
+    surf_dec_widget = widgets.BoundedFloatText(value=0.9, min=0, description='SURF_DEC (Decimation for surface respresentation, [0, 1]):')
     surf_dec_widget.style.description_width = 'initial'
+    surf_dec_widget.layout.width = '410px'
 
-    malign_mn_widget = widgets.BoundedFloatText(value=1, min=0, description='MALIGN_MN:')
+    malign_mn_widget = widgets.BoundedFloatText(value=1, min=0, description='MALIGN_MN (Micrograph miss-alginment mean, pixels):')
     malign_mn_widget.style.description_width = 'initial'
+    malign_mn_widget.layout.width = '400px'
 
-    malign_mx_widget = widgets.BoundedFloatText(value=1.5, min=0, description='MALIGN_MX:')
+    malign_mx_widget = widgets.BoundedFloatText(value=1.5, min=0, description='MALIGN_MX (Micrograph miss-alginment max, pixels):')
     malign_mx_widget.style.description_width = 'initial'
+    malign_mx_widget.layout.width = '400px'
 
-    malign_sg_widget = widgets.BoundedFloatText(value=0.2, min=0, description='MALIGN_SG:')
+    malign_sg_widget = widgets.BoundedFloatText(value=0.2, min=0, description='MALIGN_SG (Micrograph miss-alginment sigma, pixels):')
     malign_sg_widget.style.description_width = 'initial'
+    malign_sg_widget.layout.width = '400px'
 
-    prop_list_widget = widgets.FloatRangeSlider(value=[0.4, 0.6],min=0,max=1,step=0.001,description='PROP_LIST:',readout_format='.4f', disabled = True)
-    prop_list_widget.style.description_width = 'initial'
+    detector_snr_widget_low = widgets.BoundedFloatText(value=1, min=0, step=0.0001, description='DETECTOR_SNR (Micrographs SNR range):')
+    detector_snr_widget_low.style.description_width = 'initial'
+    detector_snr_widget_low.layout.width = '330px'
+    detector_snr_widget_high = widgets.BoundedFloatText(value=2, min=0, step=0.0001)
+    detector_snr_widget_high.style.description_width = 'initial'
+    detector_snr_widget_high.layout.width = '80px'
 
-    def activate_prop_list(change):
-        if change.new == True:  
-            prop_list_widget.disabled = False
-        else:
-            prop_list_widget.disabled = True
+    hbox_snr = widgets.HBox([detector_snr_widget_low, detector_snr_widget_high])
 
-   
-    
-    checkbox_widget = widgets.Checkbox(value=False,description='Activate PROP_LIST')
-    checkbox_widget.observe(activate_prop_list, names="value")
-
-    detector_snr_widget = widgets.FloatRangeSlider(value=[1,2],min=0,step=0.001,description='DETECTO_SNR:',readout_format='.4f')
-    detector_snr_widget.style.description_width = 'initial'
-
-    widget_min = widgets.BoundedIntText(value=-60, min = -1000, max= 100000, description='TIL_ANGS:')
+    widget_min = widgets.BoundedIntText(value=-60, min = -1000, max= 100000, description='TILT_ANGS (Degrees; start, end, step):')
     widget_min.style.description_width = 'initial'
-    widget_min.layout.width = '160px'
+    widget_min.layout.width = '290px'
     widget_max = widgets.BoundedIntText(value=61, min = -1000, max= 100000 )
-    widget_max.layout.width = '100px'
+    widget_max.layout.width = '60px'
     widget_paso = widgets.BoundedIntText(value=3, min = -1000,max= 100000 )
-    widget_paso.layout.width = '100px'
+    widget_paso.layout.width = '60px'
 
     hbox_tilt_angs= widgets.HBox([widget_min, widget_max, widget_paso])
 
-    
-
-    voi_off_widget_1 = widgets.BoundedIntText(value=4, description='VOI_OFF:')
+    voi_off_widget_1 = widgets.BoundedIntText(value=4, description='VOI_OFF (Empty halo, voxels):')
     voi_off_widget_1.style.description_width = 'initial'
-    voi_off_widget_1.layout.width = '180px'
+    voi_off_widget_1.layout.width = '170px'
     voi_off_widget_2 = widgets.BoundedIntText(value=396, max = 100000, min = 1)
-    voi_off_widget_2.layout.width = '120px'
+    voi_off_widget_2.layout.width = '70px'
     voi_off_widget_3 = widgets.BoundedIntText(value=4, max = 100000, min = 1 )
-    voi_off_widget_3.layout.width = '120px'
+    voi_off_widget_3.layout.width = '70px'
     voi_off_widget_4 = widgets.BoundedIntText(value=396,max = 100000, min = 1)
-    voi_off_widget_4.layout.width = '120px'
+    voi_off_widget_4.layout.width = '70px'
     voi_off_widget_5 = widgets.BoundedIntText(value=4, max = 100000, min = 1 )
-    voi_off_widget_5.layout.width = '120px'
+    voi_off_widget_5.layout.width = '70px'
     voi_off_widget_6 = widgets.BoundedIntText(value=96, max = 100000, min = 1)
-    voi_off_widget_6.layout.width = '120px'
+    voi_off_widget_6.layout.width = '70px'
 
     exec_button = widgets.Button(description="Exec")
 
     hbox_voi_off= widgets.HBox([voi_off_widget_1,voi_off_widget_2,voi_off_widget_3,voi_off_widget_4,voi_off_widget_5,voi_off_widget_6])
     
     display(widget_out_dir, ntomos_widget, hbox_voi_shape, hbox_voi_off, voi_size_widget,  mmer_tries_widget, pmer_tries_widget,
-             surf_dec_widget, malign_mn_widget, malign_mx_widget, malign_sg_widget, checkbox_widget, prop_list_widget, 
-            detector_snr_widget, hbox_tilt_angs, exec_button)
+             surf_dec_widget, malign_mn_widget, malign_mx_widget, malign_sg_widget,
+            hbox_snr, hbox_tilt_angs, exec_button)
 
     return widget_out_dir, ntomos_widget, voi_shape1, voi_shape2, voi_shape3, voi_off_widget_1, voi_off_widget_2, voi_off_widget_3, voi_off_widget_4, \
            voi_off_widget_5, voi_off_widget_6,voi_size_widget,mmer_tries_widget, \
-           pmer_tries_widget, surf_dec_widget, malign_mn_widget, malign_mx_widget, malign_sg_widget, checkbox_widget,  \
-           prop_list_widget, detector_snr_widget, widget_min, widget_max, widget_paso, exec_button
+           pmer_tries_widget, surf_dec_widget, malign_mn_widget, malign_mx_widget, malign_sg_widget,  \
+           detector_snr_widget_low, detector_snr_widget_high, widget_min, widget_max, widget_paso, exec_button
 
 
 def widgets_change_order(lists):

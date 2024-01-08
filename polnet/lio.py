@@ -11,6 +11,8 @@ import mrcfile
 import numpy as np
 import pandas as pd
 
+from vtkmodules.util.numpy_support import numpy_to_vtk
+
 
 def load_mrc(fname, mmap=False, no_saxes=True):
     """
@@ -149,3 +151,19 @@ def write_table(table, out_file):
             for key in fieldnames:
                 dic_row[key] = table[key][row]
             writer.writerow(dic_row)
+
+
+def numpy_to_vti(tomo: np.ndarray, dtype=vtk.VTK_FLOAT) -> vtk.vtkImageData:
+    """
+    Converts a tomogram as a 3D numpy array into an vtkImageData object
+    :param tomo: 3D numpy array
+    :param dtype: VTK data type, default VTK_FLOAT
+    :return: a vktImageData
+    """
+    assert len(tomo.shape) == 3
+
+    vtk_data = numpy_to_vtk(num_array=tomo.flatten(), deep=True, array_type=dtype)
+    img = vtk.vtkImageData()
+    img.GetPointData().SetScalars(vtk_data)
+    img.SetDimensions(tomo.shape[0], tomo.shape[1], tomo.shape[2])
+    return img

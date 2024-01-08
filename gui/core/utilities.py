@@ -125,7 +125,7 @@ def insert_maxis(protein_array, eje_array, center, path, name):
     :return: path 
     """
     utils.insert_svol_tomo(protein_array, eje_array, center, merge='sum')
-    name = name + "_mbz_align_shitf"
+    name = name + "_mbz_align_shift"
     output = check_path(path, name, ".mrc")
     print("ESte es el path", output)
     lio.write_mrc(eje_array, output, v_size=10)

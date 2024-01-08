@@ -195,8 +195,8 @@ def pdb_2_mrc(file_name, output_file, apix, res, offset, het, selected_atoms, mo
     tomo_final = tomo_final.astype(np.float32)
     print("\tFinal box size: ", tomo_final.shape)
     
-    #tipificar
-    tomo_final -= tomo_final.mean()
-    tomo_final /= tomo_final.std()
+    # #tipificar
+    # tomo_final -= tomo_final.mean()
+    # tomo_final /= tomo_final.std()
     lio.write_mrc(tomo_final, output_file, apix)
     print("Finished script-----  ")

@@ -33,12 +33,14 @@ Here is how to get it installed:
     ```console
     pip install -e .
     ```
-For developers who do not want to install PolNet in the virtual environment as a package, you can only install 
+**For developers** who do not want to install PolNet in the virtual environment as a package, you can only install 
 the requirements by:
 
     pip install -r requirements.txt
 
 You can check all requirements in the **requirements.txt** file (JAX is optional).
+
+The installation has been tested in Ubuntu 22.04 and Windows 11.
 
 ## Usage
 
@@ -51,9 +53,9 @@ To create you own structural models next Jupyter notebooks are available:
 3. Macromolecules: 
    - Atomic model (PDB) to electron density map (MRC): **gui/atomic_to_density.ipynb**
    - Only for membrane bound macromolecules: **gui/align_membrane_proteins.ipynb**
-   - Models: **gui/create_macromolecula_models.ipynb**
+   - Models: **gui/create_macromolecule_models.ipynb**
 
-**Important note**: all Jupyter notebooks are thoroughly self-documented in order to guide the user in the process. In addition, contain graphic objects and default setting to facilitate the process.  
+**Important note**: all Jupyter notebooks are thoroughly self-documented in order to guide the user in the process. In addition, they contain graphic objects and default setting to facilitate the process.  
 
 ## For developers
 
