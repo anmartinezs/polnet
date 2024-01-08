@@ -482,9 +482,6 @@ def widgets_add_app_files():
     hbox_mproteins = widgets.HBox([select_file_button_mproteins, dropdown_mproteins])
 
 
-
-    
-
     # Display
     display(widgets.VBox([label, hbox_membrane, hbox_helix, hbox_proteins, hbox_mproteins]))
 
@@ -608,6 +605,31 @@ def widgets_exec_app():
            voi_off_widget_5, voi_off_widget_6,voi_size_widget,mmer_tries_widget, \
            pmer_tries_widget, surf_dec_widget, malign_mn_widget, malign_mx_widget, malign_sg_widget, checkbox_widget,  \
            prop_list_widget, detector_snr_widget, widget_min, widget_max, widget_paso, exec_button
+
+
+def widgets_change_order(lists):
+    """
+    Change files order
+    :return: tuple with all widgets created
+    """
+    widgets_list = []
+    for list in lists:
+        if len(list) > 1:
+            dropdown_widget = widgets.Dropdown(options=list, value=list[0], layout={'width': '550px'})
+        else:
+             dropdown_widget = widgets.Dropdown(options=list, layout={'width': '550px'})
+        up_button = widgets.Button(description="↑ Up selected file")
+        down_button = widgets.Button(description="↓ Down selected file")
+        widgets_list.append((up_button, down_button,dropdown_widget))
+
+
+    if widgets_list:
+        # Crear una cuadrícula vertical 4x1
+        display(widgets.VBox([widgets.HBox(tupla) for tupla in widgets_list]))
+        return tuple(widgets_list)
+    else:
+        print("No hay listas válidas para mostrar widgets.")
+        return ()
 
     
 def update_dropdown(*args):
