@@ -47,6 +47,7 @@ class TEM:
     def __save_tangs_file(self, angs):
         """
         Stores the tilt angles file according IMOD format
+
         :param angs: non-empty iterable with the tilt angles
         """
         with open(self.__tangs_file, 'w') as file:
@@ -56,6 +57,7 @@ class TEM:
     def __load_tangs_file(self):
         """
         Load the tilt angles file into an array
+
         :return: output array with the tilt angles
         """
         angs = list()
@@ -67,6 +69,7 @@ class TEM:
     def gen_tilt_series_imod(self, vol, angs, ax='X', mode='real'):
         """
         Generates the 2D projection series from a 3D volume using 'xyzproj' IMOD binary
+
         :param vol: input 3D volume
         :param angs: non-empty iterable with the tilt angles or a range
         :param ax: tilt axis, either 'X', 'Y' or 'Z' (default 'X')
@@ -122,6 +125,7 @@ class TEM:
         """
         Add detector noise to micrographs. Readout noise has Gaussian distribution and dark current is typically
         one order magnitude lower, so the last one is neglected.
+
         :param snr: target snr to determine the level of noise to be added, linear scale so greater than zero
         """
 
@@ -179,6 +183,7 @@ class TEM:
     def set_header(self, data='mics', p_size=None, origin=None):
         """
         Set 3D reconstructed tomogram pixel (voxel) size using alter 'alterheader' IMOD script
+
         :param data: determines the data where the changes will be applied, valid: 'mics' or 'rec3d'
         :param p_size: pixel size X, Y and Z dimensions
         :param origin: origin X, Y and Z dimensions
@@ -225,6 +230,7 @@ class TEM:
         """
         Add random X and Y misalignment to each micrograh in the tilt series following a sinusoidal model:
         f(t_angle) = mn + mx(sin(t_angle)/sin(max_t_angle))
+
         :param mn: minimun mislignment value (t_angle = 0)
         :param mx: maximum mislignment value (t_angle = max_t_angle)
         :param n_sigma: sigma value for Gaussian noise.

@@ -23,11 +23,18 @@ def create_poly_mrc(path):
     :param path: path to mrc file
     :return tuple with vtk objects created
     """
-    reader = vtk.vtkMRCReader()
-    reader.SetFileName(path)
+    # tomo_vti = vtk.vtkMRCReader()
+    # tomo_vti.SetFileName(path)
+    tomo_np = lio.load_mrc(path, mmap=False,no_saxes=False)
+    # Normalization
+    # print('MRC loaded')
+    tomo_np = utils.lin_map(tomo_np, lb=0, ub=1)
+    tomo_vti = lio.numpy_to_vti(tomo_np)
+    del tomo_np
+    # print('VTKimage generated')
     
     iso = vtk.vtkContourFilter()
-    iso.SetInputConnection(reader.GetOutputPort())
+    iso.SetInputData(tomo_vti)
     iso.SetValue(0, 0.1)  # Ajusta el valor inicial del isovalor (puedes cambiarlo)
     
     iso_mapper = vtk.vtkPolyDataMapper()
@@ -36,7 +43,10 @@ def create_poly_mrc(path):
     
     iso_actor = vtk.vtkActor()
     iso_actor.SetMapper(iso_mapper)
-    return reader, iso, iso_mapper, iso_actor
+
+    # print('Iso-map constructed')
+
+    return tomo_vti, iso, iso_mapper, iso_actor
 
 
 def create_window(x,y):
@@ -156,9 +166,9 @@ def create_slider(iren):
     """
     # Create iso surface slider
     slider_rep = vtk.vtkSliderRepresentation2D()
-    slider_rep.SetMinimumValue(0.01)  # Maximun value 
-    slider_rep.SetMaximumValue(7.0)  # Minimun value
-    slider_rep.SetValue(1.0)  # Default value
+    slider_rep.SetMinimumValue(0.0)  # Maximun value
+    slider_rep.SetMaximumValue(1.0)  # Minimun value
+    slider_rep.SetValue(0.1)  # Default value
     slider_rep.GetPoint1Coordinate().SetCoordinateSystemToNormalizedDisplay()
     slider_rep.GetPoint1Coordinate().SetValue(0.1, 0.1)
     slider_rep.GetPoint2Coordinate().SetCoordinateSystemToNormalizedDisplay()
@@ -182,11 +192,11 @@ def select_isosurface(path, x, y):
     """
     ren, ren_win, iren = create_window(x,y)
 
-    reader, iso, iso_mapper, iso_actor = create_poly_mrc(path)
+    tomo_vti, iso, iso_mapper, iso_actor = create_poly_mrc(path)
 
     iso_actor.GetProperty().SetColor(1.0, 1.0, 0.7)  # Color amarillo
     outline = vtk.vtkOutlineFilter()
-    outline.SetInputConnection(reader.GetOutputPort())
+    outline.SetInputData(tomo_vti)
 
     outline_mapper = vtk.vtkPolyDataMapper()
     outline_mapper.SetInputConnection(outline.GetOutputPort())
@@ -230,19 +240,21 @@ def protein_to_axis(membrane_path, axis_path, x, y, v_size, outpath):
     
     ren, ren_win, iren = create_window(x, y)
 
-    reader, iso, iso_mapper, iso_actor = create_poly_mrc(membrane_path)
+    tomo_vti, iso, iso_mapper, iso_actor = create_poly_mrc(membrane_path)
     iso_actor.GetProperty().SetColor(1.0, 1.0, 0.7)  # Color amarillo
    
-    reader2, iso2, iso_mapper2, iso_actor2 = create_poly_mrc(axis_path)
+    tomo_vti2, iso2, iso_mapper2, iso_actor2 = create_poly_mrc(axis_path)
     iso_actor2.GetProperty().SetColor(0.6, 0.6, 0.6)  # Color gris claro
     iso_actor2.PickableOff()
+
     
     actor_matrix_initial = iso_actor.GetMatrix()
     transform_initial = vtk.vtkTransform()
     transform_initial.SetMatrix(actor_matrix_initial)
     
     transform_filter_initial = vtk.vtkTransformFilter()
-    transform_filter_initial.SetInputConnection(reader.GetOutputPort())
+    #transform_filter_initial.SetInputConnection(tomo_vti.GetOutputPort())
+    transform_filter_initial.SetInputData(tomo_vti)
     transform_filter_initial.SetTransform(transform_initial)
     transform_filter_initial.Update()
     print("Initial Rotation: ", transform_initial.GetOrientation())
@@ -283,39 +295,42 @@ def protein_to_axis(membrane_path, axis_path, x, y, v_size, outpath):
             transform = vtk.vtkTransform()
             transform.SetMatrix(actor_matrix)
 
+            # Calculate center of mass
             transform_filter = vtk.vtkTransformFilter()
-            transform_filter.SetInputConnection(reader.GetOutputPort())
+            transform_filter.SetInputData(tomo_vti)
+            #transform_filter.SetInputConnection(tomo_vti.GetOutputPort())
             transform_filter.SetTransform(transform)
             transform_filter.Update()
             
             center_mass_o.SetInputConnection(transform_filter.GetOutputPort())
             center_mass_o.Update()
+            
             c_m = center_mass_o.GetCenter()
-
             angles = transform.GetOrientation()
+
+            print("Center of mass o ", c_o)
+            print("Center of mass m " , c_m)
+            print("Rotation ", angles)
         
             rotation_transform = vtk.vtkTransform()
             rotation_transform.RotateZ(angles[2])
             rotation_transform.RotateX(angles[0])
             rotation_transform.RotateY(angles[1])
             rotation_transform.Inverse()
-    
-            print("Center of mass o ", c_o)
-            print("Center of mass m " , c_m)
-            print("Rotation ", transform.GetOrientation())
-            
+
             resliced = vtk.vtkImageReslice()
-            resliced.SetInputData(reader.GetOutput())
+            resliced.SetInputData(tomo_vti)
             resliced.SetAutoCropOutput(True)
             resliced.SetResliceTransform(rotation_transform)
             resliced.SetInterpolationModeToLinear()
             resliced.Update()
 
-            resliced_image_data = resliced.GetOutput()
-            resliced_image_array = vtk_to_numpy(resliced_image_data.GetPointData().GetScalars()).reshape(resliced_image_data.GetDimensions(), order='F')
-         
-            eje_array = np.zeros(shape=reader2.GetOutput().GetDimensions(), dtype=np.float32)
-            p = insert_maxis(resliced_image_array, eje_array, np.asarray(c_m) / v_size, outpath, os.path.splitext(os.path.split(membrane_path)[1])[0])
+            image_data = resliced.GetOutput()
+            image_array = vtk_to_numpy(image_data.GetPointData().GetScalars()).reshape(image_data.GetDimensions(), order='F')
+
+            #eje_array = np.zeros(shape=tomo_vti2.GetOutput().GetDimensions(), dtype=np.float32)
+            eje_array = np.zeros(shape=tomo_vti2.GetDimensions(), dtype=np.float32)
+            p = insert_maxis(image_array, eje_array, np.asarray(c_m), outpath, os.path.splitext(os.path.split(membrane_path)[1])[0])
             window_align_to_axis(p)
  
     

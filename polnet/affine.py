@@ -26,6 +26,7 @@ PSI = 1.533751168755204288118041
 def vector_module(v):
     """
     Computes the module of a vector (|v|)
+
     :param v: input vector (one dimensional numpy array)
     :return: the computed module
     """
@@ -35,6 +36,7 @@ def vector_module(v):
 def poly_rotate_wxyz(in_vtp, w, x, y, z):
     """
     Applies rigid rotation to a vtkPolyData from angle-axis input form
+
     :param in_vtp: input vtkPolyData
     :param w: angle
     :param x: axis - x
@@ -54,6 +56,7 @@ def poly_rotate_wxyz(in_vtp, w, x, y, z):
 def poly_translate(in_vtp, t):
     """
     Applies rigid rotation to a vtkPolyData
+
     :param in_vtp: input vtkPolyData
     :param t: translation vector
     :return: the transformed vtkPolyData
@@ -75,6 +78,7 @@ def poly_translate(in_vtp, t):
 def poly_scale(in_vtp, s):
     """
     Applies scaling transformation to a vtkPolyData
+
     :param in_vtp: input vtkPolyData
     :param s: scaling factor
     :return: the transformed vtkPolyData
@@ -94,6 +98,7 @@ def gen_rand_unit_quaternion():
     Generates a random sample for a unit quaternion
     KUFFNER, James J. Effective sampling and distance metrics for 3D rigid body path planning.
     In IEEE International Conference on Robotics and Automation, 2004. Proceedings. ICRA'04. 2004. IEEE, 2004. p. 3993-3998.
+
     :return: a unit quaternion in the shape Q=(w,x,y,z)=(cos(θ/2),vx*sin(θ/2),vy*sin(θ/2),vz*sin(θ/2)),
              where (vx,vy,vz) is the axis and \theta is the angle
     """
@@ -110,6 +115,7 @@ def gen_rand_unit_quaternion():
 def quat_to_angle_axis(qw, qx, qy, qz, deg=True):
     """
     Given a quaternion, q = s + X with s=qw and X=[qx, qy, qz], returns its angle axis representation
+
     :param qw: quaternion w value
     :param qx: quaternion x value
     :param qy: quaternion y value
@@ -133,6 +139,7 @@ def quat_to_angle_axis(qw, qx, qy, qz, deg=True):
 def angle_axis_to_quat(ang, x, y, z, deg=True):
     """
     Given a angle and axis [x, y, z] computes its corresponding unit quaternion
+
     :param ang: angle
     :param x: axis x value
     :param y: axis y value
@@ -152,6 +159,7 @@ def angle_axis_to_quat(ang, x, y, z, deg=True):
 def rot_vect_quat(v, q):
     """
     Rotate a vector by a quaternion using Rodrigues formula
+
     :param v: input vector
     :param q: input quaternion (angle, axis)
     :return: output rotated vector
@@ -177,6 +185,7 @@ def rot_vect_quat(v, q):
 def quat_to_mat(q):
     """
     Covert a quaternion into a full three-dimensional rotation matrix
+
     :param q: A 4 element array representing the quaternion (q0,q1,q2,q3)
     :return: A 3x3 element matrix representing the full 3D rotation matrix.
              This rotation matrix converts a point in the local reference
@@ -207,6 +216,7 @@ def quat_to_mat(q):
 def tomo_rotate(tomo, q, center=None, active=True, order=3, mode='constant', cval=0.0, prefilter=True):
     """
     Applies the rotation defined in a quaternion to a tomogram
+
     :param tomo: input tomogram as 3D numpy array
     :param q: quaternion encoding the rotation
     :param center: center for rotation, if None (default) the tomogram center is used
@@ -296,6 +306,7 @@ def tomo_rotate(tomo, q, center=None, active=True, order=3, mode='constant', cva
 def vect_rotate(vect, q, active=True):
     """
     Applies the rotation defined in a quaternion to a vector
+
     :param tomo: input vector as 1D numpy array with length 3
     :param q: quaternion encoding the rotation
     :param active: rotation mode, if True (default) active otherwise passive
@@ -319,6 +330,7 @@ def vect_rotate(vect, q, active=True):
 def quat_mult(q1, q2):
     """
     Multiply two quaternions
+
     :param q1: first input quaternion
     :param q2: second input quaternion
     """
@@ -334,6 +346,7 @@ def quat_mult(q1, q2):
 def quat_two_vectors(a, b):
     """
     Computes the quaternion to rotate from one vector to another
+
     :param a: origin vector
     :param b: destination vector
     :return: the quaternion thar rotates vector a to be aligned with b
@@ -353,6 +366,7 @@ def ortho_vector(v):
     """
     Computes any orthogonal vector to an input. This implementation uses the cross product with the most orthogonal
     basis vector.
+
     :param v: input vector
     :return: output orthogonal vector
     """
@@ -381,6 +395,7 @@ def ortho_vector(v):
 def vect_to_zmat(v_in, mode='active'):
     """
     Computes the matrix to rotate unit Z-axis vector to a given vector
+
     :param v_in: input vector
     :param mode: either 'active' (default) or 'pasive'
     :returns: a rotation matrix as numpy ndarray (shape=3x3)
@@ -412,6 +427,7 @@ def rot_mat_zyz(rot, tilt, psi, deg=True):
     """
     Creates 3D rotation matrix according to ZY'Z'' Euler angles convention (Relion and Xmipp compatible)
     This is a direct translation from code https://github.com/jjcorreao/relion/blob/master/relion-1.3/src/euler.cpp
+
     :param rot: first input Euler angle (Z)
     :param tilt: second input Euler angle (X')
     :paramn psi: third input Euler angle (Z'')
@@ -446,6 +462,7 @@ def rot_mat_zyz(rot, tilt, psi, deg=True):
 def rot_to_quat(rot):
     """
     Computes quaternion from an input rotation matrix
+
     :param rot: rotation numpy matrix
     :return: a quaternion as 4 dirmension array (real part, 3-tuple imaginary part)
     """
@@ -457,6 +474,7 @@ def rot_to_quat(rot):
 def tomo_shift(tomo, shift):
     """
     Tomogram shift in Fourier space
+
     :param tomo: the tomo numpy.ndarray (it must be 3D) to shift
     :param shift: 3-tuple with the shifting for every dimension
     """
@@ -496,6 +514,7 @@ def uniform_sampling_so3(n):
     """
     Generates uniform samples on SO3 following the deterministic approach propossed in:
     M. Alexa, "Super-Fibonacci Spirals: Fast, Low-Discrepancy Sampling of SO(3)," 2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), New Orleans, LA, USA, 2022, pp. 8281-8290, doi: 10.1109/CVPR52688.2022.00811.
+
     :param n: number of samples
     :return: a numpy array with the output samples [n_samp, 4] as unit quaternions
     """

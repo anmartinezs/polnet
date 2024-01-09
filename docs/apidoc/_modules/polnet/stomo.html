@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>polnet.stomo &mdash; PolNet 0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=10f1778b"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PolNet
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">polnet</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PolNet</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">polnet.stomo</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for polnet.stomo</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Classes with the info for a synthetic tomograms</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Antonio Martinez-Sanchez&#39;</span>
+
+
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">from</span> <span class="nn">polnet.network</span> <span class="kn">import</span> <span class="n">Network</span>
+<span class="kn">from</span> <span class="nn">polnet.membrane</span> <span class="kn">import</span> <span class="n">SetMembranes</span>
+<span class="kn">from</span> <span class="nn">polnet</span> <span class="kn">import</span> <span class="n">poly</span> <span class="k">as</span> <span class="n">pp</span>
+
+
+<div class="viewcode-block" id="MmerFile">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MmerFile">[docs]</a>
+<span class="k">class</span> <span class="nc">MmerFile</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For handling protein (or monomer) files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_file</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param in_file: path to the input file with extension .pns</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mmer_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mmer_svol</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__iso</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_l</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_occ</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_np</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_l_max</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_over_tol</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">in_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_mmer_file</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MmerFile.get_mmer_id">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MmerFile.get_mmer_id">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mmer_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mmer_id</span></div>
+
+
+<div class="viewcode-block" id="MmerFile.get_mmer_svol">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MmerFile.get_mmer_svol">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mmer_svol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mmer_svol</span></div>
+
+
+<div class="viewcode-block" id="MmerFile.get_iso">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MmerFile.get_iso">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_iso</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__iso</span></div>
+
+
+<div class="viewcode-block" id="MmerFile.get_pmer_l">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MmerFile.get_pmer_l">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_pmer_l</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_l</span></div>
+
+
+<div class="viewcode-block" id="MmerFile.get_pmer_occ">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MmerFile.get_pmer_occ">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_pmer_occ</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_occ</span></div>
+
+
+<div class="viewcode-block" id="MmerFile.get_pmer_np">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MmerFile.get_pmer_np">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_pmer_np</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_np</span></div>
+
+
+<div class="viewcode-block" id="MmerFile.get_pmer_l_max">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MmerFile.get_pmer_l_max">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_pmer_l_max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_l_max</span></div>
+
+
+<div class="viewcode-block" id="MmerFile.get_pmer_over_tol">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MmerFile.get_pmer_over_tol">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_pmer_over_tol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_over_tol</span></div>
+
+
+<div class="viewcode-block" id="MmerFile.load_mmer_file">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MmerFile.load_mmer_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_mmer_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_file</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load protein parameters from an input file</span>
+
+<span class="sd">        :param in_file: path to the input file with extension .pns</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">in_file</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">in_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.pms&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">in_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.pns&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Reading input file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">linea</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">linea</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+                    <span class="c1"># Remove coments</span>
+                    <span class="n">linea</span> <span class="o">=</span> <span class="n">linea</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+                    <span class="c1"># Parsing an file entry</span>
+                    <span class="n">var</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">linea</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)</span>
+                    <span class="n">var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;MMER_ID&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__mmer_id</span> <span class="o">=</span> <span class="n">value</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;MMER_SVOL&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__mmer_svol</span> <span class="o">=</span> <span class="n">value</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;MMER_ISO&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__iso</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;PMER_L&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_l</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;PMER_OCC&#39;</span><span class="p">:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_occ</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                            <span class="n">value_0</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+                            <span class="n">value_1</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;)&#39;</span><span class="p">)]</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_occ</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">value_0</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">value_1</span><span class="p">))</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;PMER_NP&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_np</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;PMER_L_MAX&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_l_max</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;PMER_OVER_TOL&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_over_tol</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+</div>
+
+                    <span class="c1"># else:</span>
+                    <span class="c1">#     print(&#39;ERROR: (MmerFile - load_protein_file) input entry not recognized:&#39;, value)</span>
+
+
+<div class="viewcode-block" id="MmerMbFile">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MmerMbFile">[docs]</a>
+<span class="k">class</span> <span class="nc">MmerMbFile</span><span class="p">(</span><span class="n">MmerFile</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For handling protein (or monomer) files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_file</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param in_file: path to the input file with extension .pms</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mmer_center</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mb_z_height</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_reverse_normals</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">in_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_mmer_mb_file</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MmerMbFile.get_mmer_center">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MmerMbFile.get_mmer_center">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mmer_center</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mmer_center</span></div>
+
+
+<div class="viewcode-block" id="MmerMbFile.get_mb_z_height">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MmerMbFile.get_mb_z_height">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mb_z_height</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mb_z_height</span></div>
+
+
+<div class="viewcode-block" id="MmerMbFile.get_pmer_reverse_normals">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MmerMbFile.get_pmer_reverse_normals">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_pmer_reverse_normals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_reverse_normals</span></div>
+
+
+<div class="viewcode-block" id="MmerMbFile.load_mmer_mb_file">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MmerMbFile.load_mmer_mb_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_mmer_mb_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_file</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load protein parameters from an input file</span>
+
+<span class="sd">        :param in_file: path to the input file with extension .pms</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">load_mmer_file</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span>
+
+        <span class="c1"># Reading input file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">linea</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">linea</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+                    <span class="c1"># Remove coments</span>
+                    <span class="n">linea</span> <span class="o">=</span> <span class="n">linea</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+                    <span class="c1"># Parsing an file entry</span>
+                    <span class="n">var</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">linea</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)</span>
+                    <span class="n">var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;MMER_CENTER&#39;</span><span class="p">:</span>
+                        <span class="n">hold_str</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;[&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                        <span class="n">hold_str</span> <span class="o">=</span> <span class="n">hold_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;]&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                        <span class="n">hold_str</span> <span class="o">=</span> <span class="n">hold_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__mmer_center</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">hold_str</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">hold_str</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">hold_str</span><span class="p">[</span><span class="mi">2</span><span class="p">])]</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;MB_Z_HEIGHT&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__mb_z_height</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;PMER_REVERSE_NORMALS&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_reverse_normals</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+</div>
+
+
+
+
+
+<div class="viewcode-block" id="MbFile">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MbFile">[docs]</a>
+<span class="k">class</span> <span class="nc">MbFile</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For handling membrane configuration files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__type</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__thick_rg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__layer_s_rg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__max_ecc</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__over_tol</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__min_rad</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__den_cf_rg</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="MbFile.get_type">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MbFile.get_type">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__type</span></div>
+
+
+<div class="viewcode-block" id="MbFile.get_occ">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MbFile.get_occ">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_occ</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span></div>
+
+
+<div class="viewcode-block" id="MbFile.get_thick_rg">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MbFile.get_thick_rg">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_thick_rg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__thick_rg</span></div>
+
+
+<div class="viewcode-block" id="MbFile.get_layer_s_rg">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MbFile.get_layer_s_rg">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_layer_s_rg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__layer_s_rg</span></div>
+
+
+<div class="viewcode-block" id="MbFile.get_max_ecc">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MbFile.get_max_ecc">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_max_ecc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__max_ecc</span></div>
+
+
+<div class="viewcode-block" id="MbFile.get_over_tol">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MbFile.get_over_tol">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_over_tol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__over_tol</span></div>
+
+
+<div class="viewcode-block" id="MbFile.get_min_rad">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MbFile.get_min_rad">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_min_rad</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__min_rad</span></div>
+
+
+<div class="viewcode-block" id="MbFile.get_den_cf_rg">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MbFile.get_den_cf_rg">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_den_cf_rg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__den_cf_rg</span></div>
+
+
+<div class="viewcode-block" id="MbFile.load_mb_file">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MbFile.load_mb_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_mb_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_file</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load protein parameters from an input file</span>
+
+<span class="sd">        :param in_file: path to the input file with extension .mbs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">in_file</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">in_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.mbs&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Reading input file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">linea</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">linea</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+                    <span class="c1"># Remove coments</span>
+                    <span class="n">linea</span> <span class="o">=</span> <span class="n">linea</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+                    <span class="c1"># Parsing an file entry</span>
+                    <span class="n">var</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">linea</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)</span>
+                    <span class="n">var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;MB_TYPE&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__type</span> <span class="o">=</span> <span class="n">value</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;MB_OCC&#39;</span><span class="p">:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                            <span class="n">value_0</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+                            <span class="n">value_1</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;)&#39;</span><span class="p">)]</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">value_0</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">value_1</span><span class="p">))</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;MB_THICK_RG&#39;</span><span class="p">:</span>
+                        <span class="n">value_0</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+                        <span class="n">value_1</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;)&#39;</span><span class="p">)]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__thick_rg</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">value_0</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">value_1</span><span class="p">))</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;MB_LAYER_S_RG&#39;</span><span class="p">:</span>
+                        <span class="n">value_0</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+                        <span class="n">value_1</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;)&#39;</span><span class="p">)]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__layer_s_rg</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">value_0</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">value_1</span><span class="p">))</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;MB_MAX_ECC&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__max_ecc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;MB_OVER_TOL&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__over_tol</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;MB_MIN_RAD&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__min_rad</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;MB_DEN_CF_RG&#39;</span><span class="p">:</span>
+                        <span class="n">value_0</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+                        <span class="n">value_1</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;)&#39;</span><span class="p">)]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__den_cf_rg</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">value_0</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">value_1</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR: (MmerFile - load_protein_file) input entry not recognized:&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HelixFile">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.HelixFile">[docs]</a>
+<span class="k">class</span> <span class="nc">HelixFile</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For handling helicoidal structures configuration files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__type</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__l</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__min_p_len</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mmer_rad</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__hp_len</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mz_len</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mz_len_f</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__thick_rg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__over_tol</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__den_cf_rg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__min_nmmer</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="HelixFile.get_type">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.HelixFile.get_type">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__type</span></div>
+
+
+<div class="viewcode-block" id="HelixFile.get_l">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.HelixFile.get_l">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_l</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__l</span></div>
+
+
+<div class="viewcode-block" id="HelixFile.get_occ">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.HelixFile.get_occ">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_occ</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span></div>
+
+
+<div class="viewcode-block" id="HelixFile.get_thick_rg">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.HelixFile.get_thick_rg">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_thick_rg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__thick_rg</span></div>
+
+
+<div class="viewcode-block" id="HelixFile.get_min_p_len">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.HelixFile.get_min_p_len">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_min_p_len</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__min_p_len</span></div>
+
+
+<div class="viewcode-block" id="HelixFile.get_mmer_rad">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.HelixFile.get_mmer_rad">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mmer_rad</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mmer_rad</span></div>
+
+
+<div class="viewcode-block" id="HelixFile.get_hp_len">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.HelixFile.get_hp_len">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_hp_len</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__hp_len</span></div>
+
+
+<div class="viewcode-block" id="HelixFile.get_mz_len">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.HelixFile.get_mz_len">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mz_len</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mz_len</span></div>
+
+
+<div class="viewcode-block" id="HelixFile.get_mz_len_f">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.HelixFile.get_mz_len_f">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mz_len_f</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mz_len_f</span></div>
+
+
+<div class="viewcode-block" id="HelixFile.get_over_tol">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.HelixFile.get_over_tol">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_over_tol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__over_tol</span></div>
+
+
+<div class="viewcode-block" id="HelixFile.get_den_cf_rg">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.HelixFile.get_den_cf_rg">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_den_cf_rg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__den_cf_rg</span></div>
+
+
+<div class="viewcode-block" id="HelixFile.get_min_nmmer">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.HelixFile.get_min_nmmer">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_min_nmmer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__min_nmmer</span></div>
+
+
+<div class="viewcode-block" id="HelixFile.load_hx_file">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.HelixFile.load_hx_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_hx_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_file</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load protein parameters from an input file</span>
+
+<span class="sd">        :param in_file: path to the input file with extension .hns</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">in_file</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">in_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.hns&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Reading input file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">linea</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">linea</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+                    <span class="c1"># Remove coments</span>
+                    <span class="n">linea</span> <span class="o">=</span> <span class="n">linea</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+                    <span class="c1"># Parsing an file entry</span>
+                    <span class="n">var</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">linea</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)</span>
+                    <span class="n">var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;HLIX_TYPE&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__type</span> <span class="o">=</span> <span class="n">value</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;HLIX_PMER_L&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__l</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;HLIX_PMER_OCC&#39;</span><span class="p">:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                            <span class="n">value_0</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+                            <span class="n">value_1</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;)&#39;</span><span class="p">)]</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">value_0</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">value_1</span><span class="p">))</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;HLIX_MIN_P_LEN&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__min_p_len</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;HLIX_HP_LEN&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__hp_len</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;HLIX_MZ_LEN&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__mz_len</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;HLIX_MZ_LEN_F&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__mz_len_f</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;HLIX_MMER_RAD&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__mmer_rad</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;HLIX_OVER_TOL&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__over_tol</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;HLIX_DEN_CF_RG&#39;</span><span class="p">:</span>
+                        <span class="n">value_0</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+                        <span class="n">value_1</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;)&#39;</span><span class="p">)]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__den_cf_rg</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">value_0</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">value_1</span><span class="p">))</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;HLIX_MIN_NMMER&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__min_nmmer</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MTFile">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MTFile">[docs]</a>
+<span class="k">class</span> <span class="nc">MTFile</span><span class="p">(</span><span class="n">HelixFile</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For handling microtubular structures configuration files (inherits from Helix)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__rad</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__nunits</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="MTFile.get_rad">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MTFile.get_rad">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_rad</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__rad</span></div>
+
+
+<div class="viewcode-block" id="MTFile.get_nunits">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MTFile.get_nunits">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_nunits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__nunits</span></div>
+
+
+<div class="viewcode-block" id="MTFile.load_mt_file">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.MTFile.load_mt_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_mt_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_file</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load protein parameters from an input file</span>
+
+<span class="sd">        :param in_file: path to the input file with extension .mbs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">load_hx_file</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span>
+
+        <span class="c1"># Reading input file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">linea</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">linea</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+                    <span class="c1"># Remove coments</span>
+                    <span class="n">linea</span> <span class="o">=</span> <span class="n">linea</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+                    <span class="c1"># Parsing an file entry</span>
+                    <span class="n">var</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">linea</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)</span>
+                    <span class="n">var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;MT_RAD&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__rad</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;MT_NUNITS&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__nunits</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ActinFile">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.ActinFile">[docs]</a>
+<span class="k">class</span> <span class="nc">ActinFile</span><span class="p">(</span><span class="n">HelixFile</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For handling actin-like structures configuration files (inherits from Helix)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__bprop</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__p_branch</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="ActinFile.get_bprop">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.ActinFile.get_bprop">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_bprop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__bprop</span></div>
+
+
+<div class="viewcode-block" id="ActinFile.get_p_branch">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.ActinFile.get_p_branch">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_p_branch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__p_branch</span></div>
+
+
+<div class="viewcode-block" id="ActinFile.load_ac_file">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.ActinFile.load_ac_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_ac_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_file</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load protein parameters from an input file</span>
+
+<span class="sd">        :param in_file: path to the input file with extension .mbs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">load_hx_file</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span>
+
+        <span class="c1"># Reading input file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">linea</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">linea</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+                    <span class="c1"># Remove coments</span>
+                    <span class="n">linea</span> <span class="o">=</span> <span class="n">linea</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+                    <span class="c1"># Parsing an file entry</span>
+                    <span class="n">var</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">linea</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)</span>
+                    <span class="n">var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;A_BPROP&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__bprop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s1">&#39;A_MAX_P_BRANCH&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__p_branch</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+</div>
+
+
+
+
+<div class="viewcode-block" id="SynthTomo">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.SynthTomo">[docs]</a>
+<span class="k">class</span> <span class="nc">SynthTomo</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class model a Synthetic tomogram, tomogram&#39;s info are stored in disk to handle large datasets:</span>
+<span class="sd">        - Ground truth: integer type tomogram associating each pixel with the id (background is always 0)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__den</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mics</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__poly</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__motifs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SynthTomo.get_den">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.SynthTomo.get_den">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_den</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__den</span></div>
+
+
+<div class="viewcode-block" id="SynthTomo.get_mics">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.SynthTomo.get_mics">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mics</span></div>
+
+
+<div class="viewcode-block" id="SynthTomo.get_poly">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.SynthTomo.get_poly">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_poly</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__poly</span></div>
+
+
+<div class="viewcode-block" id="SynthTomo.get_tomo">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.SynthTomo.get_tomo">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_tomo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span></div>
+
+
+<div class="viewcode-block" id="SynthTomo.set_den">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.SynthTomo.set_den">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_den</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">den</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">den</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">den</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.mrc&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__den</span> <span class="o">=</span> <span class="n">den</span></div>
+
+
+<div class="viewcode-block" id="SynthTomo.set_tomo">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.SynthTomo.set_tomo">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_tomo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tomo</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tomo</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">tomo</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.mrc&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span> <span class="o">=</span> <span class="n">tomo</span></div>
+
+
+<div class="viewcode-block" id="SynthTomo.set_mics">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.SynthTomo.set_mics">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_mics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mics</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mics</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">mics</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.mrc&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mics</span> <span class="o">=</span> <span class="n">mics</span></div>
+
+
+<div class="viewcode-block" id="SynthTomo.set_poly">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.SynthTomo.set_poly">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_poly</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">poly</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">poly</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">poly</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.vtp&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__poly</span> <span class="o">=</span> <span class="n">poly</span></div>
+
+
+<div class="viewcode-block" id="SynthTomo.get_motif_list">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.SynthTomo.get_motif_list">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_motif_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__motifs</span></div>
+
+
+<div class="viewcode-block" id="SynthTomo.add_network">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.SynthTomo.add_network">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_network</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="n">m_type</span><span class="p">,</span> <span class="n">lbl</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add all motifs within the input network to the synthetic tomogram</span>
+
+<span class="sd">        :param net: a network object instance</span>
+<span class="sd">        :param m_type: string with the type of monomers contained in the network</span>
+<span class="sd">        :param lbl: integer label</span>
+<span class="sd">        :param code: string code for the network monomers, if None (default) it is taken from monomer information</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">net</span><span class="p">),</span> <span class="n">Network</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m_type</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">lbl</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span> <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lbl</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">code</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span> <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">pmer_id</span><span class="p">,</span> <span class="n">pmer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">net</span><span class="o">.</span><span class="n">get_pmers_list</span><span class="p">()):</span>
+            <span class="k">for</span> <span class="n">mmer_id</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">pmer</span><span class="o">.</span><span class="n">get_num_monomers</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="n">code</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">hold_code</span> <span class="o">=</span> <span class="n">pmer</span><span class="o">.</span><span class="n">get_mmer_code</span><span class="p">(</span><span class="n">mmer_id</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">hold_code</span> <span class="o">=</span> <span class="n">code</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__motifs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">((</span><span class="n">m_type</span><span class="p">,</span> <span class="n">lbl</span><span class="p">,</span> <span class="n">hold_code</span><span class="p">,</span> <span class="n">pmer_id</span><span class="p">,</span>
+                                           <span class="n">pmer</span><span class="o">.</span><span class="n">get_mmer_center</span><span class="p">(</span><span class="n">mmer_id</span><span class="p">),</span> <span class="n">pmer</span><span class="o">.</span><span class="n">get_mmer_rotation</span><span class="p">(</span><span class="n">mmer_id</span><span class="p">))))</span></div>
+
+
+<div class="viewcode-block" id="SynthTomo.add_set_mbs">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.SynthTomo.add_set_mbs">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_set_mbs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">set_mbs</span><span class="p">,</span> <span class="n">m_type</span><span class="p">,</span> <span class="n">lbl</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">dec</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Membrane surface point coordinates are added to the tomogram motif list</span>
+<span class="sd">        In rotations the normal vector to each point is stored as: X-&gt;Q0, Y-&gt;Q1 , Z-&gt;Q2 and 0-&gt;Q3</span>
+
+<span class="sd">        :param set_mbs: a membrane set object instance</span>
+<span class="sd">        :param m_type: string with the type of motif contained in the network</span>
+<span class="sd">        :param lbl: integer label</span>
+<span class="sd">        :param code: string code for membrane</span>
+<span class="sd">        :param dec: if not None (default) the membrane points are decimated according this factor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">set_mbs</span><span class="p">),</span> <span class="n">SetMembranes</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m_type</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lbl</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+
+        <span class="n">poly_vtp</span> <span class="o">=</span> <span class="n">set_mbs</span><span class="o">.</span><span class="n">get_vtp</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">dec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">poly_vtp</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">poly_decimate</span><span class="p">(</span><span class="n">poly_vtp</span><span class="p">,</span> <span class="n">dec</span><span class="p">)</span>
+
+        <span class="n">n_points</span> <span class="o">=</span> <span class="n">poly_vtp</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()</span>
+        <span class="n">normals</span> <span class="o">=</span> <span class="n">poly_vtp</span><span class="o">.</span><span class="n">GetPointData</span><span class="p">()</span><span class="o">.</span><span class="n">GetNormals</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_points</span><span class="p">):</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">poly_vtp</span><span class="o">.</span><span class="n">GetPoint</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">q0</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">q2</span> <span class="o">=</span> <span class="n">normals</span><span class="o">.</span><span class="n">GetTuple</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__motifs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">((</span><span class="n">m_type</span><span class="p">,</span> <span class="n">lbl</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">],</span> <span class="p">[</span><span class="n">q0</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">,</span> <span class="mi">0</span><span class="p">])))</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SetTomos">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.SetTomos">[docs]</a>
+<span class="k">class</span> <span class="nc">SetTomos</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for storing information for a set of simulated tomograms</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tomos</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SetTomos.add_tomos">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.SetTomos.add_tomos">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_tomos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tomo</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a SynthTomo to the list</span>
+
+<span class="sd">        :param tomo: input SyntTomo</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tomo</span><span class="p">,</span> <span class="n">SynthTomo</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tomos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tomo</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SetTomos.save_csv">
+<a class="viewcode-back" href="../../polnet.html#polnet.stomo.SetTomos.save_csv">[docs]</a>
+    <span class="k">def</span> <span class="nf">save_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out_file</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Saves the motifs list contained in the set of tomograms</span>
+
+<span class="sd">        :param out_file: output file path in .csv format</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">out_file</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">out_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.csv&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Writing output CSV file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">out_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csv_file</span><span class="p">:</span>
+            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">csv_file</span><span class="p">,</span> <span class="n">dialect</span><span class="o">=</span><span class="n">csv</span><span class="o">.</span><span class="n">excel_tab</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Density&#39;</span><span class="p">,</span> <span class="s1">&#39;Micrographs&#39;</span><span class="p">,</span> <span class="s1">&#39;PolyData&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;Tomo3D&#39;</span><span class="p">,</span> <span class="s1">&#39;Type&#39;</span><span class="p">,</span> <span class="s1">&#39;Label&#39;</span><span class="p">,</span> <span class="s1">&#39;Code&#39;</span><span class="p">,</span> <span class="s1">&#39;Polymer&#39;</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">,</span> <span class="s1">&#39;Q1&#39;</span><span class="p">,</span> <span class="s1">&#39;Q2&#39;</span><span class="p">,</span> <span class="s1">&#39;Q3&#39;</span><span class="p">,</span> <span class="s1">&#39;Q4&#39;</span><span class="p">])</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writeheader</span><span class="p">()</span>
+
+            <span class="c1"># Tomos loop</span>
+            <span class="k">for</span> <span class="n">tomo</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__tomos</span><span class="p">:</span>
+                <span class="n">den_path</span> <span class="o">=</span> <span class="n">tomo</span><span class="o">.</span><span class="n">get_den</span><span class="p">()</span>
+                <span class="n">mics_path</span> <span class="o">=</span> <span class="n">tomo</span><span class="o">.</span><span class="n">get_mics</span><span class="p">()</span>
+                <span class="n">poly_path</span> <span class="o">=</span> <span class="n">tomo</span><span class="o">.</span><span class="n">get_poly</span><span class="p">()</span>
+                <span class="n">rec_path</span> <span class="o">=</span> <span class="n">tomo</span><span class="o">.</span><span class="n">get_tomo</span><span class="p">()</span>
+
+                <span class="c1"># Motifs loop</span>
+                <span class="k">for</span> <span class="n">motif</span> <span class="ow">in</span> <span class="n">tomo</span><span class="o">.</span><span class="n">get_motif_list</span><span class="p">():</span>
+                    <span class="n">m_type</span> <span class="o">=</span> <span class="n">motif</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">lbl_id</span> <span class="o">=</span> <span class="n">motif</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">text_id</span> <span class="o">=</span> <span class="n">motif</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="n">pmer_id</span> <span class="o">=</span> <span class="n">motif</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+                    <span class="n">center</span> <span class="o">=</span> <span class="n">motif</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+                    <span class="n">rotation</span> <span class="o">=</span> <span class="n">motif</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+
+                    <span class="c1"># Writing entry</span>
+                    <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">({</span><span class="s1">&#39;Density&#39;</span><span class="p">:</span><span class="n">den_path</span><span class="p">,</span> <span class="s1">&#39;Micrographs&#39;</span><span class="p">:</span><span class="n">mics_path</span><span class="p">,</span> <span class="s1">&#39;PolyData&#39;</span><span class="p">:</span><span class="n">poly_path</span><span class="p">,</span>
+                                     <span class="s1">&#39;Tomo3D&#39;</span><span class="p">:</span><span class="n">rec_path</span><span class="p">,</span> <span class="s1">&#39;Type&#39;</span><span class="p">:</span><span class="n">m_type</span><span class="p">,</span> <span class="s1">&#39;Label&#39;</span><span class="p">:</span><span class="n">lbl_id</span><span class="p">,</span> <span class="s1">&#39;Code&#39;</span><span class="p">:</span><span class="n">text_id</span><span class="p">,</span>
+                                     <span class="s1">&#39;Polymer&#39;</span><span class="p">:</span><span class="n">pmer_id</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">:</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;Y&#39;</span><span class="p">:</span><span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;Z&#39;</span><span class="p">:</span><span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                                     <span class="s1">&#39;Q1&#39;</span><span class="p">:</span><span class="n">rotation</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;Q2&#39;</span><span class="p">:</span><span class="n">rotation</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;Q3&#39;</span><span class="p">:</span><span class="n">rotation</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;Q4&#39;</span><span class="p">:</span><span class="n">rotation</span><span class="p">[</span><span class="mi">3</span><span class="p">]})</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Antonio Martinez-Sanchez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

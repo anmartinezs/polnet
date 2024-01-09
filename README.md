@@ -20,9 +20,9 @@ Here is how to get it installed:
 
 1. Download PolNet source code:
     ```console
-    git clone anmartinezs/polnet
+    git clone https://github.com/anmartinezs/polnet.git
     cd polnet
-   ```
+    ```
 2. Create a conda virtual environment
     ```console
     conda create --name polnet pip
@@ -33,12 +33,14 @@ Here is how to get it installed:
     ```console
     pip install -e .
     ```
-For developers who do not want to install PolNet in the virtual environment as a package, you can only install 
+**For developers** who do not want to install PolNet in the virtual environment as a package, you can only install 
 the requirements by:
 
     pip install -r requirements.txt
 
 You can check all requirements in the **requirements.txt** file (JAX is optional).
+
+The installation has been tested in Ubuntu 22.04 and Windows 11.
 
 ## Usage
 
@@ -51,9 +53,9 @@ To create you own structural models next Jupyter notebooks are available:
 3. Macromolecules: 
    - Atomic model (PDB) to electron density map (MRC): **gui/atomic_to_density.ipynb**
    - Only for membrane bound macromolecules: **gui/align_membrane_proteins.ipynb**
-   - Models: **gui/create_macromolecula_models.ipynb**
+   - Models: **gui/create_macromolecule_models.ipynb**
 
-**Important note**: all Jupyter notebooks are thoroughly self-documented in order to guide the user in the process. In addition, contain graphic objects and default setting to facilitate the process.  
+**Important note**: all Jupyter notebooks are thoroughly self-documented in order to guide the user in the process. In addition, they contain graphic objects and default setting to facilitate the process.  
 
 ## For developers
 
@@ -77,15 +79,17 @@ the size of the input data avoid to upload them to the repository.
   * **in_helix**: input models for helical structures.
   * **in_mbsx**: input models for membrane structures.
   * **tempaltes**: atomic models and density maps used by macromolecular models.
-* **docs**: contains a PDF with the suplementary material for [1] with the next tables:
-  + Glossary of acronyms by order of appearance in the main text.
-  + Glossary mathematical symbols defined in the main text organized by scope
-  + Table Variables used by the input files to model the generators.
-  + Table with the structures used to simulate the cellular context. 
+* **docs**:
+  * API documentation. 
+  * A PDF with the suplementary material for [1] with the next tables:
+    + Glossary of acronyms by order of appearance in the main text.
+    + Glossary mathematical symbols defined in the main text organized by scope
+    + Table Variables used by the input files to model the generators.
+    + Table with the structures used to simulate the cellular context. 
 
 ### Code documentation
 
-TODO
+The API documentation for polnet Python package is available in [docs/apidoc/index.html](docs/apidoc/index.html) 
 
 
 ## Main publication (Citation)

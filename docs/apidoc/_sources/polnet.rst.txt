@@ -1,0 +1,93 @@
+polnet package
+==============
+
+Submodules
+----------
+
+polnet.affine module
+--------------------
+
+.. automodule:: polnet.affine
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+polnet.lio module
+-----------------
+
+.. automodule:: polnet.lio
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+polnet.lrandom module
+---------------------
+
+.. automodule:: polnet.lrandom
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+polnet.membrane module
+----------------------
+
+.. automodule:: polnet.membrane
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+polnet.network module
+---------------------
+
+.. automodule:: polnet.network
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+polnet.poly module
+------------------
+
+.. automodule:: polnet.poly
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+polnet.polymer module
+---------------------
+
+.. automodule:: polnet.polymer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+polnet.stomo module
+-------------------
+
+.. automodule:: polnet.stomo
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+polnet.tem module
+-----------------
+
+.. automodule:: polnet.tem
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+polnet.utils module
+-------------------
+
+.. automodule:: polnet.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: polnet
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>polnet &mdash; PolNet 0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=10f1778b"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="polnet package" href="polnet.html" />
+    <link rel="prev" title="Welcome to PolNet’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PolNet
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">polnet</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="polnet.html">polnet package</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PolNet</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">polnet</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/modules.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="polnet">
+<h1>polnet<a class="headerlink" href="#polnet" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="polnet.html">polnet package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="polnet.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polnet.html#module-polnet.affine">polnet.affine module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.angle_axis_to_quat"><code class="docutils literal notranslate"><span class="pre">angle_axis_to_quat()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.gen_rand_unit_quaternion"><code class="docutils literal notranslate"><span class="pre">gen_rand_unit_quaternion()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.ortho_vector"><code class="docutils literal notranslate"><span class="pre">ortho_vector()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.poly_rotate_wxyz"><code class="docutils literal notranslate"><span class="pre">poly_rotate_wxyz()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.poly_scale"><code class="docutils literal notranslate"><span class="pre">poly_scale()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.poly_translate"><code class="docutils literal notranslate"><span class="pre">poly_translate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.quat_mult"><code class="docutils literal notranslate"><span class="pre">quat_mult()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.quat_to_angle_axis"><code class="docutils literal notranslate"><span class="pre">quat_to_angle_axis()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.quat_to_mat"><code class="docutils literal notranslate"><span class="pre">quat_to_mat()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.quat_two_vectors"><code class="docutils literal notranslate"><span class="pre">quat_two_vectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.rot_mat_zyz"><code class="docutils literal notranslate"><span class="pre">rot_mat_zyz()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.rot_to_quat"><code class="docutils literal notranslate"><span class="pre">rot_to_quat()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.rot_vect_quat"><code class="docutils literal notranslate"><span class="pre">rot_vect_quat()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.tomo_rotate"><code class="docutils literal notranslate"><span class="pre">tomo_rotate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.tomo_shift"><code class="docutils literal notranslate"><span class="pre">tomo_shift()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.uniform_sampling_so3"><code class="docutils literal notranslate"><span class="pre">uniform_sampling_so3()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.vect_rotate"><code class="docutils literal notranslate"><span class="pre">vect_rotate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.vect_to_zmat"><code class="docutils literal notranslate"><span class="pre">vect_to_zmat()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.affine.vector_module"><code class="docutils literal notranslate"><span class="pre">vector_module()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="polnet.html#module-polnet.lio">polnet.lio module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lio.load_csv_into_tomo_tables"><code class="docutils literal notranslate"><span class="pre">load_csv_into_tomo_tables()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lio.load_mrc"><code class="docutils literal notranslate"><span class="pre">load_mrc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lio.load_poly"><code class="docutils literal notranslate"><span class="pre">load_poly()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lio.numpy_to_vti"><code class="docutils literal notranslate"><span class="pre">numpy_to_vti()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lio.read_mrc_v_size"><code class="docutils literal notranslate"><span class="pre">read_mrc_v_size()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lio.save_vti"><code class="docutils literal notranslate"><span class="pre">save_vti()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lio.save_vtp"><code class="docutils literal notranslate"><span class="pre">save_vtp()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lio.write_mrc"><code class="docutils literal notranslate"><span class="pre">write_mrc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lio.write_table"><code class="docutils literal notranslate"><span class="pre">write_table()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="polnet.html#module-polnet.lrandom">polnet.lrandom module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lrandom.EllipGen"><code class="docutils literal notranslate"><span class="pre">EllipGen</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.lrandom.EllipGen.gen_parameters"><code class="docutils literal notranslate"><span class="pre">EllipGen.gen_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.lrandom.EllipGen.gen_parameters_exp"><code class="docutils literal notranslate"><span class="pre">EllipGen.gen_parameters_exp()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lrandom.OccGen"><code class="docutils literal notranslate"><span class="pre">OccGen</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.lrandom.OccGen.gen_occupancy"><code class="docutils literal notranslate"><span class="pre">OccGen.gen_occupancy()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lrandom.PGenHelixFiber"><code class="docutils literal notranslate"><span class="pre">PGenHelixFiber</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.lrandom.PGenHelixFiber.gen_length"><code class="docutils literal notranslate"><span class="pre">PGenHelixFiber.gen_length()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.lrandom.PGenHelixFiber.gen_persistence_length"><code class="docutils literal notranslate"><span class="pre">PGenHelixFiber.gen_persistence_length()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.lrandom.PGenHelixFiber.gen_zf_length"><code class="docutils literal notranslate"><span class="pre">PGenHelixFiber.gen_zf_length()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lrandom.PGenHelixFiberB"><code class="docutils literal notranslate"><span class="pre">PGenHelixFiberB</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.lrandom.PGenHelixFiberB.gen_branch"><code class="docutils literal notranslate"><span class="pre">PGenHelixFiberB.gen_branch()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lrandom.SGen"><code class="docutils literal notranslate"><span class="pre">SGen</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.lrandom.SGen.gen_next_mmer_id"><code class="docutils literal notranslate"><span class="pre">SGen.gen_next_mmer_id()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lrandom.SGenFixed"><code class="docutils literal notranslate"><span class="pre">SGenFixed</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.lrandom.SGenFixed.gen_next_mmer_id"><code class="docutils literal notranslate"><span class="pre">SGenFixed.gen_next_mmer_id()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lrandom.SGenProp"><code class="docutils literal notranslate"><span class="pre">SGenProp</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.lrandom.SGenProp.gen_next_mmer_id"><code class="docutils literal notranslate"><span class="pre">SGenProp.gen_next_mmer_id()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lrandom.SGenUniform"><code class="docutils literal notranslate"><span class="pre">SGenUniform</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.lrandom.SGenUniform.gen_next_mmer_id"><code class="docutils literal notranslate"><span class="pre">SGenUniform.gen_next_mmer_id()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lrandom.SphGen"><code class="docutils literal notranslate"><span class="pre">SphGen</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.lrandom.SphGen.gen_parameters"><code class="docutils literal notranslate"><span class="pre">SphGen.gen_parameters()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lrandom.SurfGen"><code class="docutils literal notranslate"><span class="pre">SurfGen</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.lrandom.SurfGen.gen_den_cf"><code class="docutils literal notranslate"><span class="pre">SurfGen.gen_den_cf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.lrandom.SurfGen.gen_parameters"><code class="docutils literal notranslate"><span class="pre">SurfGen.gen_parameters()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lrandom.TorGen"><code class="docutils literal notranslate"><span class="pre">TorGen</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.lrandom.TorGen.gen_parameters"><code class="docutils literal notranslate"><span class="pre">TorGen.gen_parameters()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.lrandom.gen_bounded_exp"><code class="docutils literal notranslate"><span class="pre">gen_bounded_exp()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="polnet.html#module-polnet.membrane">polnet.membrane module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.membrane.Mb"><code class="docutils literal notranslate"><span class="pre">Mb</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.Mb.get_layer_s"><code class="docutils literal notranslate"><span class="pre">Mb.get_layer_s()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.Mb.get_mask"><code class="docutils literal notranslate"><span class="pre">Mb.get_mask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.Mb.get_thick"><code class="docutils literal notranslate"><span class="pre">Mb.get_thick()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.Mb.get_tomo"><code class="docutils literal notranslate"><span class="pre">Mb.get_tomo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.Mb.get_vol"><code class="docutils literal notranslate"><span class="pre">Mb.get_vol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.Mb.get_vtp"><code class="docutils literal notranslate"><span class="pre">Mb.get_vtp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.Mb.insert_density_svol"><code class="docutils literal notranslate"><span class="pre">Mb.insert_density_svol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.Mb.masking"><code class="docutils literal notranslate"><span class="pre">Mb.masking()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.membrane.MbEllipsoid"><code class="docutils literal notranslate"><span class="pre">MbEllipsoid</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.membrane.MbError"><code class="docutils literal notranslate"><span class="pre">MbError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.membrane.MbSphere"><code class="docutils literal notranslate"><span class="pre">MbSphere</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.membrane.MbTorus"><code class="docutils literal notranslate"><span class="pre">MbTorus</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.membrane.SetMembranes"><code class="docutils literal notranslate"><span class="pre">SetMembranes</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.SetMembranes.build_set"><code class="docutils literal notranslate"><span class="pre">SetMembranes.build_set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.SetMembranes.check_overlap"><code class="docutils literal notranslate"><span class="pre">SetMembranes.check_overlap()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.SetMembranes.compute_overlap"><code class="docutils literal notranslate"><span class="pre">SetMembranes.compute_overlap()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.SetMembranes.get_gtruth"><code class="docutils literal notranslate"><span class="pre">SetMembranes.get_gtruth()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.SetMembranes.get_mb_occupancy"><code class="docutils literal notranslate"><span class="pre">SetMembranes.get_mb_occupancy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.SetMembranes.get_num_mbs"><code class="docutils literal notranslate"><span class="pre">SetMembranes.get_num_mbs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.SetMembranes.get_tomo"><code class="docutils literal notranslate"><span class="pre">SetMembranes.get_tomo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.SetMembranes.get_voi"><code class="docutils literal notranslate"><span class="pre">SetMembranes.get_voi()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.SetMembranes.get_vol"><code class="docutils literal notranslate"><span class="pre">SetMembranes.get_vol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.SetMembranes.get_vtp"><code class="docutils literal notranslate"><span class="pre">SetMembranes.get_vtp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.membrane.SetMembranes.insert_mb"><code class="docutils literal notranslate"><span class="pre">SetMembranes.insert_mb()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="polnet.html#module-polnet.network">polnet.network module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.network.Branch"><code class="docutils literal notranslate"><span class="pre">Branch</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Branch.get_point"><code class="docutils literal notranslate"><span class="pre">Branch.get_point()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Branch.get_s_mmer"><code class="docutils literal notranslate"><span class="pre">Branch.get_s_mmer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Branch.get_s_pmer"><code class="docutils literal notranslate"><span class="pre">Branch.get_s_pmer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Branch.get_t_pmer"><code class="docutils literal notranslate"><span class="pre">Branch.get_t_pmer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Branch.get_vtp"><code class="docutils literal notranslate"><span class="pre">Branch.get_vtp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Branch.set_t_pmer"><code class="docutils literal notranslate"><span class="pre">Branch.set_t_pmer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.network.NetHelixFiber"><code class="docutils literal notranslate"><span class="pre">NetHelixFiber</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.NetHelixFiber.build_network"><code class="docutils literal notranslate"><span class="pre">NetHelixFiber.build_network()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.network.NetHelixFiberB"><code class="docutils literal notranslate"><span class="pre">NetHelixFiberB</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.NetHelixFiberB.build_network"><code class="docutils literal notranslate"><span class="pre">NetHelixFiberB.build_network()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.NetHelixFiberB.get_branch_list"><code class="docutils literal notranslate"><span class="pre">NetHelixFiberB.get_branch_list()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.NetHelixFiberB.get_branches_vtp"><code class="docutils literal notranslate"><span class="pre">NetHelixFiberB.get_branches_vtp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.NetHelixFiberB.get_skel"><code class="docutils literal notranslate"><span class="pre">NetHelixFiberB.get_skel()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.network.NetSAWLC"><code class="docutils literal notranslate"><span class="pre">NetSAWLC</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.NetSAWLC.build_network"><code class="docutils literal notranslate"><span class="pre">NetSAWLC.build_network()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.network.NetSAWLCInter"><code class="docutils literal notranslate"><span class="pre">NetSAWLCInter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.NetSAWLCInter.build_network"><code class="docutils literal notranslate"><span class="pre">NetSAWLCInter.build_network()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.network.Network"><code class="docutils literal notranslate"><span class="pre">Network</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Network.add_monomer_to_voi"><code class="docutils literal notranslate"><span class="pre">Network.add_monomer_to_voi()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Network.add_polymer"><code class="docutils literal notranslate"><span class="pre">Network.add_polymer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Network.build_network"><code class="docutils literal notranslate"><span class="pre">Network.build_network()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Network.count_proteins"><code class="docutils literal notranslate"><span class="pre">Network.count_proteins()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Network.gen_vtp_points_tomo"><code class="docutils literal notranslate"><span class="pre">Network.gen_vtp_points_tomo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Network.get_gtruth"><code class="docutils literal notranslate"><span class="pre">Network.get_gtruth()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Network.get_num_mmers"><code class="docutils literal notranslate"><span class="pre">Network.get_num_mmers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Network.get_num_pmers"><code class="docutils literal notranslate"><span class="pre">Network.get_num_pmers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Network.get_pmer_fails"><code class="docutils literal notranslate"><span class="pre">Network.get_pmer_fails()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Network.get_pmers_list"><code class="docutils literal notranslate"><span class="pre">Network.get_pmers_list()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Network.get_polymer_occupancy"><code class="docutils literal notranslate"><span class="pre">Network.get_polymer_occupancy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Network.get_skel"><code class="docutils literal notranslate"><span class="pre">Network.get_skel()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Network.get_voi"><code class="docutils literal notranslate"><span class="pre">Network.get_voi()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Network.get_vtp"><code class="docutils literal notranslate"><span class="pre">Network.get_vtp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Network.insert_density_svol"><code class="docutils literal notranslate"><span class="pre">Network.insert_density_svol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Network.set_min_nmmer"><code class="docutils literal notranslate"><span class="pre">Network.set_min_nmmer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.network.Network.set_voi"><code class="docutils literal notranslate"><span class="pre">Network.set_voi()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="polnet.html#module-polnet.poly">polnet.poly module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.poly.add_label_to_poly"><code class="docutils literal notranslate"><span class="pre">add_label_to_poly()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.poly.add_sfield_to_poly"><code class="docutils literal notranslate"><span class="pre">add_sfield_to_poly()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.poly.convex_hull_surface"><code class="docutils literal notranslate"><span class="pre">convex_hull_surface()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.poly.find_point_on_poly"><code class="docutils literal notranslate"><span class="pre">find_point_on_poly()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.poly.gen_rand_quaternion_on_vector"><code class="docutils literal notranslate"><span class="pre">gen_rand_quaternion_on_vector()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.poly.gen_uni_s2_sample_on_poly"><code class="docutils literal notranslate"><span class="pre">gen_uni_s2_sample_on_poly()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.poly.gen_uni_s2_sample_on_poly_inter"><code class="docutils literal notranslate"><span class="pre">gen_uni_s2_sample_on_poly_inter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.poly.merge_polys"><code class="docutils literal notranslate"><span class="pre">merge_polys()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.poly.points_to_poly_spheres"><code class="docutils literal notranslate"><span class="pre">points_to_poly_spheres()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.poly.poly_center_mass"><code class="docutils literal notranslate"><span class="pre">poly_center_mass()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.poly.poly_decimate"><code class="docutils literal notranslate"><span class="pre">poly_decimate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.poly.poly_diam"><code class="docutils literal notranslate"><span class="pre">poly_diam()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.poly.poly_mask"><code class="docutils literal notranslate"><span class="pre">poly_mask()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.poly.poly_max_distance"><code class="docutils literal notranslate"><span class="pre">poly_max_distance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.poly.poly_point_min_dst"><code class="docutils literal notranslate"><span class="pre">poly_point_min_dst()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.poly.poly_reverse_normals"><code class="docutils literal notranslate"><span class="pre">poly_reverse_normals()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.poly.poly_surface_area"><code class="docutils literal notranslate"><span class="pre">poly_surface_area()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.poly.poly_volume"><code class="docutils literal notranslate"><span class="pre">poly_volume()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="polnet.html#module-polnet.polymer">polnet.polymer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.polymer.FiberUnit"><code class="docutils literal notranslate"><span class="pre">FiberUnit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.FiberUnit.get_tomo"><code class="docutils literal notranslate"><span class="pre">FiberUnit.get_tomo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.FiberUnit.get_vtp"><code class="docutils literal notranslate"><span class="pre">FiberUnit.get_vtp()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.polymer.FiberUnitSDimer"><code class="docutils literal notranslate"><span class="pre">FiberUnitSDimer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.FiberUnitSDimer.get_tomo"><code class="docutils literal notranslate"><span class="pre">FiberUnitSDimer.get_tomo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.FiberUnitSDimer.get_vtp"><code class="docutils literal notranslate"><span class="pre">FiberUnitSDimer.get_vtp()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.polymer.HelixFiber"><code class="docutils literal notranslate"><span class="pre">HelixFiber</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.HelixFiber.gen_new_monomer"><code class="docutils literal notranslate"><span class="pre">HelixFiber.gen_new_monomer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.HelixFiber.set_reference"><code class="docutils literal notranslate"><span class="pre">HelixFiber.set_reference()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.polymer.MTUnit"><code class="docutils literal notranslate"><span class="pre">MTUnit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.MTUnit.get_tomo"><code class="docutils literal notranslate"><span class="pre">MTUnit.get_tomo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.MTUnit.get_vtp"><code class="docutils literal notranslate"><span class="pre">MTUnit.get_vtp()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.polymer.Monomer"><code class="docutils literal notranslate"><span class="pre">Monomer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Monomer.bound_in_bounds"><code class="docutils literal notranslate"><span class="pre">Monomer.bound_in_bounds()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Monomer.compute_bounds"><code class="docutils literal notranslate"><span class="pre">Monomer.compute_bounds()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Monomer.get_area"><code class="docutils literal notranslate"><span class="pre">Monomer.get_area()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Monomer.get_center_mass"><code class="docutils literal notranslate"><span class="pre">Monomer.get_center_mass()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Monomer.get_copy"><code class="docutils literal notranslate"><span class="pre">Monomer.get_copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Monomer.get_diameter"><code class="docutils literal notranslate"><span class="pre">Monomer.get_diameter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Monomer.get_trans_list"><code class="docutils literal notranslate"><span class="pre">Monomer.get_trans_list()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Monomer.get_vol"><code class="docutils literal notranslate"><span class="pre">Monomer.get_vol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Monomer.get_vtp"><code class="docutils literal notranslate"><span class="pre">Monomer.get_vtp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Monomer.insert_density_svol"><code class="docutils literal notranslate"><span class="pre">Monomer.insert_density_svol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Monomer.overlap_mmer"><code class="docutils literal notranslate"><span class="pre">Monomer.overlap_mmer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Monomer.overlap_net"><code class="docutils literal notranslate"><span class="pre">Monomer.overlap_net()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Monomer.overlap_voi"><code class="docutils literal notranslate"><span class="pre">Monomer.overlap_voi()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Monomer.point_in_bounds"><code class="docutils literal notranslate"><span class="pre">Monomer.point_in_bounds()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Monomer.rotate_q"><code class="docutils literal notranslate"><span class="pre">Monomer.rotate_q()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Monomer.translate"><code class="docutils literal notranslate"><span class="pre">Monomer.translate()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer"><code class="docutils literal notranslate"><span class="pre">Polymer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.add_monomer"><code class="docutils literal notranslate"><span class="pre">Polymer.add_monomer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.gen_new_monomer"><code class="docutils literal notranslate"><span class="pre">Polymer.gen_new_monomer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.get_area"><code class="docutils literal notranslate"><span class="pre">Polymer.get_area()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.get_mmer_center"><code class="docutils literal notranslate"><span class="pre">Polymer.get_mmer_center()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.get_mmer_code"><code class="docutils literal notranslate"><span class="pre">Polymer.get_mmer_code()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.get_mmer_id"><code class="docutils literal notranslate"><span class="pre">Polymer.get_mmer_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.get_mmer_ids"><code class="docutils literal notranslate"><span class="pre">Polymer.get_mmer_ids()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.get_mmer_rotation"><code class="docutils literal notranslate"><span class="pre">Polymer.get_mmer_rotation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.get_mmers_list"><code class="docutils literal notranslate"><span class="pre">Polymer.get_mmers_list()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.get_monomer"><code class="docutils literal notranslate"><span class="pre">Polymer.get_monomer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.get_num_mmers"><code class="docutils literal notranslate"><span class="pre">Polymer.get_num_mmers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.get_num_monomers"><code class="docutils literal notranslate"><span class="pre">Polymer.get_num_monomers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.get_skel"><code class="docutils literal notranslate"><span class="pre">Polymer.get_skel()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.get_tail_point"><code class="docutils literal notranslate"><span class="pre">Polymer.get_tail_point()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.get_total_len"><code class="docutils literal notranslate"><span class="pre">Polymer.get_total_len()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.get_vol"><code class="docutils literal notranslate"><span class="pre">Polymer.get_vol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.get_vtp"><code class="docutils literal notranslate"><span class="pre">Polymer.get_vtp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.insert_density_svol"><code class="docutils literal notranslate"><span class="pre">Polymer.insert_density_svol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.overlap_polymer"><code class="docutils literal notranslate"><span class="pre">Polymer.overlap_polymer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.Polymer.set_reference"><code class="docutils literal notranslate"><span class="pre">Polymer.set_reference()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.polymer.SAWLC"><code class="docutils literal notranslate"><span class="pre">SAWLC</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.SAWLC.gen_new_monomer"><code class="docutils literal notranslate"><span class="pre">SAWLC.gen_new_monomer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.SAWLC.set_reference"><code class="docutils literal notranslate"><span class="pre">SAWLC.set_reference()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.polymer.SAWLCPoly"><code class="docutils literal notranslate"><span class="pre">SAWLCPoly</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.SAWLCPoly.gen_new_monomer"><code class="docutils literal notranslate"><span class="pre">SAWLCPoly.gen_new_monomer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.polymer.SAWLCPoly.set_reference"><code class="docutils literal notranslate"><span class="pre">SAWLCPoly.set_reference()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="polnet.html#module-polnet.stomo">polnet.stomo module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.stomo.ActinFile"><code class="docutils literal notranslate"><span class="pre">ActinFile</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.ActinFile.get_bprop"><code class="docutils literal notranslate"><span class="pre">ActinFile.get_bprop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.ActinFile.get_p_branch"><code class="docutils literal notranslate"><span class="pre">ActinFile.get_p_branch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.ActinFile.load_ac_file"><code class="docutils literal notranslate"><span class="pre">ActinFile.load_ac_file()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.stomo.HelixFile"><code class="docutils literal notranslate"><span class="pre">HelixFile</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.HelixFile.get_den_cf_rg"><code class="docutils literal notranslate"><span class="pre">HelixFile.get_den_cf_rg()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.HelixFile.get_hp_len"><code class="docutils literal notranslate"><span class="pre">HelixFile.get_hp_len()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.HelixFile.get_l"><code class="docutils literal notranslate"><span class="pre">HelixFile.get_l()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.HelixFile.get_min_nmmer"><code class="docutils literal notranslate"><span class="pre">HelixFile.get_min_nmmer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.HelixFile.get_min_p_len"><code class="docutils literal notranslate"><span class="pre">HelixFile.get_min_p_len()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.HelixFile.get_mmer_rad"><code class="docutils literal notranslate"><span class="pre">HelixFile.get_mmer_rad()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.HelixFile.get_mz_len"><code class="docutils literal notranslate"><span class="pre">HelixFile.get_mz_len()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.HelixFile.get_mz_len_f"><code class="docutils literal notranslate"><span class="pre">HelixFile.get_mz_len_f()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.HelixFile.get_occ"><code class="docutils literal notranslate"><span class="pre">HelixFile.get_occ()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.HelixFile.get_over_tol"><code class="docutils literal notranslate"><span class="pre">HelixFile.get_over_tol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.HelixFile.get_thick_rg"><code class="docutils literal notranslate"><span class="pre">HelixFile.get_thick_rg()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.HelixFile.get_type"><code class="docutils literal notranslate"><span class="pre">HelixFile.get_type()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.HelixFile.load_hx_file"><code class="docutils literal notranslate"><span class="pre">HelixFile.load_hx_file()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.stomo.MTFile"><code class="docutils literal notranslate"><span class="pre">MTFile</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MTFile.get_nunits"><code class="docutils literal notranslate"><span class="pre">MTFile.get_nunits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MTFile.get_rad"><code class="docutils literal notranslate"><span class="pre">MTFile.get_rad()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MTFile.load_mt_file"><code class="docutils literal notranslate"><span class="pre">MTFile.load_mt_file()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.stomo.MbFile"><code class="docutils literal notranslate"><span class="pre">MbFile</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MbFile.get_den_cf_rg"><code class="docutils literal notranslate"><span class="pre">MbFile.get_den_cf_rg()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MbFile.get_layer_s_rg"><code class="docutils literal notranslate"><span class="pre">MbFile.get_layer_s_rg()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MbFile.get_max_ecc"><code class="docutils literal notranslate"><span class="pre">MbFile.get_max_ecc()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MbFile.get_min_rad"><code class="docutils literal notranslate"><span class="pre">MbFile.get_min_rad()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MbFile.get_occ"><code class="docutils literal notranslate"><span class="pre">MbFile.get_occ()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MbFile.get_over_tol"><code class="docutils literal notranslate"><span class="pre">MbFile.get_over_tol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MbFile.get_thick_rg"><code class="docutils literal notranslate"><span class="pre">MbFile.get_thick_rg()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MbFile.get_type"><code class="docutils literal notranslate"><span class="pre">MbFile.get_type()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MbFile.load_mb_file"><code class="docutils literal notranslate"><span class="pre">MbFile.load_mb_file()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.stomo.MmerFile"><code class="docutils literal notranslate"><span class="pre">MmerFile</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MmerFile.get_iso"><code class="docutils literal notranslate"><span class="pre">MmerFile.get_iso()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MmerFile.get_mmer_id"><code class="docutils literal notranslate"><span class="pre">MmerFile.get_mmer_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MmerFile.get_mmer_svol"><code class="docutils literal notranslate"><span class="pre">MmerFile.get_mmer_svol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MmerFile.get_pmer_l"><code class="docutils literal notranslate"><span class="pre">MmerFile.get_pmer_l()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MmerFile.get_pmer_l_max"><code class="docutils literal notranslate"><span class="pre">MmerFile.get_pmer_l_max()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MmerFile.get_pmer_np"><code class="docutils literal notranslate"><span class="pre">MmerFile.get_pmer_np()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MmerFile.get_pmer_occ"><code class="docutils literal notranslate"><span class="pre">MmerFile.get_pmer_occ()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MmerFile.get_pmer_over_tol"><code class="docutils literal notranslate"><span class="pre">MmerFile.get_pmer_over_tol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MmerFile.load_mmer_file"><code class="docutils literal notranslate"><span class="pre">MmerFile.load_mmer_file()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.stomo.MmerMbFile"><code class="docutils literal notranslate"><span class="pre">MmerMbFile</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MmerMbFile.get_mb_z_height"><code class="docutils literal notranslate"><span class="pre">MmerMbFile.get_mb_z_height()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MmerMbFile.get_mmer_center"><code class="docutils literal notranslate"><span class="pre">MmerMbFile.get_mmer_center()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MmerMbFile.get_pmer_reverse_normals"><code class="docutils literal notranslate"><span class="pre">MmerMbFile.get_pmer_reverse_normals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.MmerMbFile.load_mmer_mb_file"><code class="docutils literal notranslate"><span class="pre">MmerMbFile.load_mmer_mb_file()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.stomo.SetTomos"><code class="docutils literal notranslate"><span class="pre">SetTomos</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.SetTomos.add_tomos"><code class="docutils literal notranslate"><span class="pre">SetTomos.add_tomos()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.SetTomos.save_csv"><code class="docutils literal notranslate"><span class="pre">SetTomos.save_csv()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.stomo.SynthTomo"><code class="docutils literal notranslate"><span class="pre">SynthTomo</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.SynthTomo.add_network"><code class="docutils literal notranslate"><span class="pre">SynthTomo.add_network()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.SynthTomo.add_set_mbs"><code class="docutils literal notranslate"><span class="pre">SynthTomo.add_set_mbs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.SynthTomo.get_den"><code class="docutils literal notranslate"><span class="pre">SynthTomo.get_den()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.SynthTomo.get_mics"><code class="docutils literal notranslate"><span class="pre">SynthTomo.get_mics()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.SynthTomo.get_motif_list"><code class="docutils literal notranslate"><span class="pre">SynthTomo.get_motif_list()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.SynthTomo.get_poly"><code class="docutils literal notranslate"><span class="pre">SynthTomo.get_poly()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.SynthTomo.get_tomo"><code class="docutils literal notranslate"><span class="pre">SynthTomo.get_tomo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.SynthTomo.set_den"><code class="docutils literal notranslate"><span class="pre">SynthTomo.set_den()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.SynthTomo.set_mics"><code class="docutils literal notranslate"><span class="pre">SynthTomo.set_mics()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.SynthTomo.set_poly"><code class="docutils literal notranslate"><span class="pre">SynthTomo.set_poly()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.stomo.SynthTomo.set_tomo"><code class="docutils literal notranslate"><span class="pre">SynthTomo.set_tomo()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="polnet.html#module-polnet.tem">polnet.tem module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.tem.TEM"><code class="docutils literal notranslate"><span class="pre">TEM</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.tem.TEM.add_detector_noise"><code class="docutils literal notranslate"><span class="pre">TEM.add_detector_noise()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.tem.TEM.add_mics_misalignment"><code class="docutils literal notranslate"><span class="pre">TEM.add_mics_misalignment()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.tem.TEM.gen_tilt_series_imod"><code class="docutils literal notranslate"><span class="pre">TEM.gen_tilt_series_imod()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.tem.TEM.invert_mics_den"><code class="docutils literal notranslate"><span class="pre">TEM.invert_mics_den()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.tem.TEM.recon3D_imod"><code class="docutils literal notranslate"><span class="pre">TEM.recon3D_imod()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="polnet.html#polnet.tem.TEM.set_header"><code class="docutils literal notranslate"><span class="pre">TEM.set_header()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="polnet.html#module-polnet.utils">polnet.utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.clean_dir"><code class="docutils literal notranslate"><span class="pre">clean_dir()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.density_norm"><code class="docutils literal notranslate"><span class="pre">density_norm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.gen_shpere_mask"><code class="docutils literal notranslate"><span class="pre">gen_shpere_mask()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.gen_six_connectivity_mask"><code class="docutils literal notranslate"><span class="pre">gen_six_connectivity_mask()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.gen_uni_s2_sample"><code class="docutils literal notranslate"><span class="pre">gen_uni_s2_sample()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.get_sub_copy"><code class="docutils literal notranslate"><span class="pre">get_sub_copy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.insert_svol_tomo"><code class="docutils literal notranslate"><span class="pre">insert_svol_tomo()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.is_closed_surface"><code class="docutils literal notranslate"><span class="pre">is_closed_surface()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.iso_surface"><code class="docutils literal notranslate"><span class="pre">iso_surface()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.lin_map"><code class="docutils literal notranslate"><span class="pre">lin_map()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.nn_iterp"><code class="docutils literal notranslate"><span class="pre">nn_iterp()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.numpy_to_vti"><code class="docutils literal notranslate"><span class="pre">numpy_to_vti()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.point_to_poly"><code class="docutils literal notranslate"><span class="pre">point_to_poly()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.points_distance"><code class="docutils literal notranslate"><span class="pre">points_distance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.poly_filter_triangles"><code class="docutils literal notranslate"><span class="pre">poly_filter_triangles()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.poly_threshold"><code class="docutils literal notranslate"><span class="pre">poly_threshold()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.tomo_crop_non_zeros"><code class="docutils literal notranslate"><span class="pre">tomo_crop_non_zeros()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.trilin_interp"><code class="docutils literal notranslate"><span class="pre">trilin_interp()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.vol_cube"><code class="docutils literal notranslate"><span class="pre">vol_cube()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="polnet.html#polnet.utils.wrap_angle"><code class="docutils literal notranslate"><span class="pre">wrap_angle()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="polnet.html#module-polnet">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to PolNet’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="polnet.html" class="btn btn-neutral float-right" title="polnet package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Antonio Martinez-Sanchez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

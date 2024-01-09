@@ -67,7 +67,7 @@ def create_new_pdb(upload_value):
     return new_path
     
 
-def convert_to_mrc(file_paths, destination_path,apix, offset, het, selected_atoms, model):
+def convert_to_mrc(file_paths, destination_path, apix, res, offset, het, selected_atoms, model):
     """
     convert pdb to mrc using pdb2mrc
     :param files: files selected
@@ -79,7 +79,7 @@ def convert_to_mrc(file_paths, destination_path,apix, offset, het, selected_atom
         p = os.path.basename(path)
         iden = os.path.splitext(p)[0]
         output = destination_path + iden + ".mrc"
-        pdb_2_mrc(path, output, apix, offset, het, selected_atoms, model)
+        pdb_2_mrc(path, output, apix, res, offset, het, selected_atoms, model)
         window_convert_to_mrc(output)
           
 
@@ -125,7 +125,7 @@ def insert_maxis(protein_array, eje_array, center, path, name):
     :return: path 
     """
     utils.insert_svol_tomo(protein_array, eje_array, center, merge='sum')
-    name = name + "_mbz_align_shitf"
+    name = name + "_mbz_align_shift"
     output = check_path(path, name, ".mrc")
     print("ESte es el path", output)
     lio.write_mrc(eje_array, output, v_size=10)
@@ -362,5 +362,44 @@ def check_prop_list(check_box, prop_list):
     else:
         return None
         
-    
+
+def up_file_priority(list, value):
+    """
+    increase priority to process file
+    :param list: list with files
+    :param value: dropdown option select
+    """
+    if len(list)>0:
+        index = list.index(value)
+        if index > 0:
+            return exchange_element(index, index - 1, list)
+        else:
+            return 0, []
+
+
+def down_file_priority(list, value):
+    """
+    Down priority to process file
+    :param list: list with files
+    :param value: dropdown option select
+    """
+    if len(list)>0:
+        index = list.index(value)
+        if index < len(list) - 1:
+            return exchange_element(index, index + 1, list)
+        else:
+            return len(list), []
+
+
+def exchange_element(index1, index2, list):
+    """
+    Exchange optios order
+    :param index1: index first position
+    :param index2: index second position
+    :param list: list to change order
+    return: tuple wwith the new value and new listoptions
+    """
+    list[index1], list[index2] = list[index2], list[index1]
+    options = list
+    return index2, options
     

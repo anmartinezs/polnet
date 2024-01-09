@@ -1,7 +1,15 @@
 import numpy as np
 import math
+
+import scipy.ndimage
+
 from polnet import lio, utils, affine
 import skimage
+
+# By default, sigma_factor = 1/(π * (2/log2)½) ≈ 0.187 which makes the Fourier transform(FT) of the distribution fall to
+# fall half maximum value at wavenumber 1 / resolution. Resolution here is 1A
+# Other plausible chices are 0.225, 0.356 and 0.425 (see https://www.cgl.ucsf.edu/chimera/docs/UsersGuide/midas/molmap.html)
+SIGMA_FACTOR = 0.187
 
 def add_cloud_gauss(tomo, coords, g_std, value):
     """
@@ -76,13 +84,13 @@ def add_cloud_gauss(tomo, coords, g_std, value):
     return tomo_conv
 
 
-def pdb_2_mrc(file_name, output_file, apix, offset, het, selected_atoms, model):
+def pdb_2_mrc(file_name, output_file, apix, res, offset, het, selected_atoms, model):
     """
     Converts a PDB file to an MRC file.
 
     :param file_name: Input PDB file name.
     :param output_file: Output MRC file name.
-    :param apix: Pixels per Ångström, scale of the tomogram resolution.
+    :param apix: Voxel size per Ångström, scale of the tomogram resolution.
     :param res: Tomogram resolution in Ångströms.
     :param offset: Additional offset for the tomogram size.
     :param het: Flag to include HETATM atoms (True) or not (False).
@@ -174,17 +182,21 @@ def pdb_2_mrc(file_name, output_file, apix, offset, het, selected_atoms, model):
         c[:,1] += box_size[1] / 2 - 1
         c[:,2] += box_size[2] / 2 - 1
         value = atomdefs[key][0]
-        tomo_size = add_cloud_gauss(tomo_size, c, 0.5,value)
+        tomo_size = add_cloud_gauss(tomo_size, c, SIGMA_FACTOR, value)
         tomo_final += tomo_size
         
     # Apply transform
-    print("\tRescaling...")
+    print('\tRescaling (scale=' + str(1/apix) + ')...')
     tomo_final = skimage.transform.rescale(tomo_final, scale=1/apix, order=0, anti_aliasing = True)
+    if res > apix:
+        f_res = res / apix
+        print('\tLow-pass filter by (f_res=' + str(SIGMA_FACTOR * f_res) + ')...')
+        tomo_final = scipy.ndimage.gaussian_filter(tomo_final, SIGMA_FACTOR*f_res)
     tomo_final = tomo_final.astype(np.float32)
     print("\tFinal box size: ", tomo_final.shape)
     
-    #tipificar
-    tomo_final -= tomo_final.mean()
-    tomo_final /= tomo_final.std()
-    lio.write_mrc(tomo_final, output_file, apix, None, True)
+    # #tipificar
+    # tomo_final -= tomo_final.mean()
+    # tomo_final /= tomo_final.std()
+    lio.write_mrc(tomo_final, output_file, apix)
     print("Finished script-----  ")

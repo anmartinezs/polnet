@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>polnet.polymer &mdash; PolNet 0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=10f1778b"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PolNet
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">polnet</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PolNet</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">polnet.polymer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for polnet.polymer</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Classes for modeling Self-Avoiding Worm-Like Chain (SAWLC) polymers.</span>
+<span class="sd">A polymer is a linear sequence of monomers.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Antonio Martinez-Sanchez&#39;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">polnet.utils</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">polnet.poly</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">polnet.affine</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="c1">##### VARIABLES</span>
+
+<span class="n">MB_DOMAIN_FIELD_STR</span> <span class="o">=</span> <span class="s1">&#39;mb_domain&#39;</span>
+
+<span class="c1">##### CLASES</span>
+
+
+<div class="viewcode-block" id="Monomer">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Monomer">[docs]</a>
+<span class="k">class</span> <span class="nc">Monomer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for a single monomer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_surf</span><span class="p">,</span> <span class="n">diam</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param m_surf: monomer surface (as vtkPolyData object)</span>
+<span class="sd">        :param diam: monomer diameter</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m_surf</span><span class="p">,</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">diam</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span><span class="o">.</span><span class="n">DeepCopy</span><span class="p">(</span><span class="n">m_surf</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__diam</span> <span class="o">=</span> <span class="n">diam</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__rot_angs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compute_bounds</span><span class="p">()</span>
+        <span class="c1"># Ordered transformation queue, each entry is a 2-tuple</span>
+        <span class="c1"># (str in [&#39;t&#39;, &#39;r&#39;], transform value in [vector, quaternion])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__trans</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Monomer.get_vtp">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Monomer.get_vtp">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_vtp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span></div>
+
+
+<div class="viewcode-block" id="Monomer.get_center_mass">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Monomer.get_center_mass">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_center_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computer and return the monomer center of mass</span>
+
+<span class="sd">        :return: a numpy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">poly_center_mass</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Monomer.get_diameter">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Monomer.get_diameter">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__diam</span></div>
+
+
+<div class="viewcode-block" id="Monomer.get_trans_list">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Monomer.get_trans_list">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_trans_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get transformations list</span>
+
+<span class="sd">        :return: a list with al transformations, each element is duple with a first element</span>
+<span class="sd">        indicating the transformation type (&#39;r&#39; or &#39;t&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__trans</span></div>
+
+
+<div class="viewcode-block" id="Monomer.compute_bounds">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Monomer.compute_bounds">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Compute bounds</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span><span class="o">.</span><span class="n">GetPoints</span><span class="p">()</span><span class="o">.</span><span class="n">GetData</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">GetRange</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">GetRange</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">GetRange</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Monomer.rotate_q">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Monomer.rotate_q">[docs]</a>
+    <span class="k">def</span> <span class="nf">rotate_q</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies rotation rigid transformation around center from an input unit quaternion.</span>
+
+<span class="sd">        :param q: input quaternion</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">w</span><span class="p">,</span> <span class="n">v_axis</span> <span class="o">=</span> <span class="n">quat_to_angle_axis</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span> <span class="o">=</span> <span class="n">poly_rotate_wxyz</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">v_axis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v_axis</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v_axis</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compute_bounds</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__trans</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">q</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Monomer.translate">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Monomer.translate">[docs]</a>
+    <span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_v</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies rotation rigid transformation.</span>
+
+<span class="sd">        :param t_v: translation vector (x, y, z)</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span> <span class="o">=</span> <span class="n">poly_translate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span><span class="p">,</span> <span class="n">t_v</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compute_bounds</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__trans</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;t&#39;</span><span class="p">,</span> <span class="n">t_v</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Monomer.point_in_bounds">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Monomer.point_in_bounds">[docs]</a>
+    <span class="k">def</span> <span class="nf">point_in_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">):</span>
+        <span class="n">x_over</span><span class="p">,</span> <span class="n">y_over</span><span class="p">,</span> <span class="n">z_over</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">x_over</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">y_over</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">point</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">point</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+            <span class="n">y_over</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">x_over</span> <span class="ow">and</span> <span class="n">y_over</span> <span class="ow">and</span> <span class="n">z_over</span></div>
+
+
+<div class="viewcode-block" id="Monomer.bound_in_bounds">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Monomer.bound_in_bounds">[docs]</a>
+    <span class="k">def</span> <span class="nf">bound_in_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bounds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the object&#39;s bound are at least partially in another bound</span>
+
+<span class="sd">        :param bounds: input bound</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x_over</span><span class="p">,</span> <span class="n">y_over</span><span class="p">,</span> <span class="n">z_over</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">x_over</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+            <span class="n">y_over</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__bounds</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">4</span><span class="p">]):</span>
+            <span class="n">y_over</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">x_over</span> <span class="ow">and</span> <span class="n">y_over</span> <span class="ow">and</span> <span class="n">z_over</span></div>
+
+
+<div class="viewcode-block" id="Monomer.overlap_voi">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Monomer.overlap_voi">[docs]</a>
+    <span class="k">def</span> <span class="nf">overlap_voi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">voi</span><span class="p">,</span> <span class="n">v_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines if the monomer overlaps a VOI, that requires the next condition:</span>
+<span class="sd">            - Any particle on the monomer surface is within the VOI</span>
+
+<span class="sd">        :param voi: input VOI (Volume Of Interest), binary tomogram with True for VOI voxels</span>
+<span class="sd">        :param v_size: voxel size, it must greater than 0 (default 1)</span>
+<span class="sd">        :param over_tolerance: maximum overlap allowed (default 0)</span>
+<span class="sd">        :return: True if the monomer overlaps the VOI, False otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Initialization</span>
+        <span class="k">assert</span> <span class="n">v_size</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">voi</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">voi</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="s1">&#39;bool&#39;</span><span class="p">)</span>
+        <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span> <span class="o">=</span> <span class="n">voi</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">v_size_i</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">v_size</span>
+        <span class="n">mbd_prop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span><span class="o">.</span><span class="n">GetPointData</span><span class="p">()</span><span class="o">.</span><span class="n">GetArray</span><span class="p">(</span><span class="n">MB_DOMAIN_FIELD_STR</span><span class="p">)</span>
+
+        <span class="c1"># Any particle on the monomer surface is within the VOI</span>
+        <span class="n">count</span><span class="p">,</span> <span class="n">n_points</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()</span>
+        <span class="n">n_points_if</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n_points</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mbd_prop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()):</span>
+                <span class="n">pt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span><span class="o">.</span><span class="n">GetPoint</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="o">*</span> <span class="n">v_size_i</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">pt</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">nx</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">y</span> <span class="o">&lt;</span> <span class="n">ny</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">z</span> <span class="o">&lt;</span> <span class="n">nz</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">z</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">voi</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">]:</span>
+                        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="n">over</span> <span class="o">=</span> <span class="n">count</span> <span class="o">*</span> <span class="n">n_points_if</span>
+                        <span class="k">if</span> <span class="n">over</span> <span class="o">&gt;</span> <span class="n">over_tolerance</span><span class="p">:</span>
+                            <span class="k">return</span> <span class="kc">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">over</span> <span class="o">=</span> <span class="n">count</span> <span class="o">*</span> <span class="n">n_points_if</span>
+                    <span class="k">if</span> <span class="n">over</span> <span class="o">&gt;</span> <span class="n">over_tolerance</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="n">mbd_prop</span><span class="o">.</span><span class="n">GetValue</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">pt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span><span class="o">.</span><span class="n">GetPoint</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="o">*</span> <span class="n">v_size_i</span>
+                    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">pt</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">nx</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">y</span> <span class="o">&lt;</span> <span class="n">ny</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">z</span> <span class="o">&lt;</span> <span class="n">nz</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">z</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">voi</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">]:</span>
+                            <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+                            <span class="n">over</span> <span class="o">=</span> <span class="n">count</span> <span class="o">*</span> <span class="n">n_points_if</span>
+                            <span class="k">if</span> <span class="n">over</span> <span class="o">&gt;</span> <span class="n">over_tolerance</span><span class="p">:</span>
+                                <span class="k">return</span> <span class="kc">True</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="n">over</span> <span class="o">=</span> <span class="n">count</span> <span class="o">*</span> <span class="n">n_points_if</span>
+                        <span class="k">if</span> <span class="n">over</span> <span class="o">&gt;</span> <span class="n">over_tolerance</span><span class="p">:</span>
+                            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="Monomer.get_vol">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Monomer.get_vol">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_vol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the polymer volume</span>
+<span class="sd">        :return: the computed volume</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">poly_volume</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Monomer.get_area">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Monomer.get_area">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the polymer area projected on a surface (currently only a plane containing the center, the monomer is</span>
+<span class="sd">        approximated as ssphere)</span>
+
+<span class="sd">        :return: the computed area</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">diam</span> <span class="o">=</span> <span class="n">poly_diam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">diam</span> <span class="o">*</span> <span class="n">diam</span> <span class="o">*</span> <span class="mf">.25</span></div>
+
+
+<div class="viewcode-block" id="Monomer.get_copy">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Monomer.get_copy">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a copy of the current Monomer</span>
+<span class="sd">        :return: a new instance of this monomer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Monomer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__diam</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Monomer.insert_density_svol">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Monomer.insert_density_svol">[docs]</a>
+    <span class="k">def</span> <span class="nf">insert_density_svol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_svol</span><span class="p">,</span> <span class="n">tomo</span><span class="p">,</span> <span class="n">v_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">merge</span><span class="o">=</span><span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="n">off_svol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Insert a monomer subvolume into a tomogram</span>
+
+<span class="sd">        :param m_svol: input monomer sub-volume</span>
+<span class="sd">        :param tomo: tomogram where m_svol is added</span>
+<span class="sd">        :param v_size: tomogram voxel size (default 1)</span>
+<span class="sd">        :param merge: merging mode, valid: &#39;min&#39; (default), &#39;max&#39;, &#39;sum&#39; and &#39;insert&#39;</span>
+<span class="sd">        :param off_svol: offset coordinates in voxels for shifting sub-volume monomer center coordinates (default None)</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">v_size_i</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">v_size</span>
+        <span class="n">tot_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">))</span>
+        <span class="n">hold_svol</span> <span class="o">=</span> <span class="n">m_svol</span>
+        <span class="k">for</span> <span class="n">trans</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__trans</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">trans</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;t&#39;</span><span class="p">:</span>
+                <span class="n">tot_v</span> <span class="o">+=</span> <span class="p">(</span><span class="n">trans</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">v_size_i</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">trans</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;r&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">merge</span> <span class="o">==</span> <span class="s1">&#39;min&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">hold_svol</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">:</span>
+                        <span class="n">hold_svol</span> <span class="o">=</span> <span class="n">tomo_rotate</span><span class="p">(</span><span class="n">hold_svol</span><span class="p">,</span> <span class="n">trans</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="n">hold_svol</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">hold_svol</span> <span class="o">=</span> <span class="n">tomo_rotate</span><span class="p">(</span><span class="n">hold_svol</span><span class="p">,</span> <span class="n">trans</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="n">hold_svol</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">hold_svol</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">:</span>
+                        <span class="n">hold_svol</span> <span class="o">=</span> <span class="n">tomo_rotate</span><span class="p">(</span><span class="n">hold_svol</span><span class="p">,</span> <span class="n">trans</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="n">hold_svol</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">hold_svol</span> <span class="o">=</span> <span class="n">tomo_rotate</span><span class="p">(</span><span class="n">hold_svol</span><span class="p">,</span> <span class="n">trans</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="n">hold_svol</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">off_svol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">off_svol</span> <span class="o">=</span> <span class="n">vect_rotate</span><span class="p">(</span><span class="n">off_svol</span><span class="p">,</span> <span class="n">trans</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">off_svol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tot_v</span> <span class="o">+=</span> <span class="n">off_svol</span>
+        <span class="n">insert_svol_tomo</span><span class="p">(</span><span class="n">hold_svol</span><span class="p">,</span> <span class="n">tomo</span><span class="p">,</span> <span class="n">tot_v</span><span class="p">,</span> <span class="n">merge</span><span class="o">=</span><span class="n">merge</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Monomer.overlap_mmer">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Monomer.overlap_mmer">[docs]</a>
+    <span class="k">def</span> <span class="nf">overlap_mmer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mmer</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines if the monomer overlaps with another</span>
+
+<span class="sd">        :param mmer: input monomer to check overlap with self</span>
+<span class="sd">        :param over_tolerance: maximum overlap allowed (default 0)</span>
+<span class="sd">        :return: True if overlapping, otherwise False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Initialization</span>
+        <span class="n">selector</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkSelectEnclosedPoints</span><span class="p">()</span>
+        <span class="n">selector</span><span class="o">.</span><span class="n">SetTolerance</span><span class="p">(</span><span class="n">VTK_RAY_TOLERANCE</span><span class="p">)</span>
+        <span class="n">selector</span><span class="o">.</span><span class="n">Initialize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_vtp</span><span class="p">())</span>
+
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">points_distance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_center_mass</span><span class="p">(),</span> <span class="n">mmer</span><span class="o">.</span><span class="n">get_center_mass</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">dist</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_diameter</span><span class="p">():</span>
+            <span class="n">poly_b</span> <span class="o">=</span> <span class="n">mmer</span><span class="o">.</span><span class="n">get_vtp</span><span class="p">()</span>
+            <span class="n">count</span><span class="p">,</span> <span class="n">n_points</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">poly_b</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()</span>
+            <span class="n">n_points_if</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n_points</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_points</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">selector</span><span class="o">.</span><span class="n">IsInsideSurface</span><span class="p">(</span><span class="n">poly_b</span><span class="o">.</span><span class="n">GetPoint</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">over</span> <span class="o">=</span> <span class="n">count</span> <span class="o">*</span> <span class="n">n_points_if</span>
+                    <span class="k">if</span> <span class="n">over</span> <span class="o">&gt;</span> <span class="n">over_tolerance</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="Monomer.overlap_net">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Monomer.overlap_net">[docs]</a>
+    <span class="k">def</span> <span class="nf">overlap_net</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_dist</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines if the monomer overlaps with another momonmer in a network</span>
+
+<span class="sd">        :param mmer: input monomer to check overlap with self</span>
+<span class="sd">        :param over_tolerance: maximum overlap allowed (default 0)</span>
+<span class="sd">        :param max_dist: allows to externally set a maximum distance (in A) to seach for collisions, otherwise 1.2 monomer</span>
+<span class="sd">                         diameter is used</span>
+<span class="sd">        :return: True if overlapping, otherwise False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Initialization</span>
+        <span class="n">selector</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkSelectEnclosedPoints</span><span class="p">()</span>
+        <span class="n">selector</span><span class="o">.</span><span class="n">SetTolerance</span><span class="p">(</span><span class="n">VTK_RAY_TOLERANCE</span><span class="p">)</span>
+        <span class="n">selector</span><span class="o">.</span><span class="n">Initialize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_vtp</span><span class="p">())</span>
+
+        <span class="k">for</span> <span class="n">pmer</span> <span class="ow">in</span> <span class="n">net</span><span class="o">.</span><span class="n">get_pmers_list</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">mmer</span> <span class="ow">in</span> <span class="n">pmer</span><span class="o">.</span><span class="n">get_mmers_list</span><span class="p">():</span>
+                <span class="n">dist</span> <span class="o">=</span> <span class="n">points_distance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_center_mass</span><span class="p">(),</span> <span class="n">mmer</span><span class="o">.</span><span class="n">get_center_mass</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">max_dist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">max_dist_h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_diameter</span><span class="p">()</span> <span class="o">*</span> <span class="mf">1.2</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">max_dist_h</span> <span class="o">=</span> <span class="n">max_dist</span>
+                <span class="k">if</span> <span class="n">dist</span> <span class="o">&lt;=</span> <span class="n">max_dist_h</span><span class="p">:</span>
+                    <span class="n">poly_b</span> <span class="o">=</span> <span class="n">mmer</span><span class="o">.</span><span class="n">get_vtp</span><span class="p">()</span>
+                    <span class="n">count</span><span class="p">,</span> <span class="n">n_points</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">poly_b</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()</span>
+                    <span class="n">n_points_if</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n_points</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_points</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">selector</span><span class="o">.</span><span class="n">IsInsideSurface</span><span class="p">(</span><span class="n">poly_b</span><span class="o">.</span><span class="n">GetPoint</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+                            <span class="n">over</span> <span class="o">=</span> <span class="n">count</span> <span class="o">*</span> <span class="n">n_points_if</span>
+                            <span class="k">if</span> <span class="n">over</span> <span class="o">&gt;</span> <span class="n">over_tolerance</span><span class="p">:</span>
+                                <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Polymer">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer">[docs]</a>
+<span class="k">class</span> <span class="nc">Polymer</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract class for modeling a Polymer (a sequence of monomers)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_surf</span><span class="p">,</span> <span class="n">id0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">code0</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param m_surf: monomer surface (as vtkPolyData object)</span>
+<span class="sd">        :param id0: id for the initial monomer (default 0)</span>
+<span class="sd">        :param code0: code string for the initial monomer (default &#39;&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">h_diam</span> <span class="o">=</span> <span class="n">poly_diam</span><span class="p">(</span><span class="n">m_surf</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">h_diam</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span> <span class="o">=</span> <span class="n">m_surf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__m_diam</span> <span class="o">=</span> <span class="n">h_diam</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__m</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__p</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__u</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__t</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__q</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(),</span> <span class="nb">list</span><span class="p">(),</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__t_length</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__codes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Polymer.get_num_mmers">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.get_num_mmers">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_num_mmers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: the number of monomers</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__ids</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Polymer.get_mmer_ids">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.get_mmer_ids">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mmer_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: the list of mmer ids</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ids</span></div>
+
+
+<div class="viewcode-block" id="Polymer.get_mmer_id">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.get_mmer_id">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mmer_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get monomer id from its position</span>
+
+<span class="sd">        :param m_id: monomoer position in the polymer</span>
+<span class="sd">        :return: an integer with the monomer id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ids</span><span class="p">[</span><span class="n">m_id</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Polymer.get_mmer_code">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.get_mmer_code">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mmer_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get monomer code from its position</span>
+
+<span class="sd">        :param m_id: monomoer position in the polymer</span>
+<span class="sd">        :return: an string with the monomer code</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__codes</span><span class="p">[</span><span class="n">m_id</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Polymer.get_vol">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.get_vol">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_vol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the polymer volume</span>
+
+<span class="sd">        :return: the computed volume</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">vol</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">vol</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m</span><span class="p">:</span>
+                <span class="n">vol</span> <span class="o">+=</span> <span class="n">m</span><span class="o">.</span><span class="n">get_vol</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">vol</span></div>
+
+
+<div class="viewcode-block" id="Polymer.get_area">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.get_area">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_area</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;sphere&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the polymer area projected in a surface</span>
+
+<span class="sd">        :param mode: computations mode, valid: &#39;sphere&#39; each monomer is approximated to a sphere</span>
+<span class="sd">        :return: the computed volume</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">area</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">area</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m</span><span class="p">:</span>
+                <span class="n">area</span> <span class="o">+=</span> <span class="n">m</span><span class="o">.</span><span class="n">get_area</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">area</span></div>
+
+
+<div class="viewcode-block" id="Polymer.get_total_len">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.get_total_len">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_total_len</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__t_length</span></div>
+
+
+<div class="viewcode-block" id="Polymer.get_num_monomers">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.get_num_monomers">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_num_monomers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Polymer.get_monomer">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.get_monomer">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_monomer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a monomer</span>
+
+<span class="sd">        :param m_id: monomer id, it must be [0, get_num_monomers()-1]</span>
+<span class="sd">        :return: the Monomer instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m</span><span class="p">[</span><span class="n">m_id</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Polymer.get_mmers_list">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.get_mmers_list">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mmers_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all polymer&#39;s monomers in a list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m</span></div>
+
+
+<div class="viewcode-block" id="Polymer.get_mmer_center">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.get_mmer_center">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mmer_center</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param m_id: monomner id</span>
+<span class="sd">        :return: monomer coordinates center</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__r</span><span class="p">[</span><span class="n">m_id</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Polymer.get_mmer_rotation">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.get_mmer_rotation">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mmer_rotation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param m_id: monomner id</span>
+<span class="sd">        :return: monomer rotation as a quaternion</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__q</span><span class="p">[</span><span class="n">m_id</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Polymer.get_tail_point">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.get_tail_point">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_tail_point</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the central coordinate for the latest monomer</span>
+
+<span class="sd">        :return: point coordinates as ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Polymer.get_vtp">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.get_vtp">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_vtp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the polymer a skeleton, each momomer is point and lines conecting monomers</span>
+
+<span class="sd">        :return: a vtkPolyData</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">app_flt</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkAppendPolyData</span><span class="p">()</span>
+
+        <span class="c1"># Polymers loop</span>
+        <span class="k">for</span> <span class="n">m_id</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m</span><span class="p">)):</span>
+            <span class="n">m_poly</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m</span><span class="p">[</span><span class="n">m_id</span><span class="p">]</span><span class="o">.</span><span class="n">get_vtp</span><span class="p">()</span>
+            <span class="n">add_label_to_poly</span><span class="p">(</span><span class="n">m_poly</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ids</span><span class="p">[</span><span class="n">m_id</span><span class="p">],</span> <span class="n">GTRUTH_VTP_LBLS</span><span class="p">)</span>
+            <span class="n">app_flt</span><span class="o">.</span><span class="n">AddInputData</span><span class="p">(</span><span class="n">m_poly</span><span class="p">)</span>
+        <span class="n">app_flt</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">app_flt</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Polymer.get_skel">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.get_skel">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_skel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">add_verts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_lines</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verts_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the polymer as a skeleton, each monomer is a point or sphere and lines connecting monomers</span>
+
+<span class="sd">        :param add_verts: if True (default) the vertices are included in the vtkPolyData</span>
+<span class="sd">        :param add_lines: if True (default) the lines are included in the vtkPolyData</span>
+<span class="sd">        :param verts_rad: if verts is True then sets the vertex radius, if &lt;=0 a vertices are just points</span>
+<span class="sd">        :return: a vtkPolyData</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Initialization</span>
+        <span class="n">poly</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">(),</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPoints</span><span class="p">()</span>
+        <span class="n">verts</span><span class="p">,</span> <span class="n">lines</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkCellArray</span><span class="p">(),</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkCellArray</span><span class="p">()</span>
+        <span class="n">sph_points</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="c1"># Monomers loop</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__r</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">sph_points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__r</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">id_p0</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">InsertNextPoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__r</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">add_verts</span> <span class="ow">and</span> <span class="p">(</span><span class="n">verts_rad</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="n">verts</span><span class="o">.</span><span class="n">InsertNextCell</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">verts</span><span class="o">.</span><span class="n">InsertCellPoint</span><span class="p">(</span><span class="n">id_p0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__r</span><span class="p">)):</span>
+                <span class="n">sph_points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__r</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">id_p0</span><span class="p">,</span> <span class="n">id_p1</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">InsertNextPoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__r</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">points</span><span class="o">.</span><span class="n">InsertNextPoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__r</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">add_verts</span> <span class="ow">and</span> <span class="p">(</span><span class="n">verts_rad</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+                    <span class="n">verts</span><span class="o">.</span><span class="n">InsertNextCell</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="n">verts</span><span class="o">.</span><span class="n">InsertCellPoint</span><span class="p">(</span><span class="n">id_p0</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">add_lines</span><span class="p">:</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">InsertNextCell</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">InsertCellPoint</span><span class="p">(</span><span class="n">id_p0</span><span class="p">)</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">InsertCellPoint</span><span class="p">(</span><span class="n">id_p1</span><span class="p">)</span>
+
+        <span class="c1"># Construct poly</span>
+        <span class="n">poly</span><span class="o">.</span><span class="n">SetPoints</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">add_verts</span> <span class="ow">and</span> <span class="p">(</span><span class="n">verts_rad</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">poly</span><span class="o">.</span><span class="n">SetVerts</span><span class="p">(</span><span class="n">verts</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">add_lines</span><span class="p">:</span>
+            <span class="n">poly</span><span class="o">.</span><span class="n">SetLines</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+
+        <span class="c1"># Spheres case</span>
+        <span class="k">if</span> <span class="n">add_verts</span> <span class="ow">and</span> <span class="p">(</span><span class="n">verts_rad</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">sph_vtp</span> <span class="o">=</span> <span class="n">points_to_poly_spheres</span><span class="p">(</span><span class="n">sph_points</span><span class="p">,</span> <span class="n">verts_rad</span><span class="p">)</span>
+            <span class="n">poly</span> <span class="o">=</span> <span class="n">merge_polys</span><span class="p">(</span><span class="n">sph_vtp</span><span class="p">,</span> <span class="n">poly</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">poly</span></div>
+
+
+<div class="viewcode-block" id="Polymer.add_monomer">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.add_monomer">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_monomer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a new monomer surface to the polymer once affine transformation is known</span>
+
+<span class="sd">        :param r: center point</span>
+<span class="sd">        :param t: tangent vector</span>
+<span class="sd">        :param q: unit quaternion for rotation</span>
+<span class="sd">        :param m: monomer</span>
+<span class="sd">        :param id: monomer id (default 0), necessary to identify the monomer within a list in an intercalated polymer</span>
+<span class="sd">        :param code: monomer code string (default &#39;&#39;)</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> \
+               <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">Monomer</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__t</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__m</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__codes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+        <span class="c1"># Update total length</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_num_monomers</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__t_length</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__t_length</span> <span class="o">+=</span> <span class="n">points_distance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__r</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="Polymer.insert_density_svol">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.insert_density_svol">[docs]</a>
+    <span class="k">def</span> <span class="nf">insert_density_svol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_svol</span><span class="p">,</span> <span class="n">tomo</span><span class="p">,</span> <span class="n">v_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">merge</span><span class="o">=</span><span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="n">off_svol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Insert a polymer as set of subvolumes into a tomogram</span>
+
+<span class="sd">        :param m_svol: input monomer (or list) sub-volume reference</span>
+<span class="sd">        :param tomo: tomogram where m_svol is added</span>
+<span class="sd">        :param v_size: tomogram voxel size (default 1)</span>
+<span class="sd">        :param merge: merging mode, valid: &#39;min&#39; (default), &#39;max&#39;, &#39;sum&#39; and &#39;insert&#39;</span>
+<span class="sd">        :param off_svol: offset coordinates for sub-volume monomer center coordinates</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m_svol</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="n">m_svol</span> <span class="o">=</span> <span class="p">[</span><span class="n">m_svol</span><span class="p">,</span> <span class="p">]</span>
+        <span class="k">for</span> <span class="n">mmer</span><span class="p">,</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ids</span><span class="p">):</span>
+            <span class="n">mmer</span><span class="o">.</span><span class="n">insert_density_svol</span><span class="p">(</span><span class="n">m_svol</span><span class="p">[</span><span class="nb">id</span><span class="p">],</span> <span class="n">tomo</span><span class="p">,</span> <span class="n">v_size</span><span class="p">,</span> <span class="n">merge</span><span class="o">=</span><span class="n">merge</span><span class="p">,</span> <span class="n">off_svol</span><span class="o">=</span><span class="n">off_svol</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Polymer.set_reference">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.set_reference">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">set_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+<div class="viewcode-block" id="Polymer.gen_new_monomer">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.gen_new_monomer">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">gen_new_monomer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+<div class="viewcode-block" id="Polymer.overlap_polymer">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.Polymer.overlap_polymer">[docs]</a>
+    <span class="k">def</span> <span class="nf">overlap_polymer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">monomer</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines if a monomer overlaps with other polymer&#39;s monomers</span>
+
+<span class="sd">        :param monomer: input monomer</span>
+<span class="sd">        :param over_tolerance: fraction of overlapping tolerance (default 0)</span>
+<span class="sd">        :return: True if there is an overlapping and False otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Initialization</span>
+        <span class="n">selector</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkSelectEnclosedPoints</span><span class="p">()</span>
+        <span class="n">selector</span><span class="o">.</span><span class="n">SetTolerance</span><span class="p">(</span><span class="n">VTK_RAY_TOLERANCE</span><span class="p">)</span>
+        <span class="n">selector</span><span class="o">.</span><span class="n">Initialize</span><span class="p">(</span><span class="n">monomer</span><span class="o">.</span><span class="n">get_vtp</span><span class="p">())</span>
+
+        <span class="c1"># Polymer loop, no need to process monomer beyond diameter distance</span>
+        <span class="n">diam</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="n">monomer</span><span class="o">.</span><span class="n">get_diameter</span><span class="p">(),</span> <span class="n">monomer</span><span class="o">.</span><span class="n">get_center_mass</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">hold_monomer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="n">points_distance</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">hold_monomer</span><span class="o">.</span><span class="n">get_center_mass</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">dist</span> <span class="o">&lt;=</span> <span class="n">diam</span><span class="p">:</span>
+                <span class="n">poly_b</span> <span class="o">=</span> <span class="n">hold_monomer</span><span class="o">.</span><span class="n">get_vtp</span><span class="p">()</span>
+                <span class="n">count</span><span class="p">,</span> <span class="n">n_points</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">poly_b</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()</span>
+                <span class="n">n_points_if</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n_points</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_points</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">selector</span><span class="o">.</span><span class="n">IsInsideSurface</span><span class="p">(</span><span class="n">poly_b</span><span class="o">.</span><span class="n">GetPoint</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="n">over</span> <span class="o">=</span> <span class="n">count</span> <span class="o">*</span> <span class="n">n_points_if</span>
+                        <span class="k">if</span> <span class="n">over</span> <span class="o">&gt;</span> <span class="n">over_tolerance</span><span class="p">:</span>
+                            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SAWLC">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.SAWLC">[docs]</a>
+<span class="k">class</span> <span class="nc">SAWLC</span><span class="p">(</span><span class="n">Polymer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for fibers following model Self-Avoiding Worm-Like Chain (SAWLC)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l_length</span><span class="p">,</span> <span class="n">m_surf</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">id0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">code0</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param l_lengh: link length</span>
+<span class="sd">        :param m_surf: monomer surface (as vtkPolyData object)</span>
+<span class="sd">        :param p0: starting point</span>
+<span class="sd">        :param id0: id for the initial monomer</span>
+<span class="sd">        :param code0: code string for the initial monomer (default &#39;&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SAWLC</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">m_surf</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">l_length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__l</span> <span class="o">=</span> <span class="n">l_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_reference</span><span class="p">(</span><span class="n">p0</span><span class="p">,</span> <span class="n">id0</span><span class="o">=</span><span class="n">id0</span><span class="p">,</span> <span class="n">code0</span><span class="o">=</span><span class="n">code0</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SAWLC.set_reference">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.SAWLC.set_reference">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">id0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">code0</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the chain with the specified point input point, if points were introduced before they are forgotten</span>
+
+<span class="sd">        :param p0: starting point</span>
+<span class="sd">        :param id0: id for the initial monomer</span>
+<span class="sd">        :param code0: code string for the initial monomer (default &#39;&#39;)</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p0</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">p0</span><span class="p">)</span>
+        <span class="n">hold_monomer</span> <span class="o">=</span> <span class="n">Monomer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__m_surf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__m_diam</span><span class="p">)</span>
+        <span class="n">hold_q</span> <span class="o">=</span> <span class="n">gen_rand_unit_quaternion</span><span class="p">()</span>
+        <span class="c1"># hold_q = np.asarray((1, 0., 0., 1.), dtype=np.float32)</span>
+        <span class="n">hold_monomer</span><span class="o">.</span><span class="n">rotate_q</span><span class="p">(</span><span class="n">hold_q</span><span class="p">)</span>
+        <span class="n">hold_monomer</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">p0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_monomer</span><span class="p">(</span><span class="n">p0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)),</span> <span class="n">hold_q</span><span class="p">,</span> <span class="n">hold_monomer</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">id0</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="n">code0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SAWLC.gen_new_monomer">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.SAWLC.gen_new_monomer">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_new_monomer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">voi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">v_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fix_dst</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ext_surf</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a new monomer for the polymer according to the specified random model</span>
+
+<span class="sd">        :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0)</span>
+<span class="sd">        :param voi: VOI to define forbidden regions (default None, not applied)</span>
+<span class="sd">        :param v_size: VOI voxel size, it must be greater than 0 (default 1)</span>
+<span class="sd">        :param fix_dst: allows to set the distance for the new monomer externally (default None)</span>
+<span class="sd">        :param ext_surf: allows to set the new mmer surface externally (default None)</span>
+<span class="sd">        :return: a 4-tuple with monomer center point, associated tangent vector, rotated quaternion and monomer,</span>
+<span class="sd">                 return None in case the generation has failed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Translation</span>
+        <span class="k">if</span> <span class="n">fix_dst</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">hold_l</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__l</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hold_l</span> <span class="o">=</span> <span class="n">fix_dst</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">gen_uni_s2_sample</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)),</span> <span class="n">hold_l</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">t</span>
+
+        <span class="c1"># Rotation</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">gen_rand_unit_quaternion</span><span class="p">()</span>
+        <span class="c1"># q = np.asarray((1, 0, 0, 1), dtype=np.float32)</span>
+
+        <span class="c1"># Monomer</span>
+        <span class="k">if</span> <span class="n">ext_surf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">hold_m</span> <span class="o">=</span> <span class="n">Monomer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__m_surf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__m_diam</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hold_m</span> <span class="o">=</span> <span class="n">Monomer</span><span class="p">(</span><span class="n">ext_surf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__m_diam</span><span class="p">)</span>
+        <span class="n">hold_m</span><span class="o">.</span><span class="n">rotate_q</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+        <span class="n">hold_m</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+        <span class="c1"># Check self-avoiding and forbidden regions</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap_polymer</span><span class="p">(</span><span class="n">hold_m</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="n">over_tolerance</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="n">voi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">hold_m</span><span class="o">.</span><span class="n">overlap_voi</span><span class="p">(</span><span class="n">voi</span><span class="p">,</span> <span class="n">v_size</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="n">over_tolerance</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">r</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">hold_m</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SAWLCPoly">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.SAWLCPoly">[docs]</a>
+<span class="k">class</span> <span class="nc">SAWLCPoly</span><span class="p">(</span><span class="n">Polymer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for fibers following model Self-Avoiding Worm-Like Chain (SAWLC) on a PolyData</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">poly</span><span class="p">,</span> <span class="n">l_length</span><span class="p">,</span> <span class="n">m_surf</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">id0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param poly: vtkPolyData where the monomer center will be embedded</span>
+<span class="sd">        :param l_lengh: link length</span>
+<span class="sd">        :param m_surf: monomer surface (as vtkPolyData object)</span>
+<span class="sd">        :param p0: starting point</span>
+<span class="sd">        :param id0: id for the initial monomer (default 0)</span>
+<span class="sd">        :param code0: code string for the initial monomer (default &#39;&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SAWLCPoly</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">m_surf</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">poly</span><span class="p">,</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">l_length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__l</span> <span class="o">=</span> <span class="n">l_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__poly</span> <span class="o">=</span> <span class="n">poly</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_reference</span><span class="p">(</span><span class="n">p0</span><span class="p">,</span> <span class="n">id0</span><span class="o">=</span><span class="n">id0</span><span class="p">,</span> <span class="n">code0</span><span class="o">=</span><span class="n">code</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SAWLCPoly.set_reference">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.SAWLCPoly.set_reference">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">id0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">code0</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the chain with the specified point input point, if points were introduced before they are forgotten</span>
+
+<span class="sd">        :param p0: starting point</span>
+<span class="sd">        :param id0: id for the initial monomer (default 0)</span>
+<span class="sd">        :param code0: code string for the initial monomer (default &#39;&#39;)</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p0</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__p</span><span class="p">,</span> <span class="n">hold_n</span> <span class="o">=</span> <span class="n">find_point_on_poly</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">p0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">__poly</span><span class="p">)</span>
+        <span class="n">hold_monomer</span> <span class="o">=</span> <span class="n">Monomer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__m_surf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__m_diam</span><span class="p">)</span>
+        <span class="n">hold_q</span> <span class="o">=</span> <span class="n">gen_rand_quaternion_on_vector</span><span class="p">(</span><span class="n">hold_n</span><span class="p">)</span>
+        <span class="c1"># hold_q = np.asarray((1, 0., 0., 1.), dtype=np.float32)</span>
+        <span class="n">hold_monomer</span><span class="o">.</span><span class="n">rotate_q</span><span class="p">(</span><span class="n">hold_q</span><span class="p">)</span>
+        <span class="n">hold_monomer</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__p</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_monomer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__p</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)),</span> <span class="n">hold_q</span><span class="p">,</span> <span class="n">hold_monomer</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">id0</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="n">code0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SAWLCPoly.gen_new_monomer">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.SAWLCPoly.gen_new_monomer">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_new_monomer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">voi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">v_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fix_dst</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a new monomer for the polymer according to the specified random model</span>
+
+<span class="sd">        :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0)</span>
+<span class="sd">        :param voi: VOI to define forbidden regions (default None, not applied)</span>
+<span class="sd">        :param v_size: VOI voxel size, it must be greater than 0 (default 1)</span>
+<span class="sd">        :param fix_dst: allows to set the distance for the new monomer externally (default None)</span>
+<span class="sd">        :return: a 4-tuple with monomer center point, associated tangent vector, rotated quaternion and monomer,</span>
+<span class="sd">                 return None in case the generation has failed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Translation</span>
+        <span class="k">if</span> <span class="n">fix_dst</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">hold_l</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__l</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hold_l</span> <span class="o">=</span> <span class="n">fix_dst</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">gen_uni_s2_sample_on_poly</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">hold_l</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__poly</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">r</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">r</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Rotation</span>
+        <span class="n">hold_n</span> <span class="o">=</span> <span class="n">find_point_on_poly</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__poly</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">gen_rand_quaternion_on_vector</span><span class="p">(</span><span class="n">hold_n</span><span class="p">)</span>
+        <span class="c1"># q = np.asarray((1, 0, 0, 1), dtype=np.float32)</span>
+
+        <span class="c1"># Monomer</span>
+        <span class="c1"># hold_m = self._Polymer__m[-1].get_copy()</span>
+        <span class="n">hold_m</span> <span class="o">=</span> <span class="n">Monomer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__m_surf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__m_diam</span><span class="p">)</span>
+        <span class="n">hold_m</span><span class="o">.</span><span class="n">rotate_q</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+        <span class="n">hold_m</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+        <span class="c1"># Check self-avoiding and forbidden regions</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap_polymer</span><span class="p">(</span><span class="n">hold_m</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="n">over_tolerance</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="n">voi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">hold_m</span><span class="o">.</span><span class="n">overlap_voi</span><span class="p">(</span><span class="n">voi</span><span class="p">,</span> <span class="n">v_size</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="n">over_tolerance</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">r</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">hold_m</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HelixFiber">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.HelixFiber">[docs]</a>
+<span class="k">class</span> <span class="nc">HelixFiber</span><span class="p">(</span><span class="n">Polymer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for modelling a random helical flexible fiber</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l_length</span><span class="p">,</span> <span class="n">m_surf</span><span class="p">,</span> <span class="n">p_length</span><span class="p">,</span> <span class="n">hp_length</span><span class="p">,</span> <span class="n">mz_length</span><span class="p">,</span> <span class="n">z_length_f</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">vz</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                 <span class="n">rot_rand</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param l_length: link length</span>
+<span class="sd">        :param m_surf: monomer surface (as vtkPolyData object)</span>
+<span class="sd">        :param p_length: persistence length</span>
+<span class="sd">        :param hp_length: helix period length (distance required by azimuthal angle to cover 360deg)</span>
+<span class="sd">        :param mz_length: monomer z-length</span>
+<span class="sd">        :param z_length_f: helix elevation factor or slope</span>
+<span class="sd">        :param p0: starting point (default origin (0,0,0))</span>
+<span class="sd">        :param vz: reference vector for z-axis (default (0, 0, 1)</span>
+<span class="sd">        :param rot_rand: if True (default) the rotation of the first monomer (and consequently its tangent) is</span>
+<span class="sd">                         generated randomly, otherwise it is set to fit vz</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">HelixFiber</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">m_surf</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">l_length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">p_length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">z_length_f</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">hp_length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">mz_length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__lp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__lz</span> <span class="o">=</span> <span class="n">l_length</span><span class="p">,</span> <span class="n">p_length</span><span class="p">,</span> <span class="n">z_length_f</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__hp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mz_length</span> <span class="o">=</span> <span class="n">hp_length</span><span class="p">,</span> <span class="n">mz_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__hp_astep</span> <span class="o">=</span> <span class="p">(</span><span class="mf">360.</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mz_length</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">__hp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__compute_helical_parameters</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">vz</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vz</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__vz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vz</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="c1"># Curve state member variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__ct</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__za</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__rq</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">))</span> <span class="c1"># z-aligned curve time (considering speed 1)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_reference</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">p0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">__vz</span><span class="p">,</span> <span class="n">rot_rand</span><span class="o">=</span><span class="n">rot_rand</span><span class="p">)</span>
+
+<div class="viewcode-block" id="HelixFiber.set_reference">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.HelixFiber.set_reference">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">),</span> <span class="n">vz</span><span class="o">=</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">),</span> <span class="n">rot_rand</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the chain with the specified input point, if points are introduced before they will be forgotten</span>
+
+<span class="sd">        :param p0: starting point</span>
+<span class="sd">        :param vz: z-axis reference vector for helicoid parametrization</span>
+<span class="sd">        :param rot_rand: if True (default) the rotation of the first monomer (and consequently its tangent) is</span>
+<span class="sd">                         generated randomly, otherwise it is set to fit vz</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p0</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">p0</span><span class="p">)</span>
+        <span class="n">vzr</span> <span class="o">=</span> <span class="n">vz</span> <span class="o">/</span> <span class="n">vector_module</span><span class="p">(</span><span class="n">vz</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rot_rand</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">gen_uni_s2_sample</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)),</span> <span class="mf">1.</span><span class="p">)</span>
+            <span class="n">M</span> <span class="o">=</span> <span class="n">vect_to_zmat</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;passive&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__rq</span> <span class="o">=</span> <span class="n">rot_to_quat</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__rq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">))</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__compute_tangent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__ct</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">t</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__mz_length</span> <span class="o">/</span> <span class="n">vector_module</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__ct</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__l</span>
+        <span class="n">q1</span> <span class="o">=</span> <span class="n">angle_axis_to_quat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__za</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="n">vect_to_zmat</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;passive&#39;</span><span class="p">)</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">rot_to_quat</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+        <span class="n">hold_q</span> <span class="o">=</span> <span class="n">quat_mult</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">q1</span><span class="p">)</span>
+        <span class="c1"># vzr *= self.__mz_length</span>
+        <span class="n">hold_monomer</span> <span class="o">=</span> <span class="n">Monomer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__m_surf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__m_diam</span><span class="p">)</span>
+        <span class="n">hold_monomer</span><span class="o">.</span><span class="n">rotate_q</span><span class="p">(</span><span class="n">hold_q</span><span class="p">)</span>
+        <span class="n">hold_monomer</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">p0</span><span class="p">)</span>
+        <span class="c1"># self.__rq = hold_q</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_monomer</span><span class="p">(</span><span class="n">p0</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">hold_q</span><span class="p">,</span> <span class="n">hold_monomer</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HelixFiber.gen_new_monomer">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.HelixFiber.gen_new_monomer">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_new_monomer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">voi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">v_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">net</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">branch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_dist</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a new monomer according the flexible fiber model</span>
+
+<span class="sd">        :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0)</span>
+<span class="sd">        :param voi: VOI to define forbidden regions (default None, not applied)</span>
+<span class="sd">        :param v_size: VOI voxel size, it must be greater than 0 (default 1)</span>
+<span class="sd">        :param net: if not None (default) it contain a network of polymers that must be avoided</span>
+<span class="sd">        :param branch: input branch from where the current mmer starts, is avoid network avoiding at the branch,</span>
+<span class="sd">                       only valid in net is not None (default None).</span>
+<span class="sd">        :param max_dist: allows to externally set a maximum distance (in A) to search for collisions for network</span>
+<span class="sd">                         overlapping, otherwise 1.2 monomer diameter is used</span>
+<span class="sd">        :return: a 4-tuple with monomer center point, associated tangent vector, rotated quaternion and monomer,</span>
+<span class="sd">                 return None in case the generation has failed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">hold_m</span> <span class="o">=</span> <span class="n">Monomer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__m_surf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__m_diam</span><span class="p">)</span>
+
+        <span class="c1"># Rotation</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__compute_tangent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__ct</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">t</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__mz_length</span> <span class="o">/</span> <span class="n">vector_module</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__za</span> <span class="o">=</span> <span class="n">wrap_angle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__za</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__hp_astep</span><span class="p">)</span>
+        <span class="n">q1</span> <span class="o">=</span> <span class="n">angle_axis_to_quat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__za</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="n">vect_to_zmat</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;passive&#39;</span><span class="p">)</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">rot_to_quat</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+        <span class="n">hold_m</span><span class="o">.</span><span class="n">rotate_q</span><span class="p">(</span><span class="n">quat_mult</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">q1</span><span class="p">))</span>
+
+        <span class="c1"># Translation</span>
+        <span class="n">hold_r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Polymer__r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__ct</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__l</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">hold_r</span> <span class="o">+</span> <span class="n">t</span>
+        <span class="n">hold_m</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+        <span class="c1"># Avoid forbidden regions</span>
+        <span class="k">if</span> <span class="n">voi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">hold_m</span><span class="o">.</span><span class="n">overlap_voi</span><span class="p">(</span><span class="n">voi</span><span class="p">,</span> <span class="n">v_size</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="n">over_tolerance</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        <span class="c1"># Self-avoiding and network avoiding</span>
+        <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap_polymer</span><span class="p">(</span><span class="n">hold_m</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="n">over_tolerance</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">net</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">hold_m</span><span class="o">.</span><span class="n">overlap_net</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="n">over_tolerance</span><span class="p">,</span> <span class="n">max_dist</span><span class="o">=</span><span class="n">max_dist</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">branch_dst</span> <span class="o">=</span> <span class="n">points_distance</span><span class="p">(</span><span class="n">branch</span><span class="o">.</span><span class="n">get_point</span><span class="p">(),</span> <span class="n">hold_m</span><span class="o">.</span><span class="n">get_center_mass</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">branch_dst</span> <span class="o">&gt;</span> <span class="n">hold_m</span><span class="o">.</span><span class="n">get_diameter</span><span class="p">():</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap_polymer</span><span class="p">(</span><span class="n">hold_m</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="n">over_tolerance</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">net</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">hold_m</span><span class="o">.</span><span class="n">overlap_net</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="n">over_tolerance</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">r</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">hold_m</span></div>
+
+
+    <span class="k">def</span> <span class="nf">__compute_helical_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Private method (fill class member variables) to compute helical parameters (a and b) from persistence length</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Compute curvature from persistence</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">acos</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">__l</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">__lp</span><span class="p">))</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">__l</span>
+
+        <span class="c1"># Compute circular parameter, a, from curvature</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__a</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">k</span>
+
+        <span class="c1"># Compute Z-axis elevation from the circular parameter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__lz</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">__a</span>
+
+    <span class="k">def</span> <span class="nf">__compute_tangent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes curve (z-aligned axis) normalized tangent vector</span>
+
+<span class="sd">        :param t: input parameter, time assuming that speed is 1</span>
+<span class="sd">        :return: returns the normalized tangent vector (3 elements array)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sq</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__a</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">__a</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__b</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">__b</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">t</span>
+        <span class="n">s_sq</span> <span class="o">=</span> <span class="n">s</span> <span class="o">/</span> <span class="n">sq</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">sq</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">__a</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">s_sq</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">__a</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">s_sq</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">__b</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">rot_vect_quat</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__rq</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="FiberUnit">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.FiberUnit">[docs]</a>
+<span class="k">class</span> <span class="nc">FiberUnit</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract class to generate fiber unit (set of monomers)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="FiberUnit.get_vtp">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.FiberUnit.get_vtp">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_vtp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+<div class="viewcode-block" id="FiberUnit.get_tomo">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.FiberUnit.get_tomo">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_tomo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FiberUnitSDimer">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.FiberUnitSDimer">[docs]</a>
+<span class="k">class</span> <span class="nc">FiberUnitSDimer</span><span class="p">(</span><span class="n">FiberUnit</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for modeling a fiber unit as dimer of two spheres</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sph_rad</span><span class="p">,</span> <span class="n">v_size</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param sph_rad: radius for spheres</span>
+<span class="sd">        :param v_size: voxel size (default 1)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">sph_rad</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">v_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__sph_rad</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sph_rad</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">v_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="mf">6.</span> <span class="o">*</span> <span class="p">(</span><span class="n">sph_rad</span> <span class="o">/</span> <span class="n">v_size</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__size</span><span class="o">%</span><span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__size</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__surf</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__gen_sdimer</span><span class="p">()</span>
+
+<div class="viewcode-block" id="FiberUnitSDimer.get_vtp">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.FiberUnitSDimer.get_vtp">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_vtp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__surf</span></div>
+
+
+<div class="viewcode-block" id="FiberUnitSDimer.get_tomo">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.FiberUnitSDimer.get_tomo">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_tomo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span></div>
+
+
+    <span class="k">def</span> <span class="nf">__gen_sdimer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Contains the procedure to generate the Dimer of spheres with the specified size by using logistic functions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Input parsing</span>
+        <span class="n">sph_rad_v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sph_rad</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span>
+        <span class="n">sph_rad_v2</span> <span class="o">=</span> <span class="n">sph_rad_v</span> <span class="o">*</span> <span class="n">sph_rad_v</span> <span class="o">*</span> <span class="mf">0.5625</span> <span class="c1"># (0.75*rad)^2</span>
+
+        <span class="c1"># Generating the grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__size</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">dx2</span><span class="p">,</span> <span class="n">dy2</span><span class="p">,</span> <span class="n">dz2</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span> <span class="o">*</span> <span class="n">dx</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span> <span class="o">*</span> <span class="n">dy</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span> <span class="o">*</span> <span class="n">dz</span><span class="p">)</span>
+        <span class="n">x_l</span><span class="p">,</span> <span class="n">y_l</span><span class="p">,</span> <span class="n">z_l</span> <span class="o">=</span> <span class="o">-</span><span class="n">dx2</span><span class="p">,</span> <span class="o">-</span><span class="n">dy2</span><span class="p">,</span> <span class="o">-</span><span class="n">dz2</span>
+        <span class="n">x_h</span><span class="p">,</span> <span class="n">y_h</span><span class="p">,</span> <span class="n">z_h</span> <span class="o">=</span> <span class="o">-</span><span class="n">dx2</span> <span class="o">+</span> <span class="n">dx</span><span class="p">,</span> <span class="o">-</span><span class="n">dy2</span> <span class="o">+</span> <span class="n">dy</span><span class="p">,</span> <span class="o">-</span><span class="n">dz2</span> <span class="o">+</span> <span class="n">dz</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">x_l</span><span class="p">,</span> <span class="n">x_h</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">y_l</span><span class="p">,</span> <span class="n">y_h</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">z_l</span><span class="p">,</span> <span class="n">z_h</span><span class="p">),</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;xy&#39;</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">+=</span> <span class="mf">.5</span>
+        <span class="n">Y</span> <span class="o">+=</span> <span class="mf">.5</span>
+        <span class="n">Z</span> <span class="o">+=</span> <span class="mf">.5</span>
+        <span class="c1"># X, Y, Z = X.astype(np.float16), Y.astype(np.float16), X.astype(np.float16)</span>
+
+        <span class="c1"># from polnet import lio</span>
+
+        <span class="c1"># Generate the first unit</span>
+        <span class="n">Yh</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">+</span> <span class="n">sph_rad_v</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">X</span> <span class="o">+</span> <span class="n">Yh</span> <span class="o">*</span> <span class="n">Yh</span> <span class="o">+</span> <span class="n">Z</span> <span class="o">*</span> <span class="n">Z</span> <span class="o">-</span> <span class="n">sph_rad_v2</span>
+
+        <span class="c1"># lio.write_mrc(R.astype(np.float32), &#39;/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all/hold_R1.mrc&#39;)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span> <span class="o">+=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="p">))</span>
+
+        <span class="c1"># lio.write_mrc(self.__tomo.astype(np.float32), &#39;/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all/hold_R2.mrc&#39;)</span>
+
+        <span class="c1"># Generate the second unit</span>
+        <span class="n">Yh</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">-</span> <span class="n">sph_rad_v</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">X</span> <span class="o">+</span> <span class="n">Yh</span> <span class="o">*</span> <span class="n">Yh</span> <span class="o">+</span> <span class="n">Z</span> <span class="o">*</span> <span class="n">Z</span> <span class="o">-</span> <span class="n">sph_rad_v2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span> <span class="o">+=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="p">))</span>
+
+        <span class="c1"># Generating the surfaces</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span> <span class="o">=</span> <span class="n">lin_map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># self.__tomo = lin_map(self.__tomo, lb=0, ub=1)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__surf</span> <span class="o">=</span> <span class="n">iso_surface</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="p">,</span> <span class="mf">.25</span><span class="p">)</span> <span class="c1"># self.__surf = iso_surface(self.__tomo, .75)</span>
+
+        <span class="c1"># lio.write_mrc(self.__tomo, &#39;/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all/hold_funit1.mrc&#39;)</span>
+        <span class="c1"># lio.save_vtp(self.__surf, &#39;/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all/hold_funit1.vtp&#39;)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__surf</span> <span class="o">=</span> <span class="n">poly_scale</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__surf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__surf</span> <span class="o">=</span> <span class="n">poly_translate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__surf</span><span class="p">,</span> <span class="o">-</span><span class="mf">.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">-</span><span class="mf">.5</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="MTUnit">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.MTUnit">[docs]</a>
+<span class="k">class</span> <span class="nc">MTUnit</span><span class="p">(</span><span class="n">FiberUnit</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for modelling a fiber unit for microtubules (MTs)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sph_rad</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">mt_rad</span><span class="o">=</span><span class="mf">100.5</span><span class="p">,</span> <span class="n">n_units</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">v_size</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param sph_rad: radius for spheres (default 40, approximate tubulin radius in A)</span>
+<span class="sd">        :param mt_rad: microtubule radius (default 100.5, approximate microtubule radius in A)</span>
+<span class="sd">        :param n_units: number of units (default 13, number of protofilaments that compund a MT)</span>
+<span class="sd">        :param v_size: voxel size (default 1)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">sph_rad</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">mt_rad</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">n_units</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">v_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__sph_rad</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mt_rad</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__n_units</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sph_rad</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">mt_rad</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_units</span><span class="p">),</span>\
+                                                                       <span class="nb">float</span><span class="p">(</span><span class="n">v_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="mf">6.</span> <span class="o">*</span> <span class="p">(</span><span class="n">sph_rad</span> <span class="o">/</span> <span class="n">v_size</span><span class="p">)))</span> <span class="o">+</span> <span class="mi">4</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__size</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__size</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__surf</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__gen_sdimer</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MTUnit.get_vtp">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.MTUnit.get_vtp">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_vtp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__surf</span></div>
+
+
+<div class="viewcode-block" id="MTUnit.get_tomo">
+<a class="viewcode-back" href="../../polnet.html#polnet.polymer.MTUnit.get_tomo">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_tomo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span></div>
+
+
+    <span class="k">def</span> <span class="nf">__gen_sdimer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Contains the procedure to generate the Dimer of spheres with the specified size by using logistic functions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Input parsing</span>
+        <span class="n">sph_rad_v</span><span class="p">,</span> <span class="n">mt_rad_v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sph_rad</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mt_rad</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span>
+        <span class="n">sph_rad_v2</span> <span class="o">=</span> <span class="n">sph_rad_v</span> <span class="o">*</span> <span class="n">sph_rad_v</span> <span class="o">*</span> <span class="mf">0.25</span>  <span class="c1"># (0.9*rad)^2</span>
+
+        <span class="c1"># Generating the grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__size</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">dx2</span><span class="p">,</span> <span class="n">dy2</span><span class="p">,</span> <span class="n">dz2</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span> <span class="o">*</span> <span class="n">dx</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span> <span class="o">*</span> <span class="n">dy</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span> <span class="o">*</span> <span class="n">dz</span><span class="p">)</span>
+        <span class="n">x_l</span><span class="p">,</span> <span class="n">y_l</span><span class="p">,</span> <span class="n">z_l</span> <span class="o">=</span> <span class="o">-</span><span class="n">dx2</span><span class="p">,</span> <span class="o">-</span><span class="n">dy2</span><span class="p">,</span> <span class="o">-</span><span class="n">dz2</span>
+        <span class="n">x_h</span><span class="p">,</span> <span class="n">y_h</span><span class="p">,</span> <span class="n">z_h</span> <span class="o">=</span> <span class="o">-</span><span class="n">dx2</span> <span class="o">+</span> <span class="n">dx</span><span class="p">,</span> <span class="o">-</span><span class="n">dy2</span> <span class="o">+</span> <span class="n">dy</span><span class="p">,</span> <span class="o">-</span><span class="n">dz2</span> <span class="o">+</span> <span class="n">dz</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">x_l</span><span class="p">,</span> <span class="n">x_h</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">y_l</span><span class="p">,</span> <span class="n">y_h</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">z_l</span><span class="p">,</span> <span class="n">z_h</span><span class="p">),</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;xy&#39;</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">+=</span> <span class="mf">.5</span>
+        <span class="n">Y</span> <span class="o">+=</span> <span class="mf">.5</span>
+        <span class="n">Z</span> <span class="o">+=</span> <span class="mf">.5</span>
+        <span class="c1"># X, Y, Z = X.astype(np.float16), Y.astype(np.float16), X.astype(np.float16)</span>
+
+        <span class="c1"># Loop for generate the units</span>
+        <span class="n">Z2</span> <span class="o">=</span> <span class="n">Z</span> <span class="o">*</span> <span class="n">Z</span>
+        <span class="n">ang_step</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">__n_units</span>
+        <span class="n">ang</span> <span class="o">=</span> <span class="n">ang_step</span>
+        <span class="k">while</span> <span class="n">ang</span> <span class="o">&lt;=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span>
+            <span class="c1"># Generate the unit</span>
+            <span class="c1"># x, y = mt_rad_v * math.cos(ang), mt_rad_v * math.sin(ang)</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">mt_rad_v</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">ang</span><span class="p">),</span> <span class="n">mt_rad_v</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">ang</span><span class="p">)</span>
+            <span class="n">Xh</span><span class="p">,</span> <span class="n">Yh</span> <span class="o">=</span> <span class="n">X</span> <span class="o">+</span> <span class="n">x</span><span class="p">,</span> <span class="n">Y</span> <span class="o">+</span> <span class="n">y</span>
+            <span class="c1"># R = np.abs(Xh * Xh + Yh * Yh + Z2)</span>
+            <span class="n">R</span> <span class="o">=</span> <span class="n">Xh</span> <span class="o">*</span> <span class="n">Xh</span> <span class="o">+</span> <span class="n">Yh</span> <span class="o">*</span> <span class="n">Yh</span> <span class="o">+</span> <span class="n">Z2</span> <span class="o">-</span> <span class="n">sph_rad_v2</span>
+            <span class="c1"># from polnet import lio</span>
+            <span class="c1"># lio.write_mrc(R.astype(np.float32), &#39;/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all/hold_R1.mrc&#39;)</span>
+            <span class="n">F</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="p">))</span>
+            <span class="c1"># mask_F = F &lt; 0.1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span> <span class="o">+=</span> <span class="o">-</span><span class="n">F</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">ang</span> <span class="o">+=</span> <span class="n">ang_step</span>
+
+        <span class="c1"># from polnet import lio</span>
+        <span class="c1"># lio.write_mrc(self.__tomo, &#39;/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all/hold_mtunit1.mrc&#39;)</span>
+
+        <span class="c1"># Generating the surfaces</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span> <span class="o">=</span> <span class="n">lin_map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># self.__tomo = lin_map(self.__tomo, lb=0, ub=1)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__surf</span> <span class="o">=</span> <span class="n">iso_surface</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="p">,</span> <span class="mf">.25</span><span class="p">)</span> <span class="c1"># self.__surf = iso_surface(self.__tomo, .75)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__surf</span> <span class="o">=</span> <span class="n">poly_scale</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__surf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__surf</span> <span class="o">=</span> <span class="n">poly_translate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__surf</span><span class="p">,</span> <span class="o">-</span><span class="mf">.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mf">.5</span><span class="p">))</span></div>
+
+
+        <span class="c1"># lio.save_vtp(self.__surf, &#39;/fs/pool/pool-lucic2/antonio/polnet/riboprot/synth_all/hold_mtunit1.vtp&#39;)</span>
+
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Antonio Martinez-Sanchez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

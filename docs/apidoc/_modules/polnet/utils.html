@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>polnet.utils &mdash; PolNet 0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=10f1778b"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PolNet
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">polnet</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PolNet</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">polnet.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for polnet.utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Common functionality</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Antonio Martinez-Sanchez&#39;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">errno</span>
+<span class="kn">import</span> <span class="nn">stat</span>
+<span class="kn">import</span> <span class="nn">vtk</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">vtkmodules.util</span> <span class="kn">import</span> <span class="n">numpy_support</span>
+
+<span class="c1"># CONSTANTS</span>
+
+<span class="n">PI_2</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+<span class="n">VTK_RAY_TOLERANCE</span> <span class="o">=</span> <span class="mf">0.000001</span> <span class="c1"># 0.001</span>
+
+<span class="c1"># FUNCTIONS</span>
+
+
+<div class="viewcode-block" id="gen_uni_s2_sample">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.gen_uni_s2_sample">[docs]</a>
+<span class="k">def</span> <span class="nf">gen_uni_s2_sample</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">rad</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a coordinate from uniformly random distribution on a sphere</span>
+
+<span class="sd">    :param center: sphere center</span>
+<span class="sd">    :param rad: sphere radius</span>
+<span class="sd">    :return: the random coordinate generated</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="n">rad</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">X</span> <span class="o">*=</span> <span class="n">norm</span>
+    <span class="k">return</span> <span class="n">X</span> <span class="o">+</span> <span class="n">center</span></div>
+
+
+
+<div class="viewcode-block" id="points_distance">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.points_distance">[docs]</a>
+<span class="k">def</span> <span class="nf">points_distance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the Euclidean distance between two point</span>
+
+<span class="sd">    :param a: input point a</span>
+<span class="sd">    :param b: input point b</span>
+<span class="sd">    :return: the Euclidean distance between a an b: d(a,b)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">hold</span> <span class="o">=</span> <span class="n">b</span> <span class="o">-</span> <span class="n">a</span>
+    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">hold</span> <span class="o">*</span> <span class="n">hold</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span></div>
+
+
+
+<div class="viewcode-block" id="iso_surface">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.iso_surface">[docs]</a>
+<span class="k">def</span> <span class="nf">iso_surface</span><span class="p">(</span><span class="n">tomo</span><span class="p">,</span> <span class="n">th</span><span class="p">,</span> <span class="n">flp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">normals</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Iso-surface on an input 3D volume</span>
+
+<span class="sd">    :param tomo: input 3D numpy array</span>
+<span class="sd">    :param th: iso-surface threshold</span>
+<span class="sd">    :param flp: if not None (default) it specifies the axis to flip (valid: 0, 1 or 3)</span>
+<span class="sd">    :param closed: if True (default False) if forces to generate a closed surface, VERY IMPORTANT: closed output</span>
+<span class="sd">    is only guaranteed for input boolean tomograms</span>
+<span class="sd">    :param normals: normals orientation, valid None (default), &#39;inwards&#39; and &#39;outwards&#39;. Any value different from None</span>
+<span class="sd">                    reduces surface precision</span>
+<span class="sd">    :return: a vtkPolyData object only made up of triangles</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Marching cubes configuration</span>
+    <span class="n">march</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkMarchingCubes</span><span class="p">()</span>
+    <span class="n">tomo_vtk</span> <span class="o">=</span> <span class="n">numpy_to_vti</span><span class="p">(</span><span class="n">tomo</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">closed</span><span class="p">:</span>
+        <span class="c1"># print str(tomo_vtk.GetExtent()), str(tomo.shape)</span>
+        <span class="n">padder</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkImageConstantPad</span><span class="p">()</span>
+        <span class="n">padder</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">tomo_vtk</span><span class="p">)</span>
+        <span class="n">padder</span><span class="o">.</span><span class="n">SetConstant</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">padder</span><span class="o">.</span><span class="n">SetOutputWholeExtent</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">padder</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+        <span class="n">tomo_vtk</span> <span class="o">=</span> <span class="n">padder</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span>
+
+    <span class="c1"># Flipping</span>
+    <span class="k">if</span> <span class="n">flp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">flp_i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">flp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">flp_i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">flp_i</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">):</span>
+            <span class="n">fliper</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkImageFlip</span><span class="p">()</span>
+            <span class="n">fliper</span><span class="o">.</span><span class="n">SetFilteredAxis</span><span class="p">(</span><span class="n">flp_i</span><span class="p">)</span>
+            <span class="n">fliper</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">tomo_vtk</span><span class="p">)</span>
+            <span class="n">fliper</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+            <span class="n">tomo_vtk</span> <span class="o">=</span> <span class="n">fliper</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span>
+
+    <span class="c1"># Running Marching Cubes</span>
+    <span class="n">march</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">tomo_vtk</span><span class="p">)</span>
+    <span class="n">march</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">th</span><span class="p">)</span>
+    <span class="n">march</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+    <span class="n">hold_poly</span> <span class="o">=</span> <span class="n">march</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span>
+
+    <span class="c1"># Filtering</span>
+    <span class="n">hold_poly</span> <span class="o">=</span> <span class="n">poly_filter_triangles</span><span class="p">(</span><span class="n">hold_poly</span><span class="p">)</span>
+
+    <span class="c1"># Normals orientation</span>
+    <span class="k">if</span> <span class="n">normals</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">orienter</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyDataNormals</span><span class="p">()</span>
+        <span class="n">orienter</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">hold_poly</span><span class="p">)</span>
+        <span class="n">orienter</span><span class="o">.</span><span class="n">AutoOrientNormalsOn</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">normals</span> <span class="o">==</span> <span class="s1">&#39;inwards&#39;</span><span class="p">:</span>
+            <span class="n">orienter</span><span class="o">.</span><span class="n">FlipNormalsOn</span><span class="p">()</span>
+        <span class="n">orienter</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+        <span class="n">hold_poly</span> <span class="o">=</span> <span class="n">orienter</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">closed</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">is_closed_surface</span><span class="p">(</span><span class="n">hold_poly</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span>
+
+    <span class="k">return</span> <span class="n">hold_poly</span></div>
+
+
+
+<div class="viewcode-block" id="is_closed_surface">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.is_closed_surface">[docs]</a>
+<span class="k">def</span> <span class="nf">is_closed_surface</span><span class="p">(</span><span class="n">poly</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks if an input vtkPolyData is a closed surface</span>
+
+<span class="sd">    :param poly: input vtkPolyData to check</span>
+<span class="sd">    :return: True is the surface is closed, otherwise False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">selector</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkSelectEnclosedPoints</span><span class="p">()</span>
+    <span class="n">selector</span><span class="o">.</span><span class="n">CheckSurfaceOn</span><span class="p">()</span>
+    <span class="n">selector</span><span class="o">.</span><span class="n">SetSurfaceData</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">selector</span><span class="o">.</span><span class="n">GetCheckSurface</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="poly_filter_triangles">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.poly_filter_triangles">[docs]</a>
+<span class="k">def</span> <span class="nf">poly_filter_triangles</span><span class="p">(</span><span class="n">poly</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Filter a vtkPolyData to keep just the polys which are triangles</span>
+
+<span class="sd">    :param poly: input vtkPolyData</span>
+<span class="sd">    :return: a copy of the input poly but filtered</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cut_tr</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkTriangleFilter</span><span class="p">()</span>
+    <span class="n">cut_tr</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span>
+    <span class="n">cut_tr</span><span class="o">.</span><span class="n">PassVertsOff</span><span class="p">()</span>
+    <span class="n">cut_tr</span><span class="o">.</span><span class="n">PassLinesOff</span><span class="p">()</span>
+    <span class="n">cut_tr</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">cut_tr</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="numpy_to_vti">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.numpy_to_vti">[docs]</a>
+<span class="k">def</span> <span class="nf">numpy_to_vti</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts a 3D numpy array into vtkImageData object</span>
+
+<span class="sd">    :param array: 3D numpy array</span>
+<span class="sd">    :param spacing: distance between pixels</span>
+<span class="sd">    :return: a vtkImageData object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Flattern the input array</span>
+    <span class="n">array_1d</span> <span class="o">=</span> <span class="n">numpy_support</span><span class="o">.</span><span class="n">numpy_to_vtk</span><span class="p">(</span><span class="n">num_array</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">),</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">array_type</span><span class="o">=</span><span class="n">vtk</span><span class="o">.</span><span class="n">VTK_FLOAT</span><span class="p">)</span>
+
+    <span class="c1"># Create the new vtkImageData</span>
+    <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkImageData</span><span class="p">()</span>
+    <span class="n">image</span><span class="o">.</span><span class="n">SetSpacing</span><span class="p">(</span><span class="n">spacing</span><span class="p">)</span>
+    <span class="n">image</span><span class="o">.</span><span class="n">SetDimensions</span><span class="p">(</span><span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">)</span>
+    <span class="n">image</span><span class="o">.</span><span class="n">AllocateScalars</span><span class="p">(</span><span class="n">vtk</span><span class="o">.</span><span class="n">VTK_FLOAT</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">image</span><span class="o">.</span><span class="n">GetPointData</span><span class="p">()</span><span class="o">.</span><span class="n">SetScalars</span><span class="p">(</span><span class="n">array_1d</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">image</span></div>
+
+
+
+<div class="viewcode-block" id="get_sub_copy">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.get_sub_copy">[docs]</a>
+<span class="k">def</span> <span class="nf">get_sub_copy</span><span class="p">(</span><span class="n">tomo</span><span class="p">,</span> <span class="n">sub_pt</span><span class="p">,</span> <span class="n">sub_shape</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the subvolume of a tomogram from a center and a shape</span>
+
+<span class="sd">    :param tomo: input tomogram</span>
+<span class="sd">    :param sub_pt: subtomogram center point</span>
+<span class="sd">    :param sub_shape: output subtomogram shape (all dimensions must be even)</span>
+<span class="sd">    :return: a copy with the subvolume or a VOI</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Initialization</span>
+    <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span> <span class="o">=</span> <span class="n">sub_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sub_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sub_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">mx</span><span class="p">,</span> <span class="n">my</span><span class="p">,</span> <span class="n">mz</span> <span class="o">=</span> <span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">mx1</span><span class="p">,</span> <span class="n">my1</span><span class="p">,</span> <span class="n">mz1</span> <span class="o">=</span> <span class="n">mx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">my</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">mz</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">hl_x</span><span class="p">,</span> <span class="n">hl_y</span><span class="p">,</span> <span class="n">hl_z</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nx</span> <span class="o">*</span> <span class="mf">.5</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">ny</span> <span class="o">*</span> <span class="mf">.5</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">nz</span> <span class="o">*</span> <span class="mf">.5</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">sub_pt</span><span class="p">[</span><span class="mi">0</span><span class="p">])),</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">sub_pt</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">sub_pt</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+
+    <span class="c1"># Compute bounding restriction</span>
+    <span class="c1"># off_l_x, off_l_y, off_l_z = x - hl_x + 1, y - hl_y + 1, z - hl_z + 1</span>
+    <span class="n">off_l_x</span><span class="p">,</span> <span class="n">off_l_y</span><span class="p">,</span> <span class="n">off_l_z</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="n">hl_x</span><span class="p">,</span> <span class="n">y</span> <span class="o">-</span> <span class="n">hl_y</span><span class="p">,</span> <span class="n">z</span> <span class="o">-</span> <span class="n">hl_z</span>
+    <span class="c1"># off_h_x, off_h_y, off_h_z = x + hl_x + 1, y + hl_y + 1, z + hl_z + 1</span>
+    <span class="n">off_h_x</span><span class="p">,</span> <span class="n">off_h_y</span><span class="p">,</span> <span class="n">off_h_z</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">hl_x</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">hl_y</span><span class="p">,</span> <span class="n">z</span> <span class="o">+</span> <span class="n">hl_z</span>
+    <span class="n">dif_l_x</span><span class="p">,</span> <span class="n">dif_l_y</span><span class="p">,</span> <span class="n">dif_l_z</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="n">dif_h_x</span><span class="p">,</span> <span class="n">dif_h_y</span><span class="p">,</span> <span class="n">dif_h_z</span> <span class="o">=</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span>
+    <span class="k">if</span> <span class="n">off_l_x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># dif_l_x = abs(off_l_x) - 1</span>
+        <span class="n">dif_l_x</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">off_l_x</span><span class="p">)</span>
+        <span class="n">off_l_x</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">off_l_y</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># dif_l_y = abs(off_l_y) - 1</span>
+        <span class="n">dif_l_y</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">off_l_y</span><span class="p">)</span>
+        <span class="n">off_l_y</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">off_l_z</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># dif_l_z = abs(off_l_z) - 1</span>
+        <span class="n">dif_l_z</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">off_l_z</span><span class="p">)</span>
+        <span class="n">off_l_z</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">off_h_x</span> <span class="o">&gt;=</span> <span class="n">mx</span><span class="p">:</span>
+        <span class="n">dif_h_x</span> <span class="o">=</span> <span class="n">nx</span> <span class="o">-</span> <span class="n">off_h_x</span> <span class="o">+</span> <span class="n">mx1</span>
+        <span class="n">off_h_x</span> <span class="o">=</span> <span class="n">mx1</span>
+    <span class="k">if</span> <span class="n">off_h_y</span> <span class="o">&gt;=</span> <span class="n">my</span><span class="p">:</span>
+        <span class="n">dif_h_y</span> <span class="o">=</span> <span class="n">ny</span> <span class="o">-</span> <span class="n">off_h_y</span> <span class="o">+</span> <span class="n">my1</span>
+        <span class="n">off_h_y</span> <span class="o">=</span> <span class="n">my1</span>
+    <span class="k">if</span> <span class="n">off_h_z</span> <span class="o">&gt;=</span> <span class="n">mz</span><span class="p">:</span>
+        <span class="n">dif_h_z</span> <span class="o">=</span> <span class="n">nz</span> <span class="o">-</span> <span class="n">off_h_z</span> <span class="o">+</span> <span class="n">mz1</span>
+        <span class="n">off_h_z</span> <span class="o">=</span> <span class="n">mz1</span>
+
+    <span class="c1"># Make the subvolume copy</span>
+    <span class="n">hold_sv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">sub_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tomo</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">hold_sv</span><span class="p">[</span><span class="n">dif_l_x</span><span class="p">:</span><span class="n">dif_h_x</span><span class="p">,</span> <span class="n">dif_l_y</span><span class="p">:</span><span class="n">dif_h_y</span><span class="p">,</span> <span class="n">dif_l_z</span><span class="p">:</span><span class="n">dif_h_z</span><span class="p">]</span> <span class="o">=</span> <span class="n">tomo</span><span class="p">[</span><span class="n">off_l_x</span><span class="p">:</span><span class="n">off_h_x</span><span class="p">,</span> <span class="n">off_l_y</span><span class="p">:</span><span class="n">off_h_y</span><span class="p">,</span> <span class="n">off_l_z</span><span class="p">:</span><span class="n">off_h_z</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">hold_sv</span></div>
+
+
+
+<div class="viewcode-block" id="insert_svol_tomo">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.insert_svol_tomo">[docs]</a>
+<span class="k">def</span> <span class="nf">insert_svol_tomo</span><span class="p">(</span><span class="n">svol</span><span class="p">,</span> <span class="n">tomo</span><span class="p">,</span> <span class="n">sub_pt</span><span class="p">,</span> <span class="n">merge</span><span class="o">=</span><span class="s1">&#39;max&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Insert the content of a subvolume to a tomogram</span>
+
+<span class="sd">    :param svol: input subvolume (or subtomogram)</span>
+<span class="sd">    :param tomo: input tomogram that is going to be modified</span>
+<span class="sd">    :param sub_pt: subvolume center point in the input tomogram</span>
+<span class="sd">    :param merge: merging mode, valid: &#39;max&#39; (default), &#39;min&#39;, &#39;sum&#39; and &#39;insert&#39;</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Initialization</span>
+    <span class="n">sub_shape</span> <span class="o">=</span> <span class="n">svol</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span> <span class="o">=</span> <span class="n">sub_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sub_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sub_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">mx</span><span class="p">,</span> <span class="n">my</span><span class="p">,</span> <span class="n">mz</span> <span class="o">=</span> <span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">mx1</span><span class="p">,</span> <span class="n">my1</span><span class="p">,</span> <span class="n">mz1</span> <span class="o">=</span> <span class="n">mx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">my</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">mz</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">hl_x</span><span class="p">,</span> <span class="n">hl_y</span><span class="p">,</span> <span class="n">hl_z</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nx</span> <span class="o">*</span> <span class="mf">.5</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">ny</span> <span class="o">*</span> <span class="mf">.5</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">nz</span> <span class="o">*</span> <span class="mf">.5</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">sub_pt</span><span class="p">[</span><span class="mi">0</span><span class="p">])),</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">sub_pt</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">sub_pt</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+
+    <span class="c1"># Compute bounding restriction</span>
+    <span class="c1"># off_l_x, off_l_y, off_l_z = x - hl_x + 1, y - hl_y + 1, z - hl_z + 1</span>
+    <span class="n">off_l_x</span><span class="p">,</span> <span class="n">off_l_y</span><span class="p">,</span> <span class="n">off_l_z</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="n">hl_x</span><span class="p">,</span> <span class="n">y</span> <span class="o">-</span> <span class="n">hl_y</span><span class="p">,</span> <span class="n">z</span> <span class="o">-</span> <span class="n">hl_z</span>
+    <span class="c1"># off_h_x, off_h_y, off_h_z = x + hl_x + 1, y + hl_y + 1, z + hl_z + 1</span>
+    <span class="n">off_h_x</span><span class="p">,</span> <span class="n">off_h_y</span><span class="p">,</span> <span class="n">off_h_z</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">hl_x</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">hl_y</span><span class="p">,</span> <span class="n">z</span> <span class="o">+</span> <span class="n">hl_z</span>
+    <span class="n">dif_l_x</span><span class="p">,</span> <span class="n">dif_l_y</span><span class="p">,</span> <span class="n">dif_l_z</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="n">dif_h_x</span><span class="p">,</span> <span class="n">dif_h_y</span><span class="p">,</span> <span class="n">dif_h_z</span> <span class="o">=</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span>
+    <span class="k">if</span> <span class="n">off_l_x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># dif_l_x = abs(off_l_x) - 1</span>
+        <span class="n">dif_l_x</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">off_l_x</span><span class="p">)</span>
+        <span class="n">off_l_x</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">off_l_y</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># dif_l_y = abs(off_l_y) - 1</span>
+        <span class="n">dif_l_y</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">off_l_y</span><span class="p">)</span>
+        <span class="n">off_l_y</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">off_l_z</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># dif_l_z = abs(off_l_z) - 1</span>
+        <span class="n">dif_l_z</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">off_l_z</span><span class="p">)</span>
+        <span class="n">off_l_z</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">off_h_x</span> <span class="o">&gt;=</span> <span class="n">mx</span><span class="p">:</span>
+        <span class="n">dif_h_x</span> <span class="o">=</span> <span class="n">nx</span> <span class="o">-</span> <span class="n">off_h_x</span> <span class="o">+</span> <span class="n">mx1</span>
+        <span class="n">off_h_x</span> <span class="o">=</span> <span class="n">mx1</span>
+    <span class="k">if</span> <span class="n">off_h_y</span> <span class="o">&gt;=</span> <span class="n">my</span><span class="p">:</span>
+        <span class="n">dif_h_y</span> <span class="o">=</span> <span class="n">ny</span> <span class="o">-</span> <span class="n">off_h_y</span> <span class="o">+</span> <span class="n">my1</span>
+        <span class="n">off_h_y</span> <span class="o">=</span> <span class="n">my1</span>
+    <span class="k">if</span> <span class="n">off_h_z</span> <span class="o">&gt;=</span> <span class="n">mz</span><span class="p">:</span>
+        <span class="n">dif_h_z</span> <span class="o">=</span> <span class="n">nz</span> <span class="o">-</span> <span class="n">off_h_z</span> <span class="o">+</span> <span class="n">mz1</span>
+        <span class="n">off_h_z</span> <span class="o">=</span> <span class="n">mz1</span>
+    <span class="k">if</span> <span class="n">off_l_x</span> <span class="o">&gt;</span> <span class="n">off_h_x</span><span class="p">:</span>
+        <span class="n">off_h_x</span> <span class="o">=</span> <span class="n">off_l_x</span>
+    <span class="k">if</span> <span class="n">off_l_y</span> <span class="o">&gt;</span> <span class="n">off_h_y</span><span class="p">:</span>
+        <span class="n">off_h_y</span> <span class="o">=</span> <span class="n">off_l_y</span>
+    <span class="k">if</span> <span class="n">off_l_z</span> <span class="o">&gt;</span> <span class="n">off_h_z</span><span class="p">:</span>
+        <span class="n">off_h_z</span> <span class="o">=</span> <span class="n">off_l_z</span>
+    <span class="k">if</span> <span class="n">dif_l_x</span> <span class="o">&gt;</span> <span class="n">dif_h_x</span><span class="p">:</span>
+        <span class="n">dif_h_x</span> <span class="o">=</span> <span class="n">dif_l_x</span>
+    <span class="k">if</span> <span class="n">dif_l_y</span> <span class="o">&gt;</span> <span class="n">dif_h_y</span><span class="p">:</span>
+        <span class="n">dif_h_y</span> <span class="o">=</span> <span class="n">dif_l_y</span>
+    <span class="k">if</span> <span class="n">dif_l_z</span> <span class="o">&gt;</span> <span class="n">dif_h_z</span><span class="p">:</span>
+        <span class="n">dif_h_z</span> <span class="o">=</span> <span class="n">dif_l_z</span>
+    <span class="n">sz_svol</span> <span class="o">=</span> <span class="p">[</span><span class="n">dif_h_x</span> <span class="o">-</span> <span class="n">dif_l_x</span><span class="p">,</span> <span class="n">dif_h_y</span> <span class="o">-</span> <span class="n">dif_l_y</span><span class="p">,</span> <span class="n">dif_h_z</span> <span class="o">-</span> <span class="n">dif_l_z</span><span class="p">]</span>
+    <span class="n">sz_off</span> <span class="o">=</span> <span class="p">[</span><span class="n">off_h_x</span> <span class="o">-</span> <span class="n">off_l_x</span><span class="p">,</span> <span class="n">off_h_y</span> <span class="o">-</span> <span class="n">off_l_y</span><span class="p">,</span> <span class="n">off_h_z</span> <span class="o">-</span> <span class="n">off_l_z</span><span class="p">]</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">sz_svol</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">sz_off</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span><span class="n">sz_svol</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">dif_h_x</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">sz_svol</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">sz_off</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span><span class="n">sz_svol</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">dif_h_y</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">sz_svol</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">sz_off</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span><span class="n">sz_svol</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">dif_h_z</span> <span class="o">-=</span> <span class="mi">1</span>
+
+    <span class="c1"># Modify the input tomogram</span>
+    <span class="k">if</span> <span class="n">merge</span> <span class="o">==</span> <span class="s1">&#39;insert&#39;</span><span class="p">:</span>
+        <span class="n">tomo</span><span class="p">[</span><span class="n">off_l_x</span><span class="p">:</span><span class="n">off_h_x</span><span class="p">,</span> <span class="n">off_l_y</span><span class="p">:</span><span class="n">off_h_y</span><span class="p">,</span> <span class="n">off_l_z</span><span class="p">:</span><span class="n">off_h_z</span><span class="p">]</span> <span class="o">=</span> <span class="n">svol</span><span class="p">[</span><span class="n">dif_l_x</span><span class="p">:</span><span class="n">dif_h_x</span><span class="p">,</span> <span class="n">dif_l_y</span><span class="p">:</span><span class="n">dif_h_y</span><span class="p">,</span>
+                                                                  <span class="n">dif_l_z</span><span class="p">:</span><span class="n">dif_h_z</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">merge</span> <span class="o">==</span> <span class="s1">&#39;sum&#39;</span><span class="p">:</span>
+        <span class="n">tomo</span><span class="p">[</span><span class="n">off_l_x</span><span class="p">:</span><span class="n">off_h_x</span><span class="p">,</span> <span class="n">off_l_y</span><span class="p">:</span><span class="n">off_h_y</span><span class="p">,</span> <span class="n">off_l_z</span><span class="p">:</span><span class="n">off_h_z</span><span class="p">]</span> <span class="o">+=</span> <span class="n">svol</span><span class="p">[</span><span class="n">dif_l_x</span><span class="p">:</span><span class="n">dif_h_x</span><span class="p">,</span> <span class="n">dif_l_y</span><span class="p">:</span><span class="n">dif_h_y</span><span class="p">,</span>
+                                                                   <span class="n">dif_l_z</span><span class="p">:</span><span class="n">dif_h_z</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">merge</span> <span class="o">==</span> <span class="s1">&#39;min&#39;</span><span class="p">:</span>
+        <span class="n">tomo</span><span class="p">[</span><span class="n">off_l_x</span><span class="p">:</span><span class="n">off_h_x</span><span class="p">,</span> <span class="n">off_l_y</span><span class="p">:</span><span class="n">off_h_y</span><span class="p">,</span> <span class="n">off_l_z</span><span class="p">:</span><span class="n">off_h_z</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">svol</span><span class="p">[</span><span class="n">dif_l_x</span><span class="p">:</span><span class="n">dif_h_x</span><span class="p">,</span> <span class="n">dif_l_y</span><span class="p">:</span><span class="n">dif_h_y</span><span class="p">,</span>
+                                                                  <span class="n">dif_l_z</span><span class="p">:</span><span class="n">dif_h_z</span><span class="p">],</span> <span class="n">tomo</span><span class="p">[</span><span class="n">off_l_x</span><span class="p">:</span><span class="n">off_h_x</span><span class="p">,</span>
+                                                                  <span class="n">off_l_y</span><span class="p">:</span><span class="n">off_h_y</span><span class="p">,</span> <span class="n">off_l_z</span><span class="p">:</span><span class="n">off_h_z</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">merge</span> <span class="o">==</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span>
+        <span class="n">tomo</span><span class="p">[</span><span class="n">off_l_x</span><span class="p">:</span><span class="n">off_h_x</span><span class="p">,</span> <span class="n">off_l_y</span><span class="p">:</span><span class="n">off_h_y</span><span class="p">,</span> <span class="n">off_l_z</span><span class="p">:</span><span class="n">off_h_z</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">svol</span><span class="p">[</span><span class="n">dif_l_x</span><span class="p">:</span><span class="n">dif_h_x</span><span class="p">,</span> <span class="n">dif_l_y</span><span class="p">:</span><span class="n">dif_h_y</span><span class="p">,</span>
+                                                                  <span class="n">dif_l_z</span><span class="p">:</span><span class="n">dif_h_z</span><span class="p">],</span> <span class="n">tomo</span><span class="p">[</span><span class="n">off_l_x</span><span class="p">:</span><span class="n">off_h_x</span><span class="p">,</span>
+                                                                  <span class="n">off_l_y</span><span class="p">:</span><span class="n">off_h_y</span><span class="p">,</span> <span class="n">off_l_z</span><span class="p">:</span><span class="n">off_h_z</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">merge</span> <span class="o">==</span> <span class="s1">&#39;and&#39;</span><span class="p">:</span>
+        <span class="n">tomo</span><span class="p">[</span><span class="n">off_l_x</span><span class="p">:</span><span class="n">off_h_x</span><span class="p">,</span> <span class="n">off_l_y</span><span class="p">:</span><span class="n">off_h_y</span><span class="p">,</span> <span class="n">off_l_z</span><span class="p">:</span><span class="n">off_h_z</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">svol</span><span class="p">[</span><span class="n">dif_l_x</span><span class="p">:</span><span class="n">dif_h_x</span><span class="p">,</span> <span class="n">dif_l_y</span><span class="p">:</span><span class="n">dif_h_y</span><span class="p">,</span>
+                                                                             <span class="n">dif_l_z</span><span class="p">:</span><span class="n">dif_h_z</span><span class="p">],</span> <span class="n">tomo</span><span class="p">[</span><span class="n">off_l_x</span><span class="p">:</span><span class="n">off_h_x</span><span class="p">,</span>
+                                                                             <span class="n">off_l_y</span><span class="p">:</span><span class="n">off_h_y</span><span class="p">,</span> <span class="n">off_l_z</span><span class="p">:</span><span class="n">off_h_z</span><span class="p">])</span></div>
+
+
+
+<span class="c1"># Applies a linear mapping to the input array for getting an array in the specified range</span>
+<div class="viewcode-block" id="lin_map">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.lin_map">[docs]</a>
+<span class="k">def</span> <span class="nf">lin_map</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Applies a linear mapping to the input array for getting an array in the specified range</span>
+
+<span class="sd">    :param array: input array to remap</span>
+<span class="sd">    :param lb: lower output bound for gray values (default 0)</span>
+<span class="sd">    :param ub: upper output bound for gray values (default 1)</span>
+<span class="sd">    :return: the remapped array with gray values in range lb and ub</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+    <span class="n">den</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">i</span>
+    <span class="k">if</span> <span class="n">den</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">array</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="n">ub</span> <span class="o">-</span> <span class="n">lb</span><span class="p">)</span> <span class="o">/</span> <span class="n">den</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">ub</span> <span class="o">-</span> <span class="n">m</span><span class="o">*</span><span class="n">a</span>
+    <span class="k">return</span> <span class="n">m</span><span class="o">*</span><span class="n">array</span> <span class="o">+</span> <span class="n">c</span></div>
+
+
+
+<div class="viewcode-block" id="wrap_angle">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.wrap_angle">[docs]</a>
+<span class="k">def</span> <span class="nf">wrap_angle</span><span class="p">(</span><span class="n">ang</span><span class="p">,</span> <span class="n">deg</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrap an angle to be expressed in range (-pi, pi] or (-180, 180]</span>
+
+<span class="sd">    :param ang: input angle to wrap, it may also be an array</span>
+<span class="sd">    :param deg: if True (default) the input angle is degrees, otherwise in radians</span>
+<span class="sd">    :return: the angle value (or values) in the proper range</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">deg</span><span class="p">:</span>
+        <span class="n">phase</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="n">ang</span> <span class="o">+</span> <span class="mf">180.</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="mf">180.</span><span class="p">)</span> <span class="o">-</span> <span class="mf">180.</span><span class="p">)</span> <span class="o">*</span> <span class="o">-</span><span class="mf">1.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">phase</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="n">ang</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="o">-</span><span class="mf">1.0</span>
+    <span class="k">return</span> <span class="n">phase</span></div>
+
+
+
+<div class="viewcode-block" id="point_to_poly">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.point_to_poly">[docs]</a>
+<span class="k">def</span> <span class="nf">point_to_poly</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">normal</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_name</span><span class="o">=</span><span class="s1">&#39;n_normal&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts a point into a poly</span>
+
+<span class="sd">    :param point: 3-tuple with point coordinates</span>
+<span class="sd">    :param normal: 3-tuple with the normal to be associated as property (default None)</span>
+<span class="sd">    :param n_name: name for the normal (default &#39;normal&#39;)</span>
+<span class="sd">    :return: a vtpPolyData object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">poly</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">()</span>
+    <span class="n">p_points</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPoints</span><span class="p">()</span>
+    <span class="n">p_cells</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkCellArray</span><span class="p">()</span>
+    <span class="n">p_points</span><span class="o">.</span><span class="n">InsertNextPoint</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
+    <span class="n">p_cells</span><span class="o">.</span><span class="n">InsertNextCell</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">p_cells</span><span class="o">.</span><span class="n">InsertCellPoint</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">poly</span><span class="o">.</span><span class="n">SetPoints</span><span class="p">(</span><span class="n">p_points</span><span class="p">)</span>
+    <span class="n">poly</span><span class="o">.</span><span class="n">SetVerts</span><span class="p">(</span><span class="n">p_cells</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">normal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">p_norm</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkFloatArray</span><span class="p">()</span>
+        <span class="n">p_norm</span><span class="o">.</span><span class="n">SetName</span><span class="p">(</span><span class="n">n_name</span><span class="p">)</span>
+        <span class="n">p_norm</span><span class="o">.</span><span class="n">SetNumberOfComponents</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">p_norm</span><span class="o">.</span><span class="n">InsertTuple</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">normal</span><span class="p">)</span>
+        <span class="n">poly</span><span class="o">.</span><span class="n">GetPointData</span><span class="p">()</span><span class="o">.</span><span class="n">AddArray</span><span class="p">(</span><span class="n">p_norm</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">poly</span></div>
+
+
+
+<div class="viewcode-block" id="density_norm">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.density_norm">[docs]</a>
+<span class="k">def</span> <span class="nf">density_norm</span><span class="p">(</span><span class="n">tomo</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">inv</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Tomogram density normalization (I(x,y,z)-mean) / std)</span>
+
+<span class="sd">    :param tomo: input tomogram</span>
+<span class="sd">    :param mask: if None (default) the whole tomogram is used for computing the statistics otherwise just the masked region</span>
+<span class="sd">    :param inv: if True the values are inverted (default)</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Input parsing</span>
+    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+
+    <span class="c1"># Inversion</span>
+    <span class="k">if</span> <span class="n">inv</span><span class="p">:</span>
+        <span class="n">hold_tomo</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">tomo</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">hold_tomo</span> <span class="o">=</span> <span class="n">tomo</span>
+
+    <span class="c1"># Statistics</span>
+    <span class="n">stat_tomo</span> <span class="o">=</span> <span class="n">hold_tomo</span><span class="p">[</span><span class="n">mask</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">mn</span><span class="p">,</span> <span class="n">st</span> <span class="o">=</span> <span class="n">stat_tomo</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">stat_tomo</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+    <span class="c1"># Histogram equalization</span>
+    <span class="n">tomo_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">st</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">tomo_out</span> <span class="o">=</span> <span class="p">(</span><span class="n">hold_tomo</span><span class="o">-</span><span class="n">mn</span><span class="p">)</span> <span class="o">/</span> <span class="n">st</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;WARNING (density_norm): standard deviation=&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">st</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">tomo_out</span></div>
+
+
+
+<div class="viewcode-block" id="trilin_interp">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.trilin_interp">[docs]</a>
+<span class="k">def</span> <span class="nf">trilin_interp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">tomogram</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Trilinear interpolation of the value of a coordinate point within a tomogram</span>
+
+<span class="sd">    :param x: x input coordinate</span>
+<span class="sd">    :param y: y input coordinate</span>
+<span class="sd">    :param z: z input coordinate</span>
+<span class="sd">    :param tomogram: input ndarray with the scalar field</span>
+<span class="sd">    :return: the value interpolated</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Input parsing</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tomogram</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">tomogram</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+    <span class="n">xc</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="n">yc</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+    <span class="n">zc</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+    <span class="n">xf</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="n">yf</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+    <span class="n">zf</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">xc</span> <span class="o">&lt;</span> <span class="n">tomogram</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span><span class="n">yc</span> <span class="o">&lt;</span> <span class="n">tomogram</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span><span class="n">zc</span> <span class="o">&lt;</span> <span class="n">tomogram</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="ow">and</span> \
+            <span class="p">(</span><span class="n">xf</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">yf</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">zf</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Get neigbourhood values</span>
+    <span class="n">v000</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tomogram</span><span class="p">[</span><span class="n">xf</span><span class="p">,</span> <span class="n">yf</span><span class="p">,</span> <span class="n">zf</span><span class="p">])</span>
+    <span class="n">v100</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tomogram</span><span class="p">[</span><span class="n">xc</span><span class="p">,</span> <span class="n">yf</span><span class="p">,</span> <span class="n">zf</span><span class="p">])</span>
+    <span class="n">v010</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tomogram</span><span class="p">[</span><span class="n">xf</span><span class="p">,</span> <span class="n">yc</span><span class="p">,</span> <span class="n">zf</span><span class="p">])</span>
+    <span class="n">v001</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tomogram</span><span class="p">[</span><span class="n">xf</span><span class="p">,</span> <span class="n">yf</span><span class="p">,</span> <span class="n">zc</span><span class="p">])</span>
+    <span class="n">v101</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tomogram</span><span class="p">[</span><span class="n">xc</span><span class="p">,</span> <span class="n">yf</span><span class="p">,</span> <span class="n">zc</span><span class="p">])</span>
+    <span class="n">v011</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tomogram</span><span class="p">[</span><span class="n">xf</span><span class="p">,</span> <span class="n">yc</span><span class="p">,</span> <span class="n">zc</span><span class="p">])</span>
+    <span class="n">v110</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tomogram</span><span class="p">[</span><span class="n">xc</span><span class="p">,</span> <span class="n">yc</span><span class="p">,</span> <span class="n">zf</span><span class="p">])</span>
+    <span class="n">v111</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tomogram</span><span class="p">[</span><span class="n">xc</span><span class="p">,</span> <span class="n">yc</span><span class="p">,</span> <span class="n">zc</span><span class="p">])</span>
+
+    <span class="c1"># Coordinates correction</span>
+    <span class="n">xn</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="n">xf</span>
+    <span class="n">yn</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="n">yf</span>
+    <span class="n">zn</span> <span class="o">=</span> <span class="n">z</span> <span class="o">-</span> <span class="n">zf</span>
+    <span class="n">x1</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">xn</span>
+    <span class="n">y1</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">yn</span>
+    <span class="n">z1</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">zn</span>
+
+    <span class="c1"># Interpolation</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">v000</span> <span class="o">*</span> <span class="n">x1</span> <span class="o">*</span> <span class="n">y1</span> <span class="o">*</span> <span class="n">z1</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">v100</span> <span class="o">*</span> <span class="n">xn</span> <span class="o">*</span> <span class="n">y1</span> <span class="o">*</span> <span class="n">z1</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">v010</span> <span class="o">*</span> <span class="n">x1</span> <span class="o">*</span> <span class="n">yn</span> <span class="o">*</span> <span class="n">z1</span><span class="p">)</span> <span class="o">+</span> \
+           <span class="p">(</span><span class="n">v001</span> <span class="o">*</span> <span class="n">x1</span> <span class="o">*</span> <span class="n">y1</span> <span class="o">*</span> <span class="n">zn</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">v101</span> <span class="o">*</span> <span class="n">xn</span> <span class="o">*</span> <span class="n">y1</span> <span class="o">*</span> <span class="n">zn</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">v011</span> <span class="o">*</span> <span class="n">x1</span> <span class="o">*</span> <span class="n">yn</span> <span class="o">*</span> <span class="n">zn</span><span class="p">)</span> <span class="o">+</span> \
+           <span class="p">(</span><span class="n">v110</span> <span class="o">*</span> <span class="n">xn</span> <span class="o">*</span> <span class="n">yn</span> <span class="o">*</span> <span class="n">z1</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">v111</span> <span class="o">*</span> <span class="n">xn</span> <span class="o">*</span> <span class="n">yn</span> <span class="o">*</span> <span class="n">zn</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="nn_iterp">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.nn_iterp">[docs]</a>
+<span class="k">def</span> <span class="nf">nn_iterp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">tomogram</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Nearest neighbour interpolation of the value of a coordinate point within a tomogram</span>
+
+<span class="sd">    :param x: x input coordinate</span>
+<span class="sd">    :param y: y input coordinate</span>
+<span class="sd">    :param z: z input coordinate</span>
+<span class="sd">    :param tomogram: input ndarray with the scalar field</span>
+<span class="sd">    :return: the value interpolated</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Input parsing</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tomogram</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">tomogram</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+    <span class="n">xc</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="n">yc</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+    <span class="n">zc</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+    <span class="n">xf</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="n">yf</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+    <span class="n">zf</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">xc</span> <span class="o">&lt;</span> <span class="n">tomogram</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span><span class="n">yc</span> <span class="o">&lt;</span> <span class="n">tomogram</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span><span class="n">zc</span> <span class="o">&lt;</span> <span class="n">tomogram</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="ow">and</span> \
+               <span class="p">(</span><span class="n">xf</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">yf</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">zf</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Finding the closest voxel</span>
+    <span class="n">point</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">))</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">xf</span><span class="p">,</span><span class="n">xc</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">yf</span><span class="p">,</span><span class="n">yc</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">zf</span><span class="p">,</span><span class="n">zc</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">Z</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    <span class="n">min_point</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Y</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Z</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">hold</span> <span class="o">=</span> <span class="n">point</span> <span class="o">-</span> <span class="n">min_point</span>
+    <span class="n">min_dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">hold</span> <span class="o">*</span> <span class="n">hold</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)):</span>
+        <span class="n">hold_point</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">Z</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        <span class="n">hold</span> <span class="o">=</span> <span class="n">point</span> <span class="o">-</span> <span class="n">hold_point</span>
+        <span class="n">hold_dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">hold</span> <span class="o">*</span> <span class="n">hold</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">hold_dist</span> <span class="o">&lt;</span> <span class="n">min_dist</span><span class="p">:</span>
+            <span class="n">min_point</span> <span class="o">=</span> <span class="n">hold_point</span>
+            <span class="n">min_dist</span> <span class="o">=</span> <span class="n">hold_dist</span>
+
+    <span class="c1"># Interpolation</span>
+    <span class="k">return</span> <span class="n">tomogram</span><span class="p">[</span><span class="n">min_point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">min_point</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">min_point</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span></div>
+
+
+
+<div class="viewcode-block" id="poly_threshold">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.poly_threshold">[docs]</a>
+<span class="k">def</span> <span class="nf">poly_threshold</span><span class="p">(</span><span class="n">poly</span><span class="p">,</span> <span class="n">p_name</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;points&#39;</span><span class="p">,</span> <span class="n">low_th</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hi_th</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Threshold a vtkPolyData according the values of a property</span>
+
+<span class="sd">    :param poly: vtkPolyData to threshold</span>
+<span class="sd">    :param p_name: property name for points</span>
+<span class="sd">    :param mode: determines if the property is associated to points data &#39;points&#39; (default) or &#39;cells&#39;</span>
+<span class="sd">    :low_th: low threshold value, default None then the minimum property value is assigned</span>
+<span class="sd">    :hi_th: high threshold value, default None then the maximum property value is assigned</span>
+<span class="sd">    :return: the threshold vtkPolyData</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Input parsing</span>
+    <span class="n">prop</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;points&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;cells&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;points&#39;</span><span class="p">:</span>
+        <span class="n">n_arrays</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">GetPointData</span><span class="p">()</span><span class="o">.</span><span class="n">GetNumberOfArrays</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_arrays</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">p_name</span> <span class="o">==</span> <span class="n">poly</span><span class="o">.</span><span class="n">GetPointData</span><span class="p">()</span><span class="o">.</span><span class="n">GetArrayName</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+                <span class="n">prop</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">GetPointData</span><span class="p">()</span><span class="o">.</span><span class="n">GetArray</span><span class="p">(</span><span class="n">p_name</span><span class="p">)</span>
+                <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">n_arrays</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">GetCellData</span><span class="p">()</span><span class="o">.</span><span class="n">GetNumberOfArrays</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_arrays</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">p_name</span> <span class="o">==</span> <span class="n">poly</span><span class="o">.</span><span class="n">GetCellData</span><span class="p">()</span><span class="o">.</span><span class="n">GetArrayName</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+                <span class="n">prop</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">GetCellData</span><span class="p">()</span><span class="o">.</span><span class="n">GetArray</span><span class="p">(</span><span class="n">p_name</span><span class="p">)</span>
+                <span class="k">break</span>
+    <span class="k">assert</span> <span class="n">prop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">low_th</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">hi_th</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">rg_low</span><span class="p">,</span> <span class="n">rg_hi</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">GetRange</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">low_th</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">low_th</span> <span class="o">=</span> <span class="n">rg_low</span>
+    <span class="k">if</span> <span class="n">hi_th</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">hi_th</span> <span class="o">=</span> <span class="n">rg_hi</span>
+
+    <span class="c1"># Points thresholding filter</span>
+    <span class="n">th_flt</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkThreshold</span><span class="p">()</span>
+    <span class="n">th_flt</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;cells&#39;</span><span class="p">:</span>
+        <span class="n">th_flt</span><span class="o">.</span><span class="n">SetInputArrayToProcess</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkDataObject</span><span class="o">.</span><span class="n">FIELD_ASSOCIATION_CELLS</span><span class="p">,</span> <span class="n">p_name</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">th_flt</span><span class="o">.</span><span class="n">SetInputArrayToProcess</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkDataObject</span><span class="o">.</span><span class="n">FIELD_ASSOCIATION_POINTS</span><span class="p">,</span> <span class="n">p_name</span><span class="p">)</span>
+    <span class="c1"># th_flt.ThresholdByUpper(.5)</span>
+    <span class="c1"># th_flt.ThresholdBetween(low_th, hi_th)</span>
+    <span class="n">th_flt</span><span class="o">.</span><span class="n">SetLowerThreshold</span><span class="p">(</span><span class="n">low_th</span><span class="p">)</span>
+    <span class="n">th_flt</span><span class="o">.</span><span class="n">SetUpperThreshold</span><span class="p">(</span><span class="n">hi_th</span><span class="p">)</span>
+    <span class="n">th_flt</span><span class="o">.</span><span class="n">AllScalarsOff</span><span class="p">()</span>
+    <span class="n">th_flt</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+
+    <span class="n">surf_flt</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkDataSetSurfaceFilter</span><span class="p">()</span>
+    <span class="n">surf_flt</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">th_flt</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">())</span>
+    <span class="n">surf_flt</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">surf_flt</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="gen_six_connectivity_mask">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.gen_six_connectivity_mask">[docs]</a>
+<span class="k">def</span> <span class="nf">gen_six_connectivity_mask</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a 6-connectivity mask</span>
+<span class="sd">    :return: 3x3x3 boolean numpy array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">mask</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">mask</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">mask</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">mask</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">mask</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">mask</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">mask</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="n">mask</span></div>
+
+
+
+<div class="viewcode-block" id="clean_dir">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.clean_dir">[docs]</a>
+<span class="k">def</span> <span class="nf">clean_dir</span><span class="p">(</span><span class="nb">dir</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clean a directory contents (directory is preserved)</span>
+
+<span class="sd">    :param dir: directory path</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="nb">dir</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="n">f_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">f_name</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">err</span><span class="o">.</span><span class="n">errno</span> <span class="o">!=</span> <span class="n">errno</span><span class="o">.</span><span class="n">EBUSY</span><span class="p">:</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">f_name</span><span class="p">,</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_IWRITE</span><span class="p">)</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">f_name</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dirs</span><span class="p">:</span>
+            <span class="n">d_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">d_name</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">err</span><span class="o">.</span><span class="n">errno</span> <span class="o">!=</span> <span class="n">errno</span><span class="o">.</span><span class="n">EBUSY</span><span class="p">:</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">d_name</span><span class="p">,</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_IWRITE</span><span class="p">)</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">d_name</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="vol_cube">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.vol_cube">[docs]</a>
+<span class="k">def</span> <span class="nf">vol_cube</span><span class="p">(</span><span class="n">vol</span><span class="p">,</span> <span class="n">off</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reshape a 3D volume for being cubic</span>
+
+<span class="sd">    :param vol: input volume (ndarray)</span>
+<span class="sd">    :param off: offset voxels (default 0)</span>
+<span class="sd">    :return: a cubic volume with the info from the input, the cube dimension corresponds with the largest input</span>
+<span class="sd">             dimension</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vol</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">vol</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+    <span class="k">assert</span> <span class="n">off</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+    <span class="n">dim_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">vol</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">cube_dim</span> <span class="o">=</span> <span class="n">vol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dim_max</span><span class="p">]</span>
+    <span class="n">out_vol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">cube_dim</span><span class="p">,</span> <span class="n">cube_dim</span><span class="p">,</span> <span class="n">cube_dim</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">vol</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dim_max</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">off_ly</span><span class="p">,</span> <span class="n">off_lz</span> <span class="o">=</span> <span class="p">(</span><span class="n">cube_dim</span> <span class="o">-</span> <span class="n">vol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">cube_dim</span> <span class="o">-</span> <span class="n">vol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">//</span><span class="mi">2</span>
+        <span class="n">off_hy</span><span class="p">,</span> <span class="n">off_hz</span> <span class="o">=</span> <span class="n">off_ly</span> <span class="o">+</span> <span class="n">vol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">off_lz</span> <span class="o">+</span> <span class="n">vol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">out_vol</span><span class="p">[:,</span><span class="n">off_ly</span><span class="p">:</span><span class="n">off_hy</span><span class="p">,</span><span class="n">off_lz</span><span class="p">:</span><span class="n">off_hz</span><span class="p">]</span> <span class="o">=</span> <span class="n">vol</span>
+    <span class="k">elif</span> <span class="n">dim_max</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">off_lx</span><span class="p">,</span> <span class="n">off_lz</span> <span class="o">=</span> <span class="p">(</span><span class="n">cube_dim</span> <span class="o">-</span> <span class="n">vol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">cube_dim</span> <span class="o">-</span> <span class="n">vol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">//</span><span class="mi">2</span>
+        <span class="n">off_hx</span><span class="p">,</span> <span class="n">off_hz</span> <span class="o">=</span> <span class="n">off_lx</span> <span class="o">+</span> <span class="n">vol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">off_lz</span> <span class="o">+</span> <span class="n">vol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">out_vol</span><span class="p">[</span><span class="n">off_lx</span><span class="p">:</span><span class="n">off_hx</span><span class="p">,:,</span><span class="n">off_lz</span><span class="p">:</span><span class="n">off_hz</span><span class="p">]</span> <span class="o">=</span> <span class="n">vol</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">off_lx</span><span class="p">,</span> <span class="n">off_ly</span> <span class="o">=</span> <span class="p">(</span><span class="n">cube_dim</span> <span class="o">-</span> <span class="n">vol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">cube_dim</span> <span class="o">-</span> <span class="n">vol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">//</span><span class="mi">2</span>
+        <span class="n">off_hx</span><span class="p">,</span> <span class="n">off_hy</span> <span class="o">=</span> <span class="n">off_lx</span> <span class="o">+</span> <span class="n">vol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">off_ly</span> <span class="o">+</span> <span class="n">vol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">out_vol</span><span class="p">[</span><span class="n">off_lx</span><span class="p">:</span><span class="n">off_hx</span><span class="p">,</span><span class="n">off_lx</span><span class="p">:</span><span class="n">off_hx</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">vol</span>
+    <span class="k">if</span> <span class="n">off</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">off_2</span> <span class="o">=</span> <span class="n">off</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">off_vol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">cube_dim</span><span class="o">+</span><span class="n">off</span><span class="p">,</span> <span class="n">cube_dim</span><span class="o">+</span><span class="n">off</span><span class="p">,</span> <span class="n">cube_dim</span><span class="o">+</span><span class="n">off</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">vol</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">off_vol</span><span class="p">[</span><span class="n">off_2</span><span class="p">:</span><span class="n">off_2</span><span class="o">+</span><span class="n">cube_dim</span><span class="p">,</span> <span class="n">off_2</span><span class="p">:</span><span class="n">off_2</span><span class="o">+</span><span class="n">cube_dim</span><span class="p">,</span> <span class="n">off_2</span><span class="p">:</span><span class="n">off_2</span><span class="o">+</span><span class="n">cube_dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">out_vol</span>
+        <span class="n">out_vol</span> <span class="o">=</span> <span class="n">off_vol</span>
+    <span class="k">return</span> <span class="n">out_vol</span></div>
+
+
+
+<div class="viewcode-block" id="gen_shpere_mask">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.gen_shpere_mask">[docs]</a>
+<span class="k">def</span> <span class="nf">gen_shpere_mask</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a binary mask with a sphere</span>
+
+<span class="sd">    :param shape: 3D shape of the output numpy array</span>
+<span class="sd">    :param radius: sphere radius</span>
+<span class="sd">    :param center: sphere center, if None (default) then the center of the output numpy array</span>
+<span class="sd">    :return: a 3D numpy array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">center</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="mf">.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">center</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">center</span><span class="p">)</span>
+
+    <span class="n">x_mat</span><span class="p">,</span> <span class="n">y_mat</span><span class="p">,</span> <span class="n">z_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">range</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">range</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+    <span class="n">x_mat</span> <span class="o">=</span> <span class="n">x_mat</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">y_mat</span> <span class="o">=</span> <span class="n">y_mat</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">z_mat</span> <span class="o">=</span> <span class="n">z_mat</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">x_mat</span> <span class="o">*</span> <span class="n">x_mat</span> <span class="o">+</span> <span class="n">y_mat</span> <span class="o">*</span> <span class="n">y_mat</span> <span class="o">+</span> <span class="n">z_mat</span> <span class="o">*</span> <span class="n">z_mat</span> <span class="o">&lt;=</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">radius</span></div>
+
+
+
+<div class="viewcode-block" id="tomo_crop_non_zeros">
+<a class="viewcode-back" href="../../polnet.html#polnet.utils.tomo_crop_non_zeros">[docs]</a>
+<span class="k">def</span> <span class="nf">tomo_crop_non_zeros</span><span class="p">(</span><span class="n">tomo</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Crop a tomogram to focus on non-zero volumes</span>
+
+<span class="sd">    :param tomo: input tomogram</span>
+<span class="sd">    :return: the cropped tomogram with bound fitted to non-zero volume</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">tomo</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">z_min</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span><span class="p">,</span> <span class="n">z_max</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tomo</span><span class="p">[</span><span class="n">x_min</span><span class="p">:</span><span class="n">x_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">y_min</span><span class="p">:</span><span class="n">y_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">z_min</span><span class="p">:</span><span class="n">z_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Antonio Martinez-Sanchez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

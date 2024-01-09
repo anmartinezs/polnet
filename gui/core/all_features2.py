@@ -1,5 +1,5 @@
-import os
 import sys
+import csv
 import time
 import random
 
@@ -14,13 +14,11 @@ from polnet.lrandom import EllipGen, SphGen, TorGen, PGenHelixFiberB, PGenHelixF
 from polnet.membrane import SetMembranes
 
 def all_features2(NTOMOS, VOI_SHAPE, OUT_DIR, VOI_OFFS, VOI_VSIZE, MMER_TRIES, PMER_TRIES,
-                  MEMBRANES_LIST, HELIX_LIST, PROTEINS_LIST, MB_PROTEINS_LIST, PROP_LIST, SURF_DEC,
+                  MEMBRANES_LIST, HELIX_LIST, PROTEINS_LIST, MB_PROTEINS_LIST, SURF_DEC,
                   TILT_ANGS, DETECTOR_SNR, MALIGN_MN, MALIGN_MX, MALIGN_SG):
 
     # Common tomogram settings
     ROOT_PATH = os.path.realpath(os.getcwd() + '/../data')
-    if PROP_LIST is not None:
-        assert sum(PROP_LIST) == 1
     
     # OUTPUT FILES
     #OUT_DIR = os.path.realpath(ROOT_PATH + '/../data_generated/polnet_test') # '/out_all_tomos_9-10' # '/only_actin' # '/out_rotations'
@@ -47,6 +45,25 @@ def all_features2(NTOMOS, VOI_SHAPE, OUT_DIR, VOI_OFFS, VOI_VSIZE, MMER_TRIES, P
     # Preparing intermediate directories
     clean_dir(TEM_DIR)
     clean_dir(TOMOS_DIR)
+
+    # Save labels table
+    unit_lbl = 1
+    header_lbl_tab = ['MODEL', 'LABEL']
+    with open(OUT_DIR + '/labels_table.csv', 'w') as file_csv:
+        writer_csv = csv.DictWriter(file_csv, fieldnames=header_lbl_tab, delimiter='\t')
+        writer_csv.writeheader()
+        for i in range(len(MEMBRANES_LIST)):
+            writer_csv.writerow({header_lbl_tab[0]: MEMBRANES_LIST[i], header_lbl_tab[1]: unit_lbl})
+            unit_lbl += 1
+        for i in range(len(HELIX_LIST)):
+            writer_csv.writerow({header_lbl_tab[0]: HELIX_LIST[i], header_lbl_tab[1]: unit_lbl})
+            unit_lbl += 1
+        for i in range(len(PROTEINS_LIST)):
+            writer_csv.writerow({header_lbl_tab[0]: PROTEINS_LIST[i], header_lbl_tab[1]: unit_lbl})
+            unit_lbl += 1
+        for i in range(len(MB_PROTEINS_LIST)):
+            writer_csv.writerow({header_lbl_tab[0]: MB_PROTEINS_LIST[i], header_lbl_tab[1]: unit_lbl})
+            unit_lbl += 1
     
     # Loop for tomograms
     for tomod_id in range(NTOMOS):
@@ -286,11 +303,6 @@ def all_features2(NTOMOS, VOI_SHAPE, OUT_DIR, VOI_OFFS, VOI_VSIZE, MMER_TRIES, P
     
             # Network generation
             pol_l_generator = PGenHelixFiber()
-            if PROP_LIST is None:
-                pol_s_generator = SGenUniform()
-            else:
-                assert len(PROP_LIST) == len(PROTEINS_LIST)
-                pol_s_generator = SGenProp(PROP_LIST)
             net_sawlc = NetSAWLC(voi, VOI_VSIZE, protein.get_pmer_l() * surf_diam, model_surf, protein.get_pmer_l_max(),
                                  pol_l_generator, hold_occ, protein.get_pmer_over_tol(), poly=None,
                                  svol=model < protein.get_iso(), tries_mmer=MMER_TRIES, tries_pmer=PMER_TRIES)

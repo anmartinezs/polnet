@@ -22,6 +22,7 @@ def gen_bounded_exp(mean, lb, ub):
     """
     Generates a random number following a 'bounded exponential distribution'
     Get random exponential numbers until falls into bounded range
+
     :param mean: mean for the exponential distribution (1/lambda)
     :param lb: lower bound
     :param hb: higher bound
@@ -50,6 +51,7 @@ class PGenHelixFiber(ABC):
     def gen_length(self, min_l, max_l):
         """
         Generate a length with a range following a uniform distribution
+
         :param min_l: minimum length
         :param max_l: maximum length
         :return:
@@ -60,6 +62,7 @@ class PGenHelixFiber(ABC):
     def gen_persistence_length(self, min_p):
         """
         Generate a persistence length according an exponential distribution with lambda=1 and minimum value
+
         :param min_p: minimum persistence value
         :return:
         """
@@ -68,6 +71,7 @@ class PGenHelixFiber(ABC):
     def gen_zf_length(self, min_zf=0, max_zf=1):
         """
         Generates a z-axis factor within a range
+
         :param min_zf: minimum value (default 0)
         :param max_zf: maximum value (default 1)
         """
@@ -83,6 +87,7 @@ class PGenHelixFiberB(PGenHelixFiber):
     def gen_branch(self, b_prob=0.5):
         """
         Generates a boolean that is True (branching) with some input probability
+
         :param b_prob: branching probability [0, 1) (default 0.5)
         :return: a boolean
         """
@@ -100,6 +105,7 @@ class SurfGen(ABC):
     def gen_den_cf(self, low, high):
         """
         Generates a uniform random real number between two input values
+
         :return:
         """
         return random.uniform(low, high)
@@ -117,6 +123,7 @@ class EllipGen(SurfGen):
     def __init__(self, radius_rg, max_ecc=1, max_tries=int(1e6)):
         """
         Constructor
+
         :param radius_rg: ranges for semi-axis parameters
         :param max_ecc: maximum eccentricity for both planes (default 1), in range [0, 1]
         :param max_tries: raises an RuntimeError exception if there is no proper settings are found before trying
@@ -130,6 +137,7 @@ class EllipGen(SurfGen):
     def gen_parameters(self):
         """
         Generates randomly the three semi-axes parameters following a uniform distribution
+
         :return: an array with the three semi-axes sorted in descending order
         """
         for i in range(self.__max_tries):
@@ -144,6 +152,7 @@ class EllipGen(SurfGen):
     def gen_parameters_exp(self):
         """
         Generates randomly the three semi-axes parameters following a bounded exponential distribution
+
         :return: an array with the three semi-axes sorted in descending order
         """
         for i in range(self.__max_tries):
@@ -164,6 +173,7 @@ class SphGen(SurfGen):
     def __init__(self, radius_rg):
         """
         Constructor
+
         :param radius_rg: ranges for radius
         """
         assert hasattr(radius_rg, '__len__') and (len(radius_rg) == 2) and (radius_rg[0] <= radius_rg[1])
@@ -172,6 +182,7 @@ class SphGen(SurfGen):
     def gen_parameters(self):
         """
         Generates randomly sphere radii
+
         :return: a float with the radius value
         """
         return random.uniform(self.__radius_rg[0], self.__radius_rg[1])
@@ -185,6 +196,7 @@ class TorGen(SurfGen):
     def __init__(self, radius_rg):
         """
         Constructor
+
         :param radius_rg: ranges for radii parameters
         """
         assert hasattr(radius_rg, '__len__') and (len(radius_rg) == 2) and (radius_rg[0] <= radius_rg[1])
@@ -193,6 +205,7 @@ class TorGen(SurfGen):
     def gen_parameters(self):
         """
         Generates randomly the two Torus radii
+
         :return: a array with the two radii ('a' torus radius, and 'b' tube radius, where a > b)
         """
         return np.sort(np.asarray((random.uniform(self.__radius_rg[0], self.__radius_rg[1]),
@@ -208,6 +221,7 @@ class SGen(ABC):
     def gen_next_mmer_id(self, n_mmers, prev_id):
         """
         Generated the id for the next monomer
+
         :param n_mmers: number of diferent monomers
         :param prev_id: previous monomer identifier
         :return: an integer indication the next monomer
@@ -223,6 +237,7 @@ class SGenFixed(SGen):
     def gen_next_mmer_id(self, n_surf, prev_id):
         """
             Generated the id for the next monomer
+
             :param n_mmers: number of diferent monomers
             :param prev_id: previous monomer identifier
             :return: an integer indication the next monomer
@@ -240,6 +255,7 @@ class SGenUniform(SGen):
     def gen_next_mmer_id(self, n_surf, prev_id=None):
         """
             Generated the id for the next monomer
+
             :param n_mmers: number of diferent monomers
             :param prev_id: previous monomer identifier (default None, not needed because this model is memoryless)
             :return: an integer indication the next monomer
@@ -264,6 +280,7 @@ class SGenProp(SGen):
     def gen_next_mmer_id(self, n_surf=None, prev_id=None):
         """
             Generated the id for the next monomer
+
             :param n_mmers: number of different monomers, (default None, not needed because this information is
             introduced in this model during construction)
             :param prev_id: previous monomer identifier (default None, not needed because this model is memoryless)
@@ -280,6 +297,7 @@ class OccGen():
     def __init__(self, occ_rg):
         """
         Constructor
+
         :param occ_rg: range for occupancy
         """
         assert hasattr(occ_rg, '__len__') and (len(occ_rg) == 2) and (occ_rg[0] <= occ_rg[1])
@@ -289,6 +307,7 @@ class OccGen():
     def gen_occupancy(self):
         """
         Generates randomly an occupancy value
+
         :return: a float with the generated occupancy
         """
         return random.uniform(self.__occ_rg[0], self.__occ_rg[1])

@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>polnet.affine &mdash; PolNet 0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=10f1778b"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PolNet
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">polnet</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PolNet</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">polnet.affine</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for polnet.affine</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Functionality for Affine Transformations</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Antonio Martinez-Sanchez&#39;</span>
+
+<span class="kn">import</span> <span class="nn">vtk</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">ndimage</span> <span class="k">as</span> <span class="n">spnd</span>
+<span class="kn">from</span> <span class="nn">polnet.utils</span> <span class="kn">import</span> <span class="n">wrap_angle</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial.transform</span> <span class="kn">import</span> <span class="n">Rotation</span> <span class="k">as</span> <span class="n">spR</span>
+
+<span class="c1"># CONSTANTS</span>
+
+<span class="n">PI_2</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+<span class="n">LOW_VALUE</span> <span class="o">=</span> <span class="mf">0.000001</span>
+<span class="c1"># Super-fibonacci constants</span>
+<span class="n">PHI</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="n">PSI</span> <span class="o">=</span> <span class="mf">1.533751168755204288118041</span>
+
+<span class="c1"># FUNCTIONS</span>
+
+
+<div class="viewcode-block" id="vector_module">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.vector_module">[docs]</a>
+<span class="k">def</span> <span class="nf">vector_module</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the module of a vector (|v|)</span>
+
+<span class="sd">    :param v: input vector (one dimensional numpy array)</span>
+<span class="sd">    :return: the computed module</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">v</span><span class="o">*</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span></div>
+
+
+
+<div class="viewcode-block" id="poly_rotate_wxyz">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.poly_rotate_wxyz">[docs]</a>
+<span class="k">def</span> <span class="nf">poly_rotate_wxyz</span><span class="p">(</span><span class="n">in_vtp</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Applies rigid rotation to a vtkPolyData from angle-axis input form</span>
+
+<span class="sd">    :param in_vtp: input vtkPolyData</span>
+<span class="sd">    :param w: angle</span>
+<span class="sd">    :param x: axis - x</span>
+<span class="sd">    :param y: axis - y</span>
+<span class="sd">    :param z: axis - z</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rot_tf</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkTransform</span><span class="p">()</span>
+    <span class="n">rot_tf</span><span class="o">.</span><span class="n">RotateWXYZ</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+    <span class="n">tf_rot</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkTransformPolyDataFilter</span><span class="p">()</span>
+    <span class="n">tf_rot</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">in_vtp</span><span class="p">)</span>
+    <span class="n">tf_rot</span><span class="o">.</span><span class="n">SetTransform</span><span class="p">(</span><span class="n">rot_tf</span><span class="p">)</span>
+    <span class="n">tf_rot</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">tf_rot</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="poly_translate">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.poly_translate">[docs]</a>
+<span class="k">def</span> <span class="nf">poly_translate</span><span class="p">(</span><span class="n">in_vtp</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Applies rigid rotation to a vtkPolyData</span>
+
+<span class="sd">    :param in_vtp: input vtkPolyData</span>
+<span class="sd">    :param t: translation vector</span>
+<span class="sd">    :return: the transformed vtkPolyData</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Input parsing</span>
+    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="c1"># Translation</span>
+    <span class="n">box_tr</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkTransform</span><span class="p">()</span>
+    <span class="n">box_tr</span><span class="o">.</span><span class="n">Translate</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">tr_box</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkTransformPolyDataFilter</span><span class="p">()</span>
+    <span class="n">tr_box</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">in_vtp</span><span class="p">)</span>
+    <span class="n">tr_box</span><span class="o">.</span><span class="n">SetTransform</span><span class="p">(</span><span class="n">box_tr</span><span class="p">)</span>
+    <span class="n">tr_box</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">tr_box</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="poly_scale">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.poly_scale">[docs]</a>
+<span class="k">def</span> <span class="nf">poly_scale</span><span class="p">(</span><span class="n">in_vtp</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Applies scaling transformation to a vtkPolyData</span>
+
+<span class="sd">    :param in_vtp: input vtkPolyData</span>
+<span class="sd">    :param s: scaling factor</span>
+<span class="sd">    :return: the transformed vtkPolyData</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Translation</span>
+    <span class="n">box_sc</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkTransform</span><span class="p">()</span>
+    <span class="n">box_sc</span><span class="o">.</span><span class="n">Scale</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+    <span class="n">tr_box</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkTransformPolyDataFilter</span><span class="p">()</span>
+    <span class="n">tr_box</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">in_vtp</span><span class="p">)</span>
+    <span class="n">tr_box</span><span class="o">.</span><span class="n">SetTransform</span><span class="p">(</span><span class="n">box_sc</span><span class="p">)</span>
+    <span class="n">tr_box</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">tr_box</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="gen_rand_unit_quaternion">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.gen_rand_unit_quaternion">[docs]</a>
+<span class="k">def</span> <span class="nf">gen_rand_unit_quaternion</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a random sample for a unit quaternion</span>
+<span class="sd">    KUFFNER, James J. Effective sampling and distance metrics for 3D rigid body path planning.</span>
+<span class="sd">    In IEEE International Conference on Robotics and Automation, 2004. Proceedings. ICRA&#39;04. 2004. IEEE, 2004. p. 3993-3998.</span>
+
+<span class="sd">    :return: a unit quaternion in the shape Q=(w,x,y,z)=(cos(θ/2),vx*sin(θ/2),vy*sin(θ/2),vz*sin(θ/2)),</span>
+<span class="sd">             where (vx,vy,vz) is the axis and \theta is the angle</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+    <span class="n">sigma_1</span><span class="p">,</span> <span class="n">sigma_2</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">s</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="n">theta_1</span><span class="p">,</span> <span class="n">theta_2</span> <span class="o">=</span> <span class="n">PI_2</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(),</span> <span class="n">PI_2</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta_2</span><span class="p">)</span> <span class="o">*</span> <span class="n">sigma_2</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta_1</span><span class="p">)</span> <span class="o">*</span> <span class="n">sigma_1</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta_1</span><span class="p">)</span> <span class="o">*</span> <span class="n">sigma_1</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta_2</span><span class="p">)</span> <span class="o">*</span> <span class="n">sigma_2</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="quat_to_angle_axis">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.quat_to_angle_axis">[docs]</a>
+<span class="k">def</span> <span class="nf">quat_to_angle_axis</span><span class="p">(</span><span class="n">qw</span><span class="p">,</span> <span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">,</span> <span class="n">qz</span><span class="p">,</span> <span class="n">deg</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given a quaternion, q = s + X with s=qw and X=[qx, qy, qz], returns its angle axis representation</span>
+
+<span class="sd">    :param qw: quaternion w value</span>
+<span class="sd">    :param qx: quaternion x value</span>
+<span class="sd">    :param qy: quaternion y value</span>
+<span class="sd">    :param qz: quaternion z value</span>
+<span class="sd">    :param deg: if True (default) the output is given in degrees, otherwise in radians</span>
+<span class="sd">    :return: an angle in degrees and axis (3-array)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">,</span> <span class="n">qz</span><span class="p">))</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="n">vector_module</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">norm</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">deg</span><span class="p">:</span>
+        <span class="n">ang_rad</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">norm</span><span class="p">,</span> <span class="n">qw</span><span class="p">))</span>
+        <span class="n">ang</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">ang_rad</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ang</span><span class="p">,</span> <span class="n">x</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">.5</span> <span class="o">*</span> <span class="n">ang_rad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ang</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span>  <span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">norm</span><span class="p">,</span> <span class="n">qw</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ang</span><span class="p">,</span> <span class="n">x</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">.5</span> <span class="o">*</span> <span class="n">ang</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="angle_axis_to_quat">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.angle_axis_to_quat">[docs]</a>
+<span class="k">def</span> <span class="nf">angle_axis_to_quat</span><span class="p">(</span><span class="n">ang</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">deg</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given a angle and axis [x, y, z] computes its corresponding unit quaternion</span>
+
+<span class="sd">    :param ang: angle</span>
+<span class="sd">    :param x: axis x value</span>
+<span class="sd">    :param y: axis y value</span>
+<span class="sd">    :param z: axis z value</span>
+<span class="sd">    :param deg: if True (default) the input angle is given in degrees, otherwise in radians</span>
+<span class="sd">    :return: a unit quaternion (4-array)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">ax</span> <span class="o">/=</span> <span class="n">vector_module</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">hold_ang</span> <span class="o">=</span> <span class="mf">.5</span> <span class="o">*</span> <span class="n">wrap_angle</span><span class="p">(</span><span class="n">ang</span><span class="p">,</span> <span class="n">deg</span><span class="o">=</span><span class="n">deg</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">deg</span><span class="p">:</span>
+        <span class="n">hold_ang</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">hold_ang</span><span class="p">)</span>
+    <span class="n">ca</span><span class="p">,</span> <span class="n">sa</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">hold_ang</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">hold_ang</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">ca</span><span class="p">,</span> <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">sa</span><span class="p">,</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">sa</span><span class="p">,</span> <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">sa</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="rot_vect_quat">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.rot_vect_quat">[docs]</a>
+<span class="k">def</span> <span class="nf">rot_vect_quat</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Rotate a vector by a quaternion using Rodrigues formula</span>
+
+<span class="sd">    :param v: input vector</span>
+<span class="sd">    :param q: input quaternion (angle, axis)</span>
+<span class="sd">    :return: output rotated vector</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Get axis angle representation</span>
+    <span class="n">ang</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">quat_to_angle_axis</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+
+    <span class="c1"># Make sure axis is a unit vector</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+    <span class="n">mod_k</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">k</span> <span class="o">*</span> <span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">mod_k</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">k</span> <span class="o">/=</span> <span class="n">mod_k</span>
+        <span class="n">vc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+        <span class="c1"># Rodrigues formula</span>
+        <span class="n">cos_ang</span><span class="p">,</span> <span class="n">sin_ang</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">ang</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">ang</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vc</span> <span class="o">*</span> <span class="n">cos_ang</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">vc</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin_ang</span> <span class="o">+</span> <span class="n">k</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">vc</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span><span class="o">-</span><span class="n">cos_ang</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">v</span></div>
+
+
+
+<div class="viewcode-block" id="quat_to_mat">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.quat_to_mat">[docs]</a>
+<span class="k">def</span> <span class="nf">quat_to_mat</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Covert a quaternion into a full three-dimensional rotation matrix</span>
+
+<span class="sd">    :param q: A 4 element array representing the quaternion (q0,q1,q2,q3)</span>
+<span class="sd">    :return: A 3x3 element matrix representing the full 3D rotation matrix.</span>
+<span class="sd">             This rotation matrix converts a point in the local reference</span>
+<span class="sd">             frame to a point in the global reference frame.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Extract the values from Q</span>
+    <span class="n">q0</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">,</span> <span class="n">q3</span> <span class="o">=</span> <span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="c1"># First row of the rotation matrix</span>
+    <span class="n">r00</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">q0</span> <span class="o">*</span> <span class="n">q0</span> <span class="o">+</span> <span class="n">q1</span> <span class="o">*</span> <span class="n">q1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">r01</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">q1</span> <span class="o">*</span> <span class="n">q2</span> <span class="o">-</span> <span class="n">q0</span> <span class="o">*</span> <span class="n">q3</span><span class="p">)</span>
+    <span class="n">r02</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">q1</span> <span class="o">*</span> <span class="n">q3</span> <span class="o">+</span> <span class="n">q0</span> <span class="o">*</span> <span class="n">q2</span><span class="p">)</span>
+
+    <span class="c1"># Second row of the rotation matrix</span>
+    <span class="n">r10</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">q1</span> <span class="o">*</span> <span class="n">q2</span> <span class="o">+</span> <span class="n">q0</span> <span class="o">*</span> <span class="n">q3</span><span class="p">)</span>
+    <span class="n">r11</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">q0</span> <span class="o">*</span> <span class="n">q0</span> <span class="o">+</span> <span class="n">q2</span> <span class="o">*</span> <span class="n">q2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">r12</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">q2</span> <span class="o">*</span> <span class="n">q3</span> <span class="o">-</span> <span class="n">q0</span> <span class="o">*</span> <span class="n">q1</span><span class="p">)</span>
+
+    <span class="c1"># Third row of the rotation matrix</span>
+    <span class="n">r20</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">q1</span> <span class="o">*</span> <span class="n">q3</span> <span class="o">-</span> <span class="n">q0</span> <span class="o">*</span> <span class="n">q2</span><span class="p">)</span>
+    <span class="n">r21</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">q2</span> <span class="o">*</span> <span class="n">q3</span> <span class="o">+</span> <span class="n">q0</span> <span class="o">*</span> <span class="n">q1</span><span class="p">)</span>
+    <span class="n">r22</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">q0</span> <span class="o">*</span> <span class="n">q0</span> <span class="o">+</span> <span class="n">q3</span> <span class="o">*</span> <span class="n">q3</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="c1"># 3x3 rotation matrix</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">r00</span><span class="p">,</span> <span class="n">r01</span><span class="p">,</span> <span class="n">r02</span><span class="p">],</span> <span class="p">[</span><span class="n">r10</span><span class="p">,</span> <span class="n">r11</span><span class="p">,</span> <span class="n">r12</span><span class="p">],</span> <span class="p">[</span><span class="n">r20</span><span class="p">,</span> <span class="n">r21</span><span class="p">,</span> <span class="n">r22</span><span class="p">]])</span></div>
+
+
+
+<div class="viewcode-block" id="tomo_rotate">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.tomo_rotate">[docs]</a>
+<span class="k">def</span> <span class="nf">tomo_rotate</span><span class="p">(</span><span class="n">tomo</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">prefilter</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Applies the rotation defined in a quaternion to a tomogram</span>
+
+<span class="sd">    :param tomo: input tomogram as 3D numpy array</span>
+<span class="sd">    :param q: quaternion encoding the rotation</span>
+<span class="sd">    :param center: center for rotation, if None (default) the tomogram center is used</span>
+<span class="sd">    :param active: rotation mode, if True (default) active otherwise passive</span>
+<span class="sd">    :param order: see doc for scipy.ndimage.interpolation.map_coordinate</span>
+<span class="sd">    :param mode: see doc for scipy.ndimage.interpolation.map_coordinate</span>
+<span class="sd">    :param cval: see doc for scipy.ndimage.interpolation.map_coordinate</span>
+<span class="sd">    :param prefilter: see doc for scipy.ndimage.interpolation.map_coordinate</span>
+<span class="sd">    :return: the rotated tomogram</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Input parsing</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tomo</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">center</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># center = np.round(.5 * np.asarray(tomo.shape, dtype=np.float32))</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="mf">.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tomo</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">center</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="c1"># Getting rotation matrix</span>
+    <span class="n">q</span> <span class="o">/=</span> <span class="n">vector_module</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">quat_to_mat</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">active</span><span class="p">:</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">jax</span>
+
+        <span class="c1"># Jax version (it should be faster when GPU available)</span>
+
+        <span class="c1"># Compute grid</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">numpy</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+                              <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+
+        <span class="c1"># From indices to coordinates</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="p">(</span><span class="n">Y</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="p">(</span><span class="n">Z</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="c1"># Grid rotation</span>
+        <span class="n">Xr</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">Y</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">Z</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">Yr</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">Y</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">Z</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">Zr</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">Y</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">Z</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+        <span class="c1"># From coordinates to indices</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="n">Xr</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Yr</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Zr</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="c1"># Re-mapping (interpolation)</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">tomo</span><span class="o">.</span><span class="n">size</span>
+        <span class="n">inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">ts</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">inds</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">inds</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">inds</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ts</span><span class="p">),</span> <span class="n">Y</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ts</span><span class="p">),</span> <span class="n">Z</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+        <span class="c1"># Jax does not support orders beyond 1</span>
+        <span class="k">if</span> <span class="n">order</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">tomo_r</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">scipy</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">map_coordinates</span><span class="p">(</span><span class="n">tomo</span><span class="p">,</span> <span class="n">inds</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="n">cval</span><span class="p">)</span>
+        <span class="n">tomo_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tomo_r</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+
+        <span class="c1"># Scipy versions</span>
+        <span class="c1"># print(&#39;Warning: GPU acceleration by using JAX is not enabled for rotations!&#39;)</span>
+
+        <span class="c1"># Compute grid</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+                              <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+
+        <span class="c1"># From indices to coordinates</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="p">(</span><span class="n">Y</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="p">(</span><span class="n">Z</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="c1"># Grid rotation</span>
+        <span class="n">Xr</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">Y</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">Z</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">Yr</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">Y</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">Z</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">Zr</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">Y</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">Z</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+        <span class="c1"># From coordinates to indices</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="n">Xr</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Yr</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Zr</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="c1"># Re-mapping (interpolation)</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">tomo</span><span class="o">.</span><span class="n">size</span>
+        <span class="n">inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">ts</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">inds</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">inds</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">inds</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ts</span><span class="p">),</span> <span class="n">Y</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ts</span><span class="p">),</span> <span class="n">Z</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+        <span class="n">tomo_r</span> <span class="o">=</span> <span class="n">spnd</span><span class="o">.</span><span class="n">interpolation</span><span class="o">.</span><span class="n">map_coordinates</span><span class="p">(</span><span class="n">tomo</span><span class="p">,</span> <span class="n">inds</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="n">cval</span><span class="p">,</span> <span class="n">prefilter</span><span class="o">=</span><span class="n">prefilter</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tomo_r</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="vect_rotate">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.vect_rotate">[docs]</a>
+<span class="k">def</span> <span class="nf">vect_rotate</span><span class="p">(</span><span class="n">vect</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Applies the rotation defined in a quaternion to a vector</span>
+
+<span class="sd">    :param tomo: input vector as 1D numpy array with length 3</span>
+<span class="sd">    :param q: quaternion encoding the rotation</span>
+<span class="sd">    :param active: rotation mode, if True (default) active otherwise passive</span>
+<span class="sd">    :return: the rotated vector as 1D numpy array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Input parsing</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vect</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vect</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span>
+
+    <span class="c1"># Getting rotation matrix</span>
+    <span class="n">q</span> <span class="o">/=</span> <span class="n">vector_module</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">quat_to_mat</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">active</span><span class="p">:</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="c1"># Applying rotation matrix</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">vect</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="quat_mult">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.quat_mult">[docs]</a>
+<span class="k">def</span> <span class="nf">quat_mult</span><span class="p">(</span><span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Multiply two quaternions</span>
+
+<span class="sd">    :param q1: first input quaternion</span>
+<span class="sd">    :param q2: second input quaternion</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">w0</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">z0</span> <span class="o">=</span> <span class="n">q1</span>
+    <span class="n">w1</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">z1</span> <span class="o">=</span> <span class="n">q2</span>
+    <span class="n">hold_q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">x1</span> <span class="o">*</span> <span class="n">x0</span> <span class="o">-</span> <span class="n">y1</span> <span class="o">*</span> <span class="n">y0</span> <span class="o">-</span> <span class="n">z1</span> <span class="o">*</span> <span class="n">z0</span> <span class="o">+</span> <span class="n">w1</span> <span class="o">*</span> <span class="n">w0</span><span class="p">,</span>
+                       <span class="n">x1</span> <span class="o">*</span> <span class="n">w0</span> <span class="o">+</span> <span class="n">y1</span> <span class="o">*</span> <span class="n">z0</span> <span class="o">-</span> <span class="n">z1</span> <span class="o">*</span> <span class="n">y0</span> <span class="o">+</span> <span class="n">w1</span> <span class="o">*</span> <span class="n">x0</span><span class="p">,</span>
+                       <span class="o">-</span><span class="n">x1</span> <span class="o">*</span> <span class="n">z0</span> <span class="o">+</span> <span class="n">y1</span> <span class="o">*</span> <span class="n">w0</span> <span class="o">+</span> <span class="n">z1</span> <span class="o">*</span> <span class="n">x0</span> <span class="o">+</span> <span class="n">w1</span> <span class="o">*</span> <span class="n">y0</span><span class="p">,</span>
+                       <span class="n">x1</span> <span class="o">*</span> <span class="n">y0</span> <span class="o">-</span> <span class="n">y1</span> <span class="o">*</span> <span class="n">x0</span> <span class="o">+</span> <span class="n">z1</span> <span class="o">*</span> <span class="n">w0</span> <span class="o">+</span> <span class="n">w1</span> <span class="o">*</span> <span class="n">z0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">hold_q</span></div>
+
+
+
+<div class="viewcode-block" id="quat_two_vectors">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.quat_two_vectors">[docs]</a>
+<span class="k">def</span> <span class="nf">quat_two_vectors</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the quaternion to rotate from one vector to another</span>
+
+<span class="sd">    :param a: origin vector</span>
+<span class="sd">    :param b: destination vector</span>
+<span class="sd">    :return: the quaternion thar rotates vector a to be aligned with b</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">a</span> <span class="o">/</span> <span class="n">vector_module</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">b</span> <span class="o">/</span> <span class="n">vector_module</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vector_module</span><span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">v</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">LOW_VALUE</span><span class="p">:</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">ortho_vector</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ax</span> <span class="o">/</span> <span class="n">vector_module</span><span class="p">(</span><span class="n">ax</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">half</span> <span class="o">=</span> <span class="n">u</span> <span class="o">+</span> <span class="n">v</span>
+        <span class="n">half</span> <span class="o">/=</span> <span class="n">vector_module</span><span class="p">(</span><span class="n">half</span><span class="p">)</span>
+        <span class="n">ang</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">ang</span><span class="p">,</span> <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span></div>
+
+
+
+<div class="viewcode-block" id="ortho_vector">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.ortho_vector">[docs]</a>
+<span class="k">def</span> <span class="nf">ortho_vector</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes any orthogonal vector to an input. This implementation uses the cross product with the most orthogonal</span>
+<span class="sd">    basis vector.</span>
+
+<span class="sd">    :param v: input vector</span>
+<span class="sd">    :return: output orthogonal vector</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Handle input is a basis</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">LOW_VALUE</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">LOW_VALUE</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">LOW_VALUE</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">LOW_VALUE</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">LOW_VALUE</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">LOW_VALUE</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">))</span>
+    <span class="c1"># Search for the most orthogonal basis vector</span>
+    <span class="n">v_abs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">v_abs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">v_abs</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">v_abs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">v_abs</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+            <span class="n">other</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">other</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">v_abs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">v_abs</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+            <span class="n">other</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">other</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="vect_to_zmat">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.vect_to_zmat">[docs]</a>
+<span class="k">def</span> <span class="nf">vect_to_zmat</span><span class="p">(</span><span class="n">v_in</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;active&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the matrix to rotate unit Z-axis vector to a given vector</span>
+
+<span class="sd">    :param v_in: input vector</span>
+<span class="sd">    :param mode: either &#39;active&#39; (default) or &#39;pasive&#39;</span>
+<span class="sd">    :returns: a rotation matrix as numpy ndarray (shape=3x3)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Normalization</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">v_in</span> <span class="o">/</span> <span class="n">vector_module</span><span class="p">(</span><span class="n">v_in</span><span class="p">)</span>
+
+
+    <span class="c1"># Computing angles in Extrinsic ZYZ system</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">n</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">n</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># Transform to Relion system (intrinsic ZY&#39;Z&#39;&#39; where rho is free)</span>
+    <span class="n">rot</span><span class="p">,</span> <span class="n">tilt</span><span class="p">,</span> <span class="n">psi</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">wrap_angle</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">alpha</span><span class="p">),</span> <span class="n">deg</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> \
+                     <span class="n">wrap_angle</span><span class="p">(</span><span class="mf">180.</span><span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="n">deg</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Matrix computation</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">rot_mat_zyz</span><span class="p">(</span><span class="n">rot</span><span class="p">,</span> <span class="n">tilt</span><span class="p">,</span> <span class="n">psi</span><span class="p">,</span> <span class="n">deg</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># By default is active, invert if passive</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;passive&#39;</span><span class="p">:</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">return</span> <span class="n">M</span></div>
+
+
+
+<div class="viewcode-block" id="rot_mat_zyz">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.rot_mat_zyz">[docs]</a>
+<span class="k">def</span> <span class="nf">rot_mat_zyz</span><span class="p">(</span><span class="n">rot</span><span class="p">,</span> <span class="n">tilt</span><span class="p">,</span> <span class="n">psi</span><span class="p">,</span> <span class="n">deg</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates 3D rotation matrix according to ZY&#39;Z&#39;&#39; Euler angles convention (Relion and Xmipp compatible)</span>
+<span class="sd">    This is a direct translation from code https://github.com/jjcorreao/relion/blob/master/relion-1.3/src/euler.cpp</span>
+
+<span class="sd">    :param rot: first input Euler angle (Z)</span>
+<span class="sd">    :param tilt: second input Euler angle (X&#39;)</span>
+<span class="sd">    :paramn psi: third input Euler angle (Z&#39;&#39;)</span>
+<span class="sd">    :param deg: if True (default) angles are computed in degrees, otherwise radians</span>
+<span class="sd">    :return:  a rotation matrix as numpy ndarray (shape=3x3)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># XMIPP doc</span>
+    <span class="k">if</span> <span class="n">deg</span><span class="p">:</span>
+        <span class="n">rot</span><span class="p">,</span> <span class="n">tilt</span><span class="p">,</span> <span class="n">psi</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">rot</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">tilt</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">psi</span><span class="p">)</span>
+    <span class="n">mt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">ca</span><span class="p">,</span> <span class="n">sa</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">rot</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">rot</span><span class="p">)</span>
+    <span class="n">cb</span><span class="p">,</span> <span class="n">sb</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">tilt</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">tilt</span><span class="p">)</span>
+    <span class="n">cg</span><span class="p">,</span> <span class="n">sg</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">psi</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">psi</span><span class="p">)</span>
+    <span class="n">cc</span><span class="p">,</span> <span class="n">cs</span> <span class="o">=</span> <span class="n">cb</span><span class="o">*</span><span class="n">ca</span><span class="p">,</span> <span class="n">cb</span><span class="o">*</span><span class="n">sa</span>
+    <span class="n">sc</span><span class="p">,</span> <span class="n">ss</span> <span class="o">=</span> <span class="n">sb</span><span class="o">*</span><span class="n">ca</span><span class="p">,</span> <span class="n">sb</span><span class="o">*</span><span class="n">sa</span>
+
+    <span class="c1"># XMIPP doc inverted</span>
+    <span class="n">mt</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">cg</span><span class="o">*</span><span class="n">cc</span> <span class="o">-</span> <span class="n">sg</span><span class="o">*</span><span class="n">sa</span>
+    <span class="n">mt</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">cg</span><span class="o">*</span><span class="n">cs</span> <span class="o">+</span> <span class="n">sg</span><span class="o">*</span><span class="n">ca</span>
+    <span class="n">mt</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">cg</span><span class="o">*</span><span class="n">sb</span>
+    <span class="n">mt</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">sg</span><span class="o">*</span><span class="n">cc</span> <span class="o">-</span> <span class="n">cg</span><span class="o">*</span><span class="n">sa</span>
+    <span class="n">mt</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">sg</span><span class="o">*</span><span class="n">cs</span> <span class="o">+</span> <span class="n">cg</span><span class="o">*</span><span class="n">ca</span>
+    <span class="n">mt</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">sg</span><span class="o">*</span><span class="n">sb</span>
+    <span class="n">mt</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">sc</span>
+    <span class="n">mt</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">ss</span>
+    <span class="n">mt</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">cb</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">mt</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="rot_to_quat">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.rot_to_quat">[docs]</a>
+<span class="k">def</span> <span class="nf">rot_to_quat</span><span class="p">(</span><span class="n">rot</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes quaternion from an input rotation matrix</span>
+
+<span class="sd">    :param rot: rotation numpy matrix</span>
+<span class="sd">    :return: a quaternion as 4 dirmension array (real part, 3-tuple imaginary part)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">spR</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">rot</span><span class="p">)</span>
+    <span class="n">hold_q</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">as_quat</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">hold_q</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">hold_q</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">hold_q</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">hold_q</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="tomo_shift">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.tomo_shift">[docs]</a>
+<span class="k">def</span> <span class="nf">tomo_shift</span><span class="p">(</span><span class="n">tomo</span><span class="p">,</span> <span class="n">shift</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Tomogram shift in Fourier space</span>
+
+<span class="sd">    :param tomo: the tomo numpy.ndarray (it must be 3D) to shift</span>
+<span class="sd">    :param shift: 3-tuple with the shifting for every dimension</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Input parsing</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tomo</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">shift</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">shift</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">dx2</span><span class="p">,</span> <span class="n">dy2</span><span class="p">,</span> <span class="n">dz2</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span><span class="o">*</span><span class="n">dx</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span><span class="o">*</span><span class="n">dy</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span><span class="o">*</span><span class="n">dz</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shift</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">shift</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">shift</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">dim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="c1"># Generating the grid</span>
+    <span class="n">x_l</span><span class="p">,</span> <span class="n">y_l</span><span class="p">,</span> <span class="n">z_l</span> <span class="o">=</span> <span class="o">-</span><span class="n">dx2</span><span class="p">,</span> <span class="o">-</span><span class="n">dy2</span><span class="p">,</span> <span class="o">-</span><span class="n">dz2</span>
+    <span class="n">x_h</span><span class="p">,</span> <span class="n">y_h</span><span class="p">,</span> <span class="n">z_h</span> <span class="o">=</span> <span class="o">-</span><span class="n">dx2</span><span class="o">+</span><span class="n">dx</span><span class="p">,</span> <span class="o">-</span><span class="n">dy2</span><span class="o">+</span><span class="n">dy</span><span class="p">,</span> <span class="o">-</span><span class="n">dz2</span><span class="o">+</span><span class="n">dz</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">x_l</span><span class="p">,</span> <span class="n">x_h</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">y_l</span><span class="p">,</span> <span class="n">y_h</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">z_l</span><span class="p">,</span> <span class="n">z_h</span><span class="p">),</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;xy&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Check for trivial dimensions</span>
+    <span class="n">ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">dim</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">delta</span><span class="p">[</span><span class="n">ids</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Shift grid in Fourier space</span>
+    <span class="n">delta</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delta</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">delta</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">delta</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">dx</span><span class="p">,</span> <span class="n">delta</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">dy</span><span class="p">,</span> <span class="n">delta</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="n">dz</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftshift</span><span class="p">(</span><span class="n">delta</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">X</span> <span class="o">+</span> <span class="n">delta</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">Y</span> <span class="o">+</span> <span class="n">delta</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">Z</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span>
+
+    <span class="c1"># Tomogram shifting in Fourier space</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">complex</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftn</span><span class="p">(</span><span class="n">tomo</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftn</span><span class="p">(</span><span class="n">img</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">j</span><span class="o">*</span><span class="n">X</span><span class="p">)))</span></div>
+
+
+
+<div class="viewcode-block" id="uniform_sampling_so3">
+<a class="viewcode-back" href="../../polnet.html#polnet.affine.uniform_sampling_so3">[docs]</a>
+<span class="k">def</span> <span class="nf">uniform_sampling_so3</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates uniform samples on SO3 following the deterministic approach propossed in:</span>
+<span class="sd">    M. Alexa, &quot;Super-Fibonacci Spirals: Fast, Low-Discrepancy Sampling of SO(3),&quot; 2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), New Orleans, LA, USA, 2022, pp. 8281-8290, doi: 10.1109/CVPR52688.2022.00811.</span>
+
+<span class="sd">    :param n: number of samples</span>
+<span class="sd">    :return: a numpy array with the output samples [n_samp, 4] as unit quaternions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">Q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mf">0.5</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">s</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">s</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">s</span> <span class="o">/</span> <span class="n">PHI</span>
+        <span class="n">beta</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">s</span> <span class="o">/</span> <span class="n">PSI</span>
+        <span class="n">Q</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
+        <span class="n">Q</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
+        <span class="n">Q</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span>
+        <span class="n">Q</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Q</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Antonio Martinez-Sanchez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

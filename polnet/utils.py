@@ -25,6 +25,7 @@ VTK_RAY_TOLERANCE = 0.000001 # 0.001
 def gen_uni_s2_sample(center, rad):
     """
     Generates a coordinate from uniformly random distribution on a sphere
+
     :param center: sphere center
     :param rad: sphere radius
     :return: the random coordinate generated
@@ -38,6 +39,7 @@ def gen_uni_s2_sample(center, rad):
 def points_distance(a, b):
     """
     Computes the Euclidean distance between two point
+
     :param a: input point a
     :param b: input point b
     :return: the Euclidean distance between a an b: d(a,b)
@@ -49,6 +51,7 @@ def points_distance(a, b):
 def iso_surface(tomo, th, flp=None, closed=False, normals=None):
     """
     Iso-surface on an input 3D volume
+
     :param tomo: input 3D numpy array
     :param th: iso-surface threshold
     :param flp: if not None (default) it specifies the axis to flip (valid: 0, 1 or 3)
@@ -109,6 +112,7 @@ def iso_surface(tomo, th, flp=None, closed=False, normals=None):
 def is_closed_surface(poly):
     """
     Checks if an input vtkPolyData is a closed surface
+
     :param poly: input vtkPolyData to check
     :return: True is the surface is closed, otherwise False
     """
@@ -124,6 +128,7 @@ def is_closed_surface(poly):
 def poly_filter_triangles(poly):
     """
     Filter a vtkPolyData to keep just the polys which are triangles
+
     :param poly: input vtkPolyData
     :return: a copy of the input poly but filtered
     """
@@ -138,6 +143,7 @@ def poly_filter_triangles(poly):
 def numpy_to_vti(array, spacing=[1, 1, 1]):
     """
     Converts a 3D numpy array into vtkImageData object
+
     :param array: 3D numpy array
     :param spacing: distance between pixels
     :return: a vtkImageData object
@@ -159,7 +165,8 @@ def numpy_to_vti(array, spacing=[1, 1, 1]):
 
 def get_sub_copy(tomo, sub_pt, sub_shape):
     """
-    Returns the a subvolume of a tomogram from a center and a shape
+    Returns the subvolume of a tomogram from a center and a shape
+
     :param tomo: input tomogram
     :param sub_pt: subtomogram center point
     :param sub_shape: output subtomogram shape (all dimensions must be even)
@@ -212,6 +219,7 @@ def get_sub_copy(tomo, sub_pt, sub_shape):
 def insert_svol_tomo(svol, tomo, sub_pt, merge='max'):
     """
     Insert the content of a subvolume to a tomogram
+
     :param svol: input subvolume (or subtomogram)
     :param tomo: input tomogram that is going to be modified
     :param sub_pt: subvolume center point in the input tomogram
@@ -301,6 +309,7 @@ def insert_svol_tomo(svol, tomo, sub_pt, merge='max'):
 def lin_map(array, lb=0, ub=1):
     """
     Applies a linear mapping to the input array for getting an array in the specified range
+
     :param array: input array to remap
     :param lb: lower output bound for gray values (default 0)
     :param ub: upper output bound for gray values (default 1)
@@ -319,6 +328,7 @@ def lin_map(array, lb=0, ub=1):
 def wrap_angle(ang, deg=True):
     """
     Wrap an angle to be expressed in range (-pi, pi] or (-180, 180]
+
     :param ang: input angle to wrap, it may also be an array
     :param deg: if True (default) the input angle is degrees, otherwise in radians
     :return: the angle value (or values) in the proper range
@@ -333,6 +343,7 @@ def wrap_angle(ang, deg=True):
 def point_to_poly(point, normal=None, n_name='n_normal'):
     """
     Converts a point into a poly
+
     :param point: 3-tuple with point coordinates
     :param normal: 3-tuple with the normal to be associated as property (default None)
     :param n_name: name for the normal (default 'normal')
@@ -358,6 +369,7 @@ def point_to_poly(point, normal=None, n_name='n_normal'):
 def density_norm(tomo, mask=None, inv=True):
     """
     Tomogram density normalization (I(x,y,z)-mean) / std)
+
     :param tomo: input tomogram
     :param mask: if None (default) the whole tomogram is used for computing the statistics otherwise just the masked region
     :param inv: if True the values are inverted (default)
@@ -391,6 +403,7 @@ def density_norm(tomo, mask=None, inv=True):
 def trilin_interp(x, y, z, tomogram):
     """
     Trilinear interpolation of the value of a coordinate point within a tomogram
+
     :param x: x input coordinate
     :param y: y input coordinate
     :param z: z input coordinate
@@ -436,6 +449,7 @@ def trilin_interp(x, y, z, tomogram):
 def nn_iterp(x, y, z, tomogram):
     """
     Nearest neighbour interpolation of the value of a coordinate point within a tomogram
+
     :param x: x input coordinate
     :param y: y input coordinate
     :param z: z input coordinate
@@ -476,6 +490,7 @@ def nn_iterp(x, y, z, tomogram):
 def poly_threshold(poly, p_name, mode='points', low_th=None, hi_th=None):
     """
     Threshold a vtkPolyData according the values of a property
+
     :param poly: vtkPolyData to threshold
     :param p_name: property name for points
     :param mode: determines if the property is associated to points data 'points' (default) or 'cells'
@@ -546,7 +561,8 @@ def gen_six_connectivity_mask():
 
 def clean_dir(dir):
     """
-    Clean an directory contents (directory is preserved)
+    Clean a directory contents (directory is preserved)
+
     :param dir: directory path
     """
     for root, dirs, files in os.walk(dir):
@@ -571,6 +587,7 @@ def clean_dir(dir):
 def vol_cube(vol, off=0):
     """
     Reshape a 3D volume for being cubic
+
     :param vol: input volume (ndarray)
     :param off: offset voxels (default 0)
     :return: a cubic volume with the info from the input, the cube dimension corresponds with the largest input
@@ -605,6 +622,7 @@ def vol_cube(vol, off=0):
 def gen_shpere_mask(shape, radius, center=None):
     """
     Generates a binary mask with a sphere
+
     :param shape: 3D shape of the output numpy array
     :param radius: sphere radius
     :param center: sphere center, if None (default) then the center of the output numpy array
@@ -629,6 +647,7 @@ def gen_shpere_mask(shape, radius, center=None):
 def tomo_crop_non_zeros(tomo):
     """
     Crop a tomogram to focus on non-zero volumes
+
     :param tomo: input tomogram
     :return: the cropped tomogram with bound fitted to non-zero volume
     """
