@@ -24,6 +24,7 @@ from polnet.utils import wrap_angle
 def find_point_on_poly(point, poly):
     """
     Find the closest point on a poly to a reference point
+
     :param point: input reference point
     :param poly: poly data where the closest output point has to be found
     :return: output point
@@ -41,6 +42,7 @@ def find_point_on_poly(point, poly):
 def gen_rand_quaternion_on_vector(vect):
     """
     Generates a unit quaternion which represents a random rotation around an input reference vector from Z-axis
+
     :param vect: reference vector
     :return: a quaternion which represents the rotation from Z-axis unit vector to be aligned to reference vector, plus
              a random rotation around the axis defined by the reference vector.
@@ -57,7 +59,8 @@ def gen_rand_quaternion_on_vector(vect):
 def gen_uni_s2_sample_on_poly(center, rad, thick, poly):
     """
     Generates a coordinate from an approximately uniformly random distribution on the intersection between a holow
-    sphere an a PolyData
+    sphere a PolyData
+
     :param center: sphere center
     :param rad: sphere radius
     :param poly: input poly (vtkPolyData object)
@@ -90,8 +93,10 @@ def gen_uni_s2_sample_on_poly(center, rad, thick, poly):
 def gen_uni_s2_sample_on_poly_inter(center, rad, poly, sph_res=360):
     """
     Generates a coordinate from an approximately uniformly random distribution on the intersection between an sphere
-    an a PolyData
+    a PolyData
+
     @Deprecated: the usage vtkIntersectionPolyDataFilter makes this function too slow
+
     :param center: sphere center
     :param rad: sphere radius
     :param poly: input poly (vtkPolyData object)
@@ -138,6 +143,7 @@ def gen_uni_s2_sample_on_poly_inter(center, rad, poly, sph_res=360):
 def poly_reverse_normals(poly):
     """
     Reverse the normals of an input polydata
+
     :param poly: input vtkPolyData object
     :return: a vtkPolyData object copy of the input but with the normals reversed
     """
@@ -152,6 +158,7 @@ def poly_reverse_normals(poly):
 def poly_volume(poly):
     """
     Computes the volume of polydata
+
     :param poly: input vtkPolyData
     :return: the volume computed
     """
@@ -164,6 +171,7 @@ def poly_volume(poly):
 def poly_surface_area(poly):
     """
     Computes the surface area of polydata
+
     :param poly: input vtkPolyData
     :return: the volume computed
     """
@@ -176,6 +184,7 @@ def poly_surface_area(poly):
 def add_sfield_to_poly(poly, sfield, name, dtype='float', interp='NN', mode='points'):
     """
     Add the values of a scalar field to a vtkPolyData object as point property
+
     :param poly: vtkPolyData objects where the scalar field values will be added
     :param sfield: input scalar field as ndarray
     :param name: string with name associated to the added property
@@ -237,6 +246,7 @@ def add_sfield_to_poly(poly, sfield, name, dtype='float', interp='NN', mode='poi
 def poly_mask(poly: vtk.vtkPolyData, mask: np.ndarray) -> vtk.vtkPolyData:
     """
     Removes the poly cells out of the mask
+
     :param poly: input poly
     :param mask: input mask
     :return: the filtered (masked) poly
@@ -264,6 +274,7 @@ def poly_mask(poly: vtk.vtkPolyData, mask: np.ndarray) -> vtk.vtkPolyData:
 def merge_polys(poly_1, poly_2):
     """
     Merges two input poly_data in single one
+
     :param poly_1: input poly_data 1
     :param poly_2: input poly_data 2
     :return: an poly_data that merges the two inputs
@@ -279,6 +290,7 @@ def merge_polys(poly_1, poly_2):
 def add_label_to_poly(poly, lbl, p_name, mode='cell'):
     """
     Add a label to all cells in a poly_data
+
     :param poly: input poly_data
     :param lbl: label (integer) value
     :param p_name: property name used for labels, if not exist in poly_dota is created
@@ -310,7 +322,8 @@ def add_label_to_poly(poly, lbl, p_name, mode='cell'):
 
 def points_to_poly_spheres(points, rad):
     """
-    From an array of coordinates generates a poly_data associating a sphere centered a each point
+    From an array of coordinates generates a poly_data associating a sphere centered at each point
+
     :param points: array or list n points with shape [n, 3]
     :param rad: sphere radius
     :return: an output poly_data
@@ -334,6 +347,7 @@ def points_to_poly_spheres(points, rad):
 def poly_max_distance(vtp):
     """
     Computes the maximum distance in vtkPolyData
+
     :param vtp: input vtkPolyData
     :return: the maximum distance as real value
     """
@@ -353,6 +367,7 @@ def poly_max_distance(vtp):
 def poly_diam(vtp):
     """
     Computes the diameter of a polydata, approximated to two times the maximumd point distance to its center of mass
+
     :param vtp: input vtkPolyData
     :return: the maximum distance as real value
     """
@@ -372,6 +387,7 @@ def poly_diam(vtp):
 def poly_point_min_dst(poly, point, chull=False):
     """
     Compute the minimum distance from a point to a poly
+
     :param poly: input poly
     :param point: input point
     :param chull: computation mode, if True (default False) the convex hull surface is firstly extracted to avoid poly holes,
@@ -397,6 +413,7 @@ def poly_point_min_dst(poly, point, chull=False):
 def poly_center_mass(poly):
     """
     Computes the center of mass of polydata
+
     :param poly: input poly
     :return: center of mass coordinates
     """
@@ -409,6 +426,7 @@ def poly_center_mass(poly):
 def convex_hull_surface(poly):
     """
     Extract the convex full surface of a polydata
+
     :param poly: input polydata
     :return: convex hull surface
     """
@@ -425,6 +443,7 @@ def convex_hull_surface(poly):
 def poly_decimate(poly, dec):
     """
     Decimate a vtkPolyData
+
     :param poly: input vtkPolyData
     :param dec: Specify the desired reduction in the total number of polygons
                (e.g., if TargetReduction is set to 0.9,

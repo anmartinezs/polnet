@@ -79,15 +79,17 @@ the size of the input data avoid to upload them to the repository.
   * **in_helix**: input models for helical structures.
   * **in_mbsx**: input models for membrane structures.
   * **tempaltes**: atomic models and density maps used by macromolecular models.
-* **docs**: contains a PDF with the suplementary material for [1] with the next tables:
-  + Glossary of acronyms by order of appearance in the main text.
-  + Glossary mathematical symbols defined in the main text organized by scope
-  + Table Variables used by the input files to model the generators.
-  + Table with the structures used to simulate the cellular context. 
+* **docs**:
+  * API documentation. 
+  * A PDF with the suplementary material for [1] with the next tables:
+    + Glossary of acronyms by order of appearance in the main text.
+    + Glossary mathematical symbols defined in the main text organized by scope
+    + Table Variables used by the input files to model the generators.
+    + Table with the structures used to simulate the cellular context. 
 
 ### Code documentation
 
-TODO
+The API documentation for polnet Python package is available in [docs/apidoc/index.html](docs/apidoc/index.html) 
 
 
 ## Main publication (Citation)

@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>polnet.network &mdash; PolNet 0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=10f1778b"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PolNet
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">polnet</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PolNet</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">polnet.network</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for polnet.network</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Classes for modeling networks polymers.</span>
+<span class="sd">A networks is a combination of a polymer in a volume</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Antonio Martinez-Sanchez&#39;</span>
+
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span>
+
+<span class="kn">from</span> <span class="nn">polnet.poly</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">polnet.polymer</span> <span class="kn">import</span> <span class="n">SAWLC</span><span class="p">,</span> <span class="n">SAWLCPoly</span><span class="p">,</span> <span class="n">HelixFiber</span>
+<span class="kn">from</span> <span class="nn">polnet.lrandom</span> <span class="kn">import</span> <span class="n">SGen</span><span class="p">,</span> <span class="n">SGenUniform</span><span class="p">,</span> <span class="n">SGenFixed</span><span class="p">,</span> <span class="n">SGenProp</span><span class="p">,</span> <span class="n">PGenHelixFiber</span><span class="p">,</span> <span class="n">PGenHelixFiberB</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="n">NET_TYPE_STR</span> <span class="o">=</span> <span class="s1">&#39;net_type&#39;</span>
+
+
+<div class="viewcode-block" id="Network">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Network">[docs]</a>
+<span class="k">class</span> <span class="nc">Network</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    General class for a network of polymers</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">voi</span><span class="p">,</span> <span class="n">v_size</span><span class="p">,</span> <span class="n">svol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construction</span>
+
+<span class="sd">        :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers</span>
+<span class="sd">        :param v_size: voxel size (default 1)</span>
+<span class="sd">        :param svol: monomer subvolume (or list of) as a numpy ndarray (default None)</span>
+<span class="sd">        :param mb_area: total membrane area within the same VOI as the network (deftault None)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_voi</span><span class="p">(</span><span class="n">voi</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__vol</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">__voi</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">*</span> <span class="n">v_size</span> <span class="o">*</span> <span class="n">v_size</span> <span class="o">*</span> <span class="n">v_size</span> <span class="c1"># withou the float cast is my raise overflow warning in Windows</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span> <span class="o">=</span> <span class="n">v_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pl_occ</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pl</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pl_nmmers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__svol</span> <span class="o">=</span> <span class="n">svol</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__svol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">svol</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">):</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__svol</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__min_nmmer</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__poly_area</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_fails</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="Network.set_min_nmmer">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Network.set_min_nmmer">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_min_nmmer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_nmmer</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set a minimum number of monomers for the generated filaments</span>
+
+<span class="sd">        :param min_nmmer: integer with the minimum number of monomenrs per filament</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__min_nmmer</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">min_nmmer</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Network.get_pmer_fails">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Network.get_pmer_fails">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_pmer_fails</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pmer_fails</span></div>
+
+
+<div class="viewcode-block" id="Network.get_pmers_list">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Network.get_pmers_list">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_pmers_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pl</span></div>
+
+
+<div class="viewcode-block" id="Network.get_num_pmers">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Network.get_num_pmers">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_num_pmers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: the number of polymers in the network</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pl</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Network.get_num_mmers">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Network.get_num_mmers">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_num_mmers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: the number of monomers in the network</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">count_mmers</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">pl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pl</span><span class="p">:</span>
+            <span class="n">count_mmers</span> <span class="o">+=</span> <span class="n">pl</span><span class="o">.</span><span class="n">get_num_mmers</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">count_mmers</span></div>
+
+
+<div class="viewcode-block" id="Network.get_polymer_occupancy">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Network.get_polymer_occupancy">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_polymer_occupancy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pl_occ</span></div>
+
+
+<div class="viewcode-block" id="Network.add_polymer">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Network.add_polymer">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_polymer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">polymer</span><span class="p">,</span> <span class="n">occ_mode</span><span class="o">=</span><span class="s1">&#39;volume&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a new polymer to the network</span>
+
+<span class="sd">        :param polymer: polymer to add</span>
+<span class="sd">        :param occ_mode: occupancy mode, valid: &#39;volume&#39; (default), &#39;area&#39; for membrane-bound polymer</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">occ_mode</span> <span class="o">==</span> <span class="s1">&#39;volume&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">occ_mode</span> <span class="o">==</span> <span class="s1">&#39;area&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">polymer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pl_nmmers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">polymer</span><span class="o">.</span><span class="n">get_num_mmers</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">occ_mode</span> <span class="o">==</span> <span class="s1">&#39;volume&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__pl_occ</span> <span class="o">+=</span> <span class="mf">100.</span> <span class="o">*</span> <span class="p">(</span><span class="n">polymer</span><span class="o">.</span><span class="n">get_vol</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">__vol</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__pl_occ</span> <span class="o">+=</span> <span class="mf">100.</span> <span class="o">*</span> <span class="p">(</span><span class="n">polymer</span><span class="o">.</span><span class="n">get_area</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__poly_area</span><span class="p">)</span></div>
+
+        <span class="c1"># print(&#39;Occ: &#39;, self.__pl_occ)</span>
+
+<div class="viewcode-block" id="Network.build_network">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Network.build_network">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">build_network</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Builds an instance of the network</span>
+
+<span class="sd">        :return: None        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="bp">NotImplemented</span></div>
+
+
+<div class="viewcode-block" id="Network.get_voi">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Network.get_voi">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_voi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the VOI</span>
+
+<span class="sd">        :return: an ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__voi</span></div>
+
+
+<div class="viewcode-block" id="Network.get_gtruth">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Network.get_gtruth">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_gtruth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thick</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the ground truth tomogram</span>
+
+<span class="sd">        :param thick: ground truth tickness in voxels (default 1)</span>
+<span class="sd">        :return: a binary numpy 3D array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">hold_gtruth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_vtp_points_tomo</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">thick</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">hold_gtruth</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">morphology</span><span class="o">.</span><span class="n">binary_dilation</span><span class="p">(</span><span class="n">hold_gtruth</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">thick</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">hold_gtruth</span></div>
+
+
+<div class="viewcode-block" id="Network.set_voi">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Network.set_voi">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_voi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">voi</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the VOI</span>
+
+<span class="sd">        :param voi:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">voi</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">voi</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">is</span> <span class="nb">bool</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__voi</span> <span class="o">=</span> <span class="n">voi</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__voi</span> <span class="o">=</span> <span class="n">voi</span> <span class="o">&gt;</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="Network.get_vtp">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Network.get_vtp">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_vtp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get Polymers Network as a vtkPolyData with their surfaces</span>
+
+<span class="sd">        :return: a vtkPolyData</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">app_flt</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkAppendPolyData</span><span class="p">()</span>
+
+        <span class="c1"># Polymers loop</span>
+        <span class="k">for</span> <span class="n">pol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pl</span><span class="p">:</span>
+            <span class="n">app_flt</span><span class="o">.</span><span class="n">AddInputData</span><span class="p">(</span><span class="n">pol</span><span class="o">.</span><span class="n">get_vtp</span><span class="p">())</span>
+        <span class="n">app_flt</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">app_flt</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Network.get_skel">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Network.get_skel">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_skel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">add_verts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_lines</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verts_rad</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the polymer as a skeleton, each monomer is a point or sphere and lines connecting monomers</span>
+
+<span class="sd">        :param add_verts: if True (default) the vertices are included in the vtkPolyData</span>
+<span class="sd">        :param add_lines: if True (default) the lines are included in the vtkPolyData</span>
+<span class="sd">        :param verts_rad: if verts is True then sets the vertex radius, if &lt;=0 a vertices are just points</span>
+<span class="sd">        :return: a vtkPolyData</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">app_flt</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkAppendPolyData</span><span class="p">()</span>
+
+        <span class="c1"># Polymers loop</span>
+        <span class="k">for</span> <span class="n">pol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pl</span><span class="p">:</span>
+            <span class="n">app_flt</span><span class="o">.</span><span class="n">AddInputData</span><span class="p">(</span><span class="n">pol</span><span class="o">.</span><span class="n">get_skel</span><span class="p">(</span><span class="n">add_verts</span><span class="p">,</span> <span class="n">add_lines</span><span class="p">,</span> <span class="n">verts_rad</span><span class="p">))</span>
+
+        <span class="c1"># Update and return</span>
+        <span class="n">app_flt</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">app_flt</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Network.gen_vtp_points_tomo">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Network.gen_vtp_points_tomo">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_vtp_points_tomo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a binary tomogram where True elements correspond with the polydata closes voxel projection</span>
+
+<span class="sd">        :return: a binary VOI shaped numpy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__voi</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">hold_tomo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">hold_vtp_skel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_skel</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">hold_vtp_skel</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()):</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">hold_vtp_skel</span><span class="o">.</span><span class="n">GetPoint</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">y</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">z</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span>  <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">nx</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">y</span> <span class="o">&lt;</span> <span class="n">ny</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">z</span> <span class="o">&lt;</span> <span class="n">nz</span><span class="p">):</span>
+                <span class="n">hold_tomo</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">hold_tomo</span></div>
+
+
+<div class="viewcode-block" id="Network.insert_density_svol">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Network.insert_density_svol">[docs]</a>
+    <span class="k">def</span> <span class="nf">insert_density_svol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_svol</span><span class="p">,</span> <span class="n">tomo</span><span class="p">,</span> <span class="n">v_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">merge</span><span class="o">=</span><span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="n">off_svol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Insert a polymer network as set of subvolumes into a tomogram</span>
+
+<span class="sd">        :param m_svol: input monomer (or list) sub-volume reference</span>
+<span class="sd">        :param tomo: tomogram where m_svol is added</span>
+<span class="sd">        :param v_size: tomogram voxel size (default 1)</span>
+<span class="sd">        :param merge: merging mode, valid: &#39;min&#39; (default), &#39;max&#39;, &#39;sum&#39; and &#39;insert&#39;</span>
+<span class="sd">        :param off_svol: offset coordinates for sub-volume monomer center coordinates</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">m_svol</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m_svol</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">m_svol</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tomo</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">merge</span> <span class="o">==</span> <span class="s1">&#39;max&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">merge</span> <span class="o">==</span> <span class="s1">&#39;min&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">merge</span> <span class="o">==</span> <span class="s1">&#39;sum&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">merge</span> <span class="o">==</span> <span class="s1">&#39;insert&#39;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">v_size</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">off_svol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">off_svol</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">off_svol</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">pl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pl</span><span class="p">:</span>
+            <span class="n">pl</span><span class="o">.</span><span class="n">insert_density_svol</span><span class="p">(</span><span class="n">m_svol</span><span class="p">,</span> <span class="n">tomo</span><span class="p">,</span> <span class="n">v_size</span><span class="p">,</span> <span class="n">merge</span><span class="o">=</span><span class="n">merge</span><span class="p">,</span> <span class="n">off_svol</span><span class="o">=</span><span class="n">off_svol</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Network.add_monomer_to_voi">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Network.add_monomer_to_voi">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_monomer_to_voi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mmer</span><span class="p">,</span> <span class="n">mmer_svol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a monomer to VOI mask</span>
+
+<span class="sd">        :param mmer: monomer to define rigid transformations</span>
+<span class="sd">        :param mmer_voi: subvolume (binary numpy ndarray) with monomer VOI</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mmer_svol</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">mmer_svol</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">v_size_i</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span>
+        <span class="n">tot_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">))</span>
+        <span class="n">hold_svol</span> <span class="o">=</span> <span class="n">mmer_svol</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">trans</span> <span class="ow">in</span> <span class="n">mmer</span><span class="o">.</span><span class="n">get_trans_list</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">trans</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;t&#39;</span><span class="p">:</span>
+                <span class="n">tot_v</span> <span class="o">+=</span> <span class="p">(</span><span class="n">trans</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">v_size_i</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">trans</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;r&#39;</span><span class="p">:</span>
+                <span class="n">hold_svol</span> <span class="o">=</span> <span class="n">tomo_rotate</span><span class="p">(</span><span class="n">hold_svol</span><span class="p">,</span> <span class="n">trans</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="n">hold_svol</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span>
+                                        <span class="n">prefilter</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="c1"># hold_svol = tomo_rotate(hold_svol, trans[1], mode=&#39;constant&#39;, cval=hold_svol.min())</span>
+        <span class="n">insert_svol_tomo</span><span class="p">(</span><span class="n">hold_svol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__voi</span><span class="p">,</span> <span class="n">tot_v</span><span class="p">,</span> <span class="n">merge</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Network.count_proteins">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Network.count_proteins">[docs]</a>
+    <span class="k">def</span> <span class="nf">count_proteins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Genrrates output statistics for this network</span>
+
+<span class="sd">        :return: a dictionary with the number of proteins for protein id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">pl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pl</span><span class="p">:</span>
+            <span class="n">ids</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">get_mmer_ids</span><span class="p">()</span>
+            <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">counts</span><span class="p">[</span><span class="nb">id</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="n">counts</span><span class="p">[</span><span class="nb">id</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">counts</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="NetSAWLC">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.NetSAWLC">[docs]</a>
+<span class="k">class</span> <span class="nc">NetSAWLC</span><span class="p">(</span><span class="n">Network</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for generating a network of SAWLC polymers</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">voi</span><span class="p">,</span> <span class="n">v_size</span><span class="p">,</span> <span class="n">l_length</span><span class="p">,</span> <span class="n">m_surf</span><span class="p">,</span> <span class="n">max_p_length</span><span class="p">,</span> <span class="n">gen_pol_lengths</span><span class="p">,</span> <span class="n">occ</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">poly</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">svol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tries_mmer</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">tries_pmer</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construction</span>
+
+<span class="sd">        :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers</span>
+<span class="sd">        :param v_size: voxel size (default 1)</span>
+<span class="sd">        :param l_length: polymer link length</span>
+<span class="sd">        :param m_surf: monomer surf</span>
+<span class="sd">        :param max_p_length: maximum polymer length</span>
+<span class="sd">        :param gen_pol_lengths: a instance of a random generation model (random.PGen) to determine the achievable</span>
+<span class="sd">        lengths for polymers</span>
+<span class="sd">        :param occ: occupancy threshold in percentage [0, 100]%</span>
+<span class="sd">        :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0, in range [0,1))</span>
+<span class="sd">        :param poly: it allows to restrict monomer localizations to a polydata (e.g. a membrane)</span>
+<span class="sd">        :param svol: monomer subvolume as a numpy ndarray (default None)</span>
+<span class="sd">        :param off_svol: offset coordinates in voxels for shifting sub-volume monomer center coordinates (default None)</span>
+<span class="sd">        :param tries_mmer: number of tries to place a monomer before starting a new polymer</span>
+<span class="sd">        :param tries_pmer: number of tries to place a polymer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Initialize abstract varibles</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NetSAWLC</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">voi</span><span class="p">,</span> <span class="n">v_size</span><span class="p">,</span> <span class="n">svol</span><span class="o">=</span><span class="n">svol</span><span class="p">)</span>
+
+        <span class="c1"># Input parsing</span>
+        <span class="k">assert</span> <span class="n">l_length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m_surf</span><span class="p">,</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">max_p_length</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gen_pol_lengths</span><span class="p">,</span> <span class="n">PGenHelixFiber</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">occ</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">occ</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">over_tolerance</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">over_tolerance</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">poly</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">poly</span><span class="p">,</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">tries_mmer</span> <span class="o">&gt;=</span> <span class="mi">1</span>
+        <span class="k">assert</span> <span class="n">tries_pmer</span> <span class="o">&gt;=</span> <span class="mi">1</span>
+
+        <span class="c1"># Variables assignment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__l_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span> <span class="o">=</span> <span class="n">l_length</span><span class="p">,</span> <span class="n">m_surf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__max_p_length</span> <span class="o">=</span> <span class="n">max_p_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__gen_pol_lengths</span> <span class="o">=</span> <span class="n">gen_pol_lengths</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__over_tolerance</span> <span class="o">=</span> <span class="n">occ</span><span class="p">,</span> <span class="n">over_tolerance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__poly</span> <span class="o">=</span> <span class="n">poly</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tries_mmer</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tries_mmer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tries_pmer</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tries_pmer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__poly_area</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__poly</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_Network__poly_area</span> <span class="o">=</span> <span class="n">poly_surface_area</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__poly</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NetSAWLC.build_network">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.NetSAWLC.build_network">[docs]</a>
+    <span class="k">def</span> <span class="nf">build_network</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add polymers following SAWLC model until an occupancy limit is passed</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">c_try</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Network__pmer_fails</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Network loop</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">c_try</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__tries_pmer</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Network__pl_occ</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span><span class="p">):</span>
+
+            <span class="c1"># Polymer initialization</span>
+            <span class="n">c_try</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__poly</span><span class="p">:</span>
+                <span class="n">p0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__poly</span><span class="o">.</span><span class="n">GetPoint</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__poly</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">())))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">p0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(),</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(),</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()))</span>
+            <span class="n">max_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__gen_pol_lengths</span><span class="o">.</span><span class="n">gen_length</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__max_p_length</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__poly</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">hold_polymer</span> <span class="o">=</span> <span class="n">SAWLC</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__l_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span><span class="p">,</span> <span class="n">p0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">hold_polymer</span> <span class="o">=</span> <span class="n">SAWLCPoly</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__poly</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__l_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span><span class="p">,</span> <span class="n">p0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_monomer</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">overlap_voi</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span><span class="p">,</span>
+                                                        <span class="n">over_tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__over_tolerance</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_Network__pmer_fails</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">continue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_monomer_to_voi</span><span class="p">(</span><span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_monomer</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__svol</span><span class="p">)</span>
+
+            <span class="c1"># Polymer loop</span>
+            <span class="n">cont_pol</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">not_finished</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">while</span> <span class="p">(</span><span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_total_len</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">max_length</span><span class="p">)</span> <span class="ow">and</span> <span class="n">not_finished</span><span class="p">:</span>
+                <span class="n">monomer_data</span> <span class="o">=</span> <span class="n">hold_polymer</span><span class="o">.</span><span class="n">gen_new_monomer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__over_tolerance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="p">,</span>
+                                                            <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span><span class="p">,</span>
+                                                            <span class="n">fix_dst</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__gen_pol_lengths</span><span class="o">.</span><span class="n">gen_length</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__l_length</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">__l_length</span><span class="p">))</span>
+
+                <span class="n">cont_pol</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                <span class="k">if</span> <span class="n">monomer_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">cont_pol</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__tries_mmer</span><span class="p">:</span>
+                        <span class="n">not_finished</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">c_try</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">new_len</span> <span class="o">=</span> <span class="n">points_distance</span><span class="p">(</span><span class="n">monomer_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_tail_point</span><span class="p">())</span>
+                    <span class="k">if</span> <span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_total_len</span><span class="p">()</span> <span class="o">+</span> <span class="n">new_len</span> <span class="o">&lt;</span> <span class="n">max_length</span><span class="p">:</span>
+                        <span class="c1"># ) and (monomer_data[3].overlap_voi(self._Network__voi, self._Network__v_size)):</span>
+                        <span class="n">hold_polymer</span><span class="o">.</span><span class="n">add_monomer</span><span class="p">(</span><span class="n">monomer_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">monomer_data</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">monomer_data</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">monomer_data</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">add_monomer_to_voi</span><span class="p">(</span><span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_monomer</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__svol</span><span class="p">)</span>
+                        <span class="n">hold_occ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__pl_occ</span> <span class="o">+</span> <span class="mf">100.</span> <span class="o">*</span> <span class="p">(</span><span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_vol</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__vol</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">hold_occ</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span><span class="p">:</span>
+                            <span class="n">not_finished</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">not_finished</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="c1"># Updating polymer</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__poly</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_polymer</span><span class="p">(</span><span class="n">hold_polymer</span><span class="p">,</span> <span class="n">occ_mode</span><span class="o">=</span><span class="s1">&#39;volume&#39;</span><span class="p">)</span>
+                <span class="n">c_try</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_polymer</span><span class="p">(</span><span class="n">hold_polymer</span><span class="p">,</span> <span class="n">occ_mode</span><span class="o">=</span><span class="s1">&#39;area&#39;</span><span class="p">)</span>
+                <span class="n">c_try</span> <span class="o">=</span> <span class="mi">0</span></div>
+</div>
+
+            <span class="c1"># print(&#39;build_network: new polymer added with &#39; + str(hold_polymer.get_num_monomers()) +</span>
+            <span class="c1">#       &#39;, length &#39; + str(hold_polymer.get_total_len()) + &#39; and occupancy &#39; +</span>
+            <span class="c1">#       str(self._Network__pl_occ) + &#39;%&#39;)</span>
+
+        <span class="c1"># print(&#39;Exit with c_try=&#39; + str(c_try) + &#39; and c_fails=&#39; + str(self._Network__pmer_fails))</span>
+
+
+<div class="viewcode-block" id="NetSAWLCInter">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.NetSAWLCInter">[docs]</a>
+<span class="k">class</span> <span class="nc">NetSAWLCInter</span><span class="p">(</span><span class="n">Network</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for generating a network of SAWLC polymers with intercalated monomers</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">voi</span><span class="p">,</span> <span class="n">v_size</span><span class="p">,</span> <span class="n">l_lengths</span><span class="p">,</span> <span class="n">m_surfs</span><span class="p">,</span> <span class="n">max_p_length</span><span class="p">,</span> <span class="n">gen_pol_lengths</span><span class="p">,</span> <span class="n">gen_seq_mmers</span><span class="p">,</span>
+                 <span class="n">occ</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">poly</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">svols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">codes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">compaq</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tries_mmer</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">rots_mmer</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construction</span>
+
+<span class="sd">        :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers</span>
+<span class="sd">        :param v_size: voxel size (default 1)</span>
+<span class="sd">        :param l_lengths: polymer link lengths</span>
+<span class="sd">        :param m_surfs: monomers list with the posible monomer surfaces</span>
+<span class="sd">        :param max_p_length: maximum polymer length</span>
+<span class="sd">        :param gen_pol_lengths: an instance of a random generation model (lrandom.PGen) to determine the achievable</span>
+<span class="sd">        lengths for polymers</span>
+<span class="sd">        :param gen_seq_mmers: an instance of a random generation model (lrandom.SGen) to generate a sequence of monomers</span>
+<span class="sd">        :param occ: occupancy threshold in percentage [0, 100]%</span>
+<span class="sd">        :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0, in range [0,1))</span>
+<span class="sd">        :param poly: it allows to restrict monomer localizations to a polydata</span>
+<span class="sd">        :param svol: monomer subvolumes as list numpy ndarrays (default None)</span>
+<span class="sd">        :param codes: monomer codes a a list (default None)</span>
+<span class="sd">        :param off_svol: offset coordinates in voxels for shifting sub-volume monomer center coordinates (default None)</span>
+<span class="sd">        :param compaq: if a number (default None) encodes the minimum distance between two surfaces</span>
+<span class="sd">        :param tries_mmer: number of tries to place a monomer before starting a new polymer</span>
+<span class="sd">        :param rots_mmer: number of rotations for monomer before increasing distance to provious by the &#39;compaq&#39; value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Initialize abstract varibles</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NetSAWLCInter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">voi</span><span class="p">,</span> <span class="n">v_size</span><span class="p">,</span> <span class="n">svol</span><span class="o">=</span><span class="n">svols</span><span class="p">)</span>
+
+        <span class="c1"># Input parsing</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">l_lengths</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">m_surfs</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">codes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">codes</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">codes</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">svols</span><span class="p">))</span>
+        <span class="k">assert</span> <span class="n">max_p_length</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gen_pol_lengths</span><span class="p">,</span> <span class="n">PGenHelixFiber</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">gen_seq_mmers</span><span class="p">),</span> <span class="n">SGen</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">occ</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">occ</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">over_tolerance</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">over_tolerance</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">poly</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">poly</span><span class="p">,</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">rots_mmer</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">tries_mmer</span> <span class="o">&gt;</span> <span class="n">rots_mmer</span><span class="p">)</span>
+
+        <span class="c1"># Variables assignment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__l_lengths</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m_surfs</span> <span class="o">=</span> <span class="n">l_lengths</span><span class="p">,</span> <span class="n">m_surfs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__centers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m_surfs</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m_surfs</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__centers</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">poly_center_mass</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m_surfs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__max_p_length</span> <span class="o">=</span> <span class="n">max_p_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__gen_pol_lengths</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__gen_seq_mmers</span> <span class="o">=</span> <span class="n">gen_pol_lengths</span><span class="p">,</span> <span class="n">gen_seq_mmers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__over_tolerance</span> <span class="o">=</span> <span class="n">occ</span><span class="p">,</span> <span class="n">over_tolerance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__poly</span> <span class="o">=</span> <span class="n">poly</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__codes</span> <span class="o">=</span> <span class="n">codes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__compaq</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">compaq</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__compaq</span> <span class="o">=</span> <span class="n">compaq</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tries_mmer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__rots_mmer</span> <span class="o">=</span> <span class="n">tries_mmer</span><span class="p">,</span> <span class="n">rots_mmer</span>
+
+<div class="viewcode-block" id="NetSAWLCInter.build_network">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.NetSAWLCInter.build_network">[docs]</a>
+    <span class="k">def</span> <span class="nf">build_network</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add polymers following SAWLC model until an occupancy limit is passed</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Computes the maximum number of tries</span>
+        <span class="n">mmer_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">c_try</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">n_tries</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Network__vol</span><span class="p">)</span> <span class="c1"># math.ceil(self._Network__vol / poly_volume(self.__m_surfs[prev_id]))</span>
+
+        <span class="c1"># Network loop</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">c_try</span> <span class="o">&lt;=</span> <span class="n">n_tries</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Network__pl_occ</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span><span class="p">):</span>
+
+            <span class="c1"># Polymer initialization</span>
+            <span class="n">c_try</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">p0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(),</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(),</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()))</span>
+            <span class="n">max_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__gen_pol_lengths</span><span class="o">.</span><span class="n">gen_length</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__max_p_length</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">mmer_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">mmer_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__gen_seq_mmers</span><span class="o">.</span><span class="n">gen_next_mmer_id</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m_surfs</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__poly</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">hold_polymer</span> <span class="o">=</span> <span class="n">SAWLC</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__l_lengths</span><span class="p">[</span><span class="n">mmer_id</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m_surfs</span><span class="p">[</span><span class="n">mmer_id</span><span class="p">],</span> <span class="n">p0</span><span class="p">,</span> <span class="n">id0</span><span class="o">=</span><span class="n">mmer_id</span><span class="p">,</span>
+                                     <span class="n">code0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__codes</span><span class="p">[</span><span class="n">mmer_id</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">hold_polymer</span> <span class="o">=</span> <span class="n">SAWLCPoly</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__poly</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__l_lengths</span><span class="p">[</span><span class="n">mmer_id</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m_surfs</span><span class="p">[</span><span class="n">mmer_id</span><span class="p">],</span> <span class="n">p0</span><span class="p">,</span>
+                                         <span class="n">id0</span><span class="o">=</span><span class="n">mmer_id</span><span class="p">,</span> <span class="n">code0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__codes</span><span class="p">[</span><span class="n">mmer_id</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_monomer</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">overlap_voi</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span><span class="p">,</span>
+                                                        <span class="bp">self</span><span class="o">.</span><span class="n">__over_tolerance</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_monomer_to_voi</span><span class="p">(</span><span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_monomer</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__svol</span><span class="p">[</span><span class="n">mmer_id</span><span class="p">])</span>
+            <span class="n">prev_id</span> <span class="o">=</span> <span class="n">mmer_id</span>
+            <span class="n">mmer_id</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># Polymer loop</span>
+            <span class="n">cont_pol</span><span class="p">,</span> <span class="n">hold_compaq</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__compaq</span>
+            <span class="n">not_finished</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">while</span> <span class="p">(</span><span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_total_len</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">max_length</span><span class="p">)</span> <span class="ow">and</span> <span class="n">not_finished</span><span class="p">:</span>
+
+                <span class="k">if</span> <span class="n">mmer_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">mmer_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__gen_seq_mmers</span><span class="o">.</span><span class="n">gen_next_mmer_id</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m_surfs</span><span class="p">))</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__compaq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">monomer_data</span> <span class="o">=</span> <span class="n">hold_polymer</span><span class="o">.</span><span class="n">gen_new_monomer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__over_tolerance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="p">,</span>
+                                                                <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">mmer_id</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">hold_off</span> <span class="o">=</span> <span class="n">poly_point_min_dst</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m_surfs</span><span class="p">[</span><span class="n">mmer_id</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__centers</span><span class="p">[</span><span class="n">mmer_id</span><span class="p">])</span> <span class="o">+</span> \
+                               <span class="n">poly_point_min_dst</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__m_surfs</span><span class="p">[</span><span class="n">prev_id</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__centers</span><span class="p">[</span><span class="n">prev_id</span><span class="p">])</span> <span class="o">+</span> <span class="n">hold_compaq</span>
+                    <span class="n">monomer_data</span> <span class="o">=</span> <span class="n">hold_polymer</span><span class="o">.</span><span class="n">gen_new_monomer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__over_tolerance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="p">,</span>
+                                                                <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span><span class="p">,</span> <span class="n">hold_off</span><span class="p">,</span>
+                                                                <span class="n">ext_surf</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__m_surfs</span><span class="p">[</span><span class="n">mmer_id</span><span class="p">])</span>
+                <span class="n">cont_pol</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                <span class="k">if</span> <span class="n">monomer_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">cont_pol</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__tries_mmer</span><span class="p">:</span>
+                        <span class="n">not_finished</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">c_try</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="k">if</span> <span class="n">cont_pol</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__rots_mmer</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="n">hold_compaq</span> <span class="o">=</span> <span class="n">cont_pol</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">__compaq</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">new_len</span> <span class="o">=</span> <span class="n">points_distance</span><span class="p">(</span><span class="n">monomer_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_tail_point</span><span class="p">())</span>
+                    <span class="k">if</span> <span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_total_len</span><span class="p">()</span> <span class="o">+</span> <span class="n">new_len</span> <span class="o">&lt;</span> <span class="n">max_length</span><span class="p">:</span>
+                        <span class="c1"># ) and (monomer_data[3].overlap_voi(self._Network__voi, self._Network__v_size)):</span>
+                        <span class="n">hold_polymer</span><span class="o">.</span><span class="n">add_monomer</span><span class="p">(</span><span class="n">monomer_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">monomer_data</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">monomer_data</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">monomer_data</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                                                 <span class="nb">id</span><span class="o">=</span><span class="n">mmer_id</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__codes</span><span class="p">[</span><span class="n">mmer_id</span><span class="p">])</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">add_monomer_to_voi</span><span class="p">(</span><span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_monomer</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__svol</span><span class="p">[</span><span class="n">mmer_id</span><span class="p">])</span>
+                        <span class="n">prev_id</span> <span class="o">=</span> <span class="n">mmer_id</span>
+                        <span class="n">mmer_id</span> <span class="o">=</span> <span class="kc">None</span>
+                        <span class="n">cont_pol</span><span class="p">,</span> <span class="n">hold_compaq</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+                        <span class="n">hold_occ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__pl_occ</span> <span class="o">+</span> <span class="mf">100.</span> <span class="o">*</span> <span class="p">(</span><span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_vol</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__vol</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">hold_occ</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span><span class="p">:</span>
+                            <span class="n">not_finished</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">not_finished</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="c1"># Updating polymer</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_polymer</span><span class="p">(</span><span class="n">hold_polymer</span><span class="p">)</span></div>
+</div>
+
+            <span class="c1"># print(&#39;build_network: new polymer added with &#39; + str(hold_polymer.get_num_monomers()) +</span>
+            <span class="c1">#       &#39;, length &#39; + str(hold_polymer.get_total_len()) + &#39; and occupancy &#39; + str(self._Network__pl_occ) + &#39;%&#39;)</span>
+
+
+<div class="viewcode-block" id="NetHelixFiber">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.NetHelixFiber">[docs]</a>
+<span class="k">class</span> <span class="nc">NetHelixFiber</span><span class="p">(</span><span class="n">Network</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for generating a network of isolated helix fibers, unconnected and randomly distributed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">voi</span><span class="p">,</span> <span class="n">v_size</span><span class="p">,</span> <span class="n">l_length</span><span class="p">,</span> <span class="n">m_surf</span><span class="p">,</span> <span class="n">gen_hfib_params</span><span class="p">,</span> <span class="n">occ</span><span class="p">,</span> <span class="n">min_p_len</span><span class="p">,</span> <span class="n">hp_len</span><span class="p">,</span> <span class="n">mz_len</span><span class="p">,</span> <span class="n">mz_len_f</span><span class="p">,</span>
+                 <span class="n">over_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">unit_diam</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construction</span>
+
+<span class="sd">        :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers</span>
+<span class="sd">        :param v_size: voxel size (default 1)</span>
+<span class="sd">        :param l_length: polymer link length</span>
+<span class="sd">        :param m_surf: monomer surf</span>
+<span class="sd">        :param gen_hfib_params: a instance of a random generation model (random.PGen) to obtain random fiber</span>
+<span class="sd">        parametrization</span>
+<span class="sd">        :param min_p_len: minimum persistence length</span>
+<span class="sd">        :param hp_len: helix period length</span>
+<span class="sd">        :param mz_len: monomer length</span>
+<span class="sd">        :param mz_len_f: maximum length factor in z-axis</span>
+<span class="sd">        :param occ: occupancy threshold in percentage [0, 100]%</span>
+<span class="sd">        :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0, in range [0,1))</span>
+<span class="sd">        :param unit_diam: structural unit diameter</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Initialize abstract variables</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NetHelixFiber</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">voi</span><span class="p">,</span> <span class="n">v_size</span><span class="p">)</span>
+
+        <span class="c1"># Input parsing</span>
+        <span class="k">assert</span> <span class="n">l_length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m_surf</span><span class="p">,</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gen_hfib_params</span><span class="p">,</span> <span class="n">PGenHelixFiber</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">occ</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">occ</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">over_tolerance</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">over_tolerance</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">min_p_len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">hp_len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">mz_len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">mz_len_f</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Variables assignment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__l_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span> <span class="o">=</span> <span class="n">l_length</span><span class="p">,</span> <span class="n">m_surf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__gen_hfib_params</span> <span class="o">=</span> <span class="n">gen_hfib_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__over_tolerance</span> <span class="o">=</span> <span class="n">occ</span><span class="p">,</span> <span class="n">over_tolerance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__min_p_len</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__hp_len</span> <span class="o">=</span> <span class="n">min_p_len</span><span class="p">,</span> <span class="n">hp_len</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mz_len</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mz_len_f</span> <span class="o">=</span> <span class="n">mz_len</span><span class="p">,</span> <span class="n">mz_len_f</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__unit_diam</span> <span class="o">=</span> <span class="n">unit_diam</span>
+
+<div class="viewcode-block" id="NetHelixFiber.build_network">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.NetHelixFiber.build_network">[docs]</a>
+    <span class="k">def</span> <span class="nf">build_network</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add helix fibres until an occupancy limit is passed</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Network loop</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__pl_occ</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span><span class="p">:</span>
+
+            <span class="c1"># Polymer initialization</span>
+            <span class="n">p0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(),</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(),</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()))</span>
+            <span class="n">max_length</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+                                  <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span>
+            <span class="n">p_len</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__gen_hfib_params</span><span class="o">.</span><span class="n">gen_persistence_length</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__min_p_len</span><span class="p">)</span>
+            <span class="n">z_len_f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__gen_hfib_params</span><span class="o">.</span><span class="n">gen_zf_length</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__mz_len_f</span><span class="p">)</span>
+            <span class="n">hold_polymer</span> <span class="o">=</span> <span class="n">HelixFiber</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__l_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span><span class="p">,</span> <span class="n">p_len</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__hp_len</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mz_len</span><span class="p">,</span> <span class="n">z_len_f</span><span class="p">,</span> <span class="n">p0</span><span class="p">)</span>
+
+            <span class="c1"># Polymer loop</span>
+            <span class="n">not_finished</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">while</span> <span class="p">(</span><span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_total_len</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">max_length</span><span class="p">)</span> <span class="ow">and</span> <span class="n">not_finished</span><span class="p">:</span>
+                <span class="n">monomer_data</span> <span class="o">=</span> <span class="n">hold_polymer</span><span class="o">.</span><span class="n">gen_new_monomer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__over_tolerance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="p">,</span>
+                                                            <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span><span class="p">,</span> <span class="n">net</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_dist</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__unit_diam</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">monomer_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">not_finished</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">new_len</span> <span class="o">=</span> <span class="n">points_distance</span><span class="p">(</span><span class="n">monomer_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_tail_point</span><span class="p">())</span>
+                    <span class="k">if</span> <span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_total_len</span><span class="p">()</span> <span class="o">+</span> <span class="n">new_len</span> <span class="o">&lt;</span> <span class="n">max_length</span><span class="p">:</span>
+                        <span class="n">hold_polymer</span><span class="o">.</span><span class="n">add_monomer</span><span class="p">(</span><span class="n">monomer_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">monomer_data</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">monomer_data</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">monomer_data</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">not_finished</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="c1"># Updating polymer</span>
+            <span class="k">if</span> <span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_num_mmers</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__min_nmmer</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_polymer</span><span class="p">(</span><span class="n">hold_polymer</span><span class="p">)</span></div>
+</div>
+
+                <span class="c1"># print(&#39;build_network: new polymer added with &#39; + str(hold_polymer.get_num_monomers()) +</span>
+                <span class="c1">#       &#39; and length &#39; + str(hold_polymer.get_total_len()) + &#39;: occupancy &#39; + str(self._Network__pl_occ))</span>
+
+
+<div class="viewcode-block" id="NetHelixFiberB">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.NetHelixFiberB">[docs]</a>
+<span class="k">class</span> <span class="nc">NetHelixFiberB</span><span class="p">(</span><span class="n">Network</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for generating a network of brancked helix fibers randomly distributed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">voi</span><span class="p">,</span> <span class="n">v_size</span><span class="p">,</span> <span class="n">l_length</span><span class="p">,</span> <span class="n">m_surf</span><span class="p">,</span> <span class="n">gen_hfib_params</span><span class="p">,</span> <span class="n">occ</span><span class="p">,</span> <span class="n">min_p_len</span><span class="p">,</span> <span class="n">hp_len</span><span class="p">,</span> <span class="n">mz_len</span><span class="p">,</span> <span class="n">mz_len_f</span><span class="p">,</span>
+                 <span class="n">b_prop</span><span class="p">,</span> <span class="n">max_p_branch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construction</span>
+
+<span class="sd">        :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers</span>
+<span class="sd">        :param v_size: voxel size (default 1)</span>
+<span class="sd">        :param l_length: polymer link length</span>
+<span class="sd">        :param m_surf: monomer surf</span>
+<span class="sd">        :param gen_hfib_params: a instance of a random generation model (random.PGen.NetHelixFiberB) to obtain random fiber</span>
+<span class="sd">        parametrization for helix with branches</span>
+<span class="sd">        :param occ: occupancy threshold in percentage [0, 100]%</span>
+<span class="sd">        :param min_p_len: minimum persistence length</span>
+<span class="sd">        :param hp_len: helix period length</span>
+<span class="sd">        :param mz_len: monomer length in z-axis</span>
+<span class="sd">        :param mz_len_f: maximum length factor in z-axis</span>
+<span class="sd">        :param b_prob: branching probability, checked every time a new monomer is added</span>
+<span class="sd">        :param max_p_branch: maximum number of branches per polymer, if 0 (default) then no branches are generated</span>
+<span class="sd">        :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0, in range [0,1))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Initialize abstract variables</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NetHelixFiberB</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">voi</span><span class="p">,</span> <span class="n">v_size</span><span class="p">)</span>
+
+        <span class="c1"># Input parsing</span>
+        <span class="k">assert</span> <span class="n">l_length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m_surf</span><span class="p">,</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gen_hfib_params</span><span class="p">,</span> <span class="n">PGenHelixFiberB</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">occ</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">occ</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">over_tolerance</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">over_tolerance</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">min_p_len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">hp_len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">mz_len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">mz_len_f</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">max_p_branch</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">b_prop</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Variables assignment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__l_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span> <span class="o">=</span> <span class="n">l_length</span><span class="p">,</span> <span class="n">m_surf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__gen_hfib_params</span> <span class="o">=</span> <span class="n">gen_hfib_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__over_tolerance</span> <span class="o">=</span> <span class="n">occ</span><span class="p">,</span> <span class="n">over_tolerance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__min_p_len</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__hp_len</span> <span class="o">=</span> <span class="n">min_p_len</span><span class="p">,</span> <span class="n">hp_len</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mz_len</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mz_len_f</span> <span class="o">=</span> <span class="n">mz_len</span><span class="p">,</span> <span class="n">mz_len_f</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__max_p_branch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__p_branches</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__b_prop</span> <span class="o">=</span> <span class="n">max_p_branch</span><span class="p">,</span> <span class="nb">list</span><span class="p">(),</span> <span class="n">b_prop</span>
+
+<div class="viewcode-block" id="NetHelixFiberB.build_network">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.NetHelixFiberB.build_network">[docs]</a>
+    <span class="k">def</span> <span class="nf">build_network</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add helix fibres until an occupancy limit is passed</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Network loop</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__pl_occ</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span><span class="p">:</span>
+
+            <span class="c1"># Polymer initialization</span>
+            <span class="n">max_length</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+                                  <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span>
+            <span class="n">p_len</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__gen_hfib_params</span><span class="o">.</span><span class="n">gen_persistence_length</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__min_p_len</span><span class="p">)</span>
+            <span class="n">z_len_f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__gen_hfib_params</span><span class="o">.</span><span class="n">gen_zf_length</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__mz_len_f</span><span class="p">)</span>
+            <span class="n">branch</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__max_p_branch</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">__gen_hfib_params</span><span class="o">.</span><span class="n">gen_branch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__b_prop</span><span class="p">):</span>
+                <span class="n">branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__gen_random_branch</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">p0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(),</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(),</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">p0</span> <span class="o">=</span> <span class="n">branch</span><span class="o">.</span><span class="n">get_point</span><span class="p">()</span>
+            <span class="n">hold_polymer</span> <span class="o">=</span> <span class="n">HelixFiber</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__l_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__m_surf</span><span class="p">,</span> <span class="n">p_len</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__hp_len</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">__mz_len</span><span class="p">,</span> <span class="n">z_len_f</span><span class="p">,</span> <span class="n">p0</span><span class="p">)</span>
+
+            <span class="c1"># Polymer loop</span>
+            <span class="n">not_finished</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">while</span> <span class="p">(</span><span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_total_len</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">max_length</span><span class="p">)</span> <span class="ow">and</span> <span class="n">not_finished</span><span class="p">:</span>
+                <span class="n">monomer_data</span> <span class="o">=</span> <span class="n">hold_polymer</span><span class="o">.</span><span class="n">gen_new_monomer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__over_tolerance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__voi</span><span class="p">,</span>
+                                                            <span class="bp">self</span><span class="o">.</span><span class="n">_Network__v_size</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">monomer_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">not_finished</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">new_len</span> <span class="o">=</span> <span class="n">points_distance</span><span class="p">(</span><span class="n">monomer_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_tail_point</span><span class="p">())</span>
+                    <span class="k">if</span> <span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_total_len</span><span class="p">()</span> <span class="o">+</span> <span class="n">new_len</span> <span class="o">&lt;</span> <span class="n">max_length</span><span class="p">:</span>
+                        <span class="n">hold_polymer</span><span class="o">.</span><span class="n">add_monomer</span><span class="p">(</span><span class="n">monomer_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">monomer_data</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">monomer_data</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">monomer_data</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">not_finished</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="c1"># Updating polymer</span>
+            <span class="k">if</span> <span class="n">hold_polymer</span><span class="o">.</span><span class="n">get_num_mmers</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__min_nmmer</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">add_polymer</span><span class="p">(</span><span class="n">hold_polymer</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__p_branches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">())</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__add_branch</span><span class="p">(</span><span class="n">hold_polymer</span><span class="p">,</span> <span class="n">branch</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">add_polymer</span><span class="p">(</span><span class="n">hold_polymer</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__p_branches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">())</span></div>
+
+                <span class="c1"># print(&#39;build_network: new polymer added with &#39; + str(hold_polymer.get_num_monomers()) +</span>
+                <span class="c1">#       &#39; and length &#39; + str(hold_polymer.get_total_len()) + &#39;: occupancy &#39; + str(self._Network__pl_occ))</span>
+
+<div class="viewcode-block" id="NetHelixFiberB.get_branch_list">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.NetHelixFiberB.get_branch_list">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_branch_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all branches in a list</span>
+
+<span class="sd">        :return: a single list with the branches</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">hold_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">bl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__p_branches</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bl</span><span class="p">:</span>
+                <span class="n">hold_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">hold_list</span></div>
+
+
+<div class="viewcode-block" id="NetHelixFiberB.get_skel">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.NetHelixFiberB.get_skel">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_skel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get Polymers Network as a vtkPolyData as points and lines with branches</span>
+
+<span class="sd">        :return: a vtkPolyData</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Initialization</span>
+        <span class="n">app_flt_l</span><span class="p">,</span> <span class="n">app_flt_v</span><span class="p">,</span> <span class="n">app_flt</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkAppendPolyData</span><span class="p">(),</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkAppendPolyData</span><span class="p">(),</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkAppendPolyData</span><span class="p">()</span>
+
+        <span class="c1"># Polymers loop</span>
+        <span class="n">p_type_l</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkIntArray</span><span class="p">()</span>
+        <span class="n">p_type_l</span><span class="o">.</span><span class="n">SetName</span><span class="p">(</span><span class="n">NET_TYPE_STR</span><span class="p">)</span>
+        <span class="n">p_type_l</span><span class="o">.</span><span class="n">SetNumberOfComponents</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">pol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__pl</span><span class="p">:</span>
+            <span class="n">app_flt_l</span><span class="o">.</span><span class="n">AddInputData</span><span class="p">(</span><span class="n">pol</span><span class="o">.</span><span class="n">get_skel</span><span class="p">())</span>
+        <span class="n">app_flt_l</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+        <span class="n">out_vtp_l</span> <span class="o">=</span> <span class="n">app_flt_l</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">out_vtp_l</span><span class="o">.</span><span class="n">GetNumberOfCells</span><span class="p">()):</span>
+            <span class="n">p_type_l</span><span class="o">.</span><span class="n">InsertNextTuple</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+        <span class="n">out_vtp_l</span><span class="o">.</span><span class="n">GetCellData</span><span class="p">()</span><span class="o">.</span><span class="n">AddArray</span><span class="p">(</span><span class="n">p_type_l</span><span class="p">)</span>
+
+        <span class="c1"># Branches loop</span>
+        <span class="n">p_type_v</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkIntArray</span><span class="p">()</span>
+        <span class="n">p_type_v</span><span class="o">.</span><span class="n">SetName</span><span class="p">(</span><span class="n">NET_TYPE_STR</span><span class="p">)</span>
+        <span class="n">p_type_v</span><span class="o">.</span><span class="n">SetNumberOfComponents</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">branch</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_branch_list</span><span class="p">()):</span>
+            <span class="n">app_flt_v</span><span class="o">.</span><span class="n">AddInputData</span><span class="p">(</span><span class="n">branch</span><span class="o">.</span><span class="n">get_vtp</span><span class="p">())</span>
+            <span class="c1"># print(&#39;Point &#39; + str(i) + &#39;: &#39; + str(branch.get_point()))</span>
+        <span class="n">app_flt_v</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+        <span class="n">out_vtp_v</span> <span class="o">=</span> <span class="n">app_flt_v</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">out_vtp_v</span><span class="o">.</span><span class="n">GetNumberOfCells</span><span class="p">()):</span>
+            <span class="n">p_type_v</span><span class="o">.</span><span class="n">InsertNextTuple</span><span class="p">((</span><span class="mi">2</span><span class="p">,))</span>
+        <span class="n">out_vtp_v</span><span class="o">.</span><span class="n">GetCellData</span><span class="p">()</span><span class="o">.</span><span class="n">AddArray</span><span class="p">(</span><span class="n">p_type_v</span><span class="p">)</span>
+
+        <span class="c1"># Merging branches and polymers</span>
+        <span class="n">app_flt</span><span class="o">.</span><span class="n">AddInputData</span><span class="p">(</span><span class="n">out_vtp_l</span><span class="p">)</span>
+        <span class="n">app_flt</span><span class="o">.</span><span class="n">AddInputData</span><span class="p">(</span><span class="n">out_vtp_v</span><span class="p">)</span>
+        <span class="n">app_flt</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">app_flt</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="NetHelixFiberB.get_branches_vtp">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.NetHelixFiberB.get_branches_vtp">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_branches_vtp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape_vtp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get Branches as a vtkPolyData with points</span>
+
+<span class="sd">        :param shape_vtp: if None (default) the a point is returned, otherwise this shape is used</span>
+<span class="sd">                          TODO: so far only isotropic shapes are recommended and starting monomer tangent is not considered yet</span>
+<span class="sd">        :return: a vtkPolyData</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Initialization</span>
+        <span class="n">app_flt_l</span><span class="p">,</span> <span class="n">app_flt_v</span><span class="p">,</span> <span class="n">app_flt</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkAppendPolyData</span><span class="p">(),</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkAppendPolyData</span><span class="p">(),</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkAppendPolyData</span><span class="p">()</span>
+
+        <span class="c1"># Branches loop</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">branch</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_branch_list</span><span class="p">()):</span>
+            <span class="n">app_flt_v</span><span class="o">.</span><span class="n">AddInputData</span><span class="p">(</span><span class="n">branch</span><span class="o">.</span><span class="n">get_vtp</span><span class="p">(</span><span class="n">shape_vtp</span><span class="p">))</span>
+            <span class="c1"># print(&#39;Point &#39; + str(i) + &#39;: &#39; + str(branch.get_point()))</span>
+        <span class="n">app_flt_v</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+        <span class="n">out_vtp_v</span> <span class="o">=</span> <span class="n">app_flt_v</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span>
+
+        <span class="c1"># Merging branches and polymers</span>
+        <span class="n">app_flt</span><span class="o">.</span><span class="n">AddInputData</span><span class="p">(</span><span class="n">out_vtp_v</span><span class="p">)</span>
+        <span class="n">app_flt</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">app_flt</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span> <span class="nf">__gen_random_branch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a position point randomly for a branch on the filament network, no more than one branch per polymer</span>
+
+<span class="sd">        :return: a branch</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Loop for polymers</span>
+        <span class="n">count</span><span class="p">,</span> <span class="n">branch</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">count</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Network__pl</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">hold_pid</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Network__pl</span><span class="p">)),</span> <span class="n">weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_Network__pl_nmmers</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__p_branches</span><span class="p">[</span><span class="n">hold_pid</span><span class="p">])</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">__max_p_branch</span><span class="p">:</span>
+                <span class="n">hold_pol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Network__pl</span><span class="p">[</span><span class="n">hold_pid</span><span class="p">]</span>
+                <span class="n">hold_mid</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">hold_pol</span><span class="o">.</span><span class="n">_Polymer__m</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">hold_m</span> <span class="o">=</span> <span class="n">hold_pol</span><span class="o">.</span><span class="n">_Polymer__m</span><span class="p">[</span><span class="n">hold_mid</span><span class="p">]</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">for</span> <span class="n">branch</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__p_branches</span><span class="p">[</span><span class="n">hold_pid</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">points_distance</span><span class="p">(</span><span class="n">hold_m</span><span class="o">.</span><span class="n">get_center_mass</span><span class="p">(),</span> <span class="n">branch</span><span class="o">.</span><span class="n">get_point</span><span class="p">())</span> <span class="o">&lt;=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">hold_m</span><span class="o">.</span><span class="n">get_diameter</span><span class="p">():</span>
+                        <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+                    <span class="n">branch</span> <span class="o">=</span> <span class="n">Branch</span><span class="p">(</span><span class="n">hold_m</span><span class="o">.</span><span class="n">get_center_mass</span><span class="p">(),</span> <span class="n">hold_pid</span><span class="p">,</span> <span class="n">hold_mid</span><span class="p">)</span>
+            <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">branch</span>
+
+    <span class="k">def</span> <span class="nf">__add_branch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">polymer</span><span class="p">,</span> <span class="n">branch</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a new branch to the polymer network</span>
+
+<span class="sd">        :param polymer: targeting polymer where the branch is going to be added (starting polumer is obtained from</span>
+<span class="sd">                        the branch)</span>
+<span class="sd">        :param branch: branch to be added</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">branch</span><span class="o">.</span><span class="n">set_t_pmer</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Network__pl</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__p_branches</span><span class="p">[</span><span class="n">branch</span><span class="o">.</span><span class="n">get_s_pmer</span><span class="p">()]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">branch</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="Branch">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Branch">[docs]</a>
+<span class="k">class</span> <span class="nc">Branch</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to model a brach in a Network</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">,</span> <span class="n">s_pmer_id</span><span class="p">,</span> <span class="n">s_mmer_id</span><span class="p">,</span> <span class="n">t_pmer_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param point: branch point coordinates (3-array)</span>
+<span class="sd">        :param s_pmer_id: starting polymer ID</span>
+<span class="sd">        :param s_mmer_id: starting monomer ID</span>
+<span class="sd">        :param t_pmer_id: targeting polymer ID, (default None) it may be unknown at construction time, the targeting</span>
+<span class="sd">                          monomer ID is 0.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">point</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">s_pmer_id</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">s_mmer_id</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">t_pmer_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">t_pmer_id</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__point</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__s_pmer_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__s_mmer_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__t_pmer_id</span> <span class="o">=</span> <span class="n">s_pmer_id</span><span class="p">,</span> <span class="n">s_mmer_id</span><span class="p">,</span> <span class="n">t_pmer_id</span>
+
+<div class="viewcode-block" id="Branch.set_t_pmer">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Branch.set_t_pmer">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_t_pmer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_pmer_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set targeting polymer ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">t_pmer_id</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__t_pmer_id</span> <span class="o">=</span> <span class="n">t_pmer_id</span></div>
+
+
+<div class="viewcode-block" id="Branch.get_point">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Branch.get_point">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_point</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get point coordinates</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__point</span></div>
+
+
+<div class="viewcode-block" id="Branch.get_s_pmer">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Branch.get_s_pmer">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_s_pmer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get starting polymer ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__s_pmer_id</span></div>
+
+
+<div class="viewcode-block" id="Branch.get_s_mmer">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Branch.get_s_mmer">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_s_mmer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get starting monomer ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__s_mmer_id</span></div>
+
+
+<div class="viewcode-block" id="Branch.get_t_pmer">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Branch.get_t_pmer">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_t_pmer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get targeting polymer ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__t_pmer_id</span></div>
+
+
+<div class="viewcode-block" id="Branch.get_vtp">
+<a class="viewcode-back" href="../../polnet.html#polnet.network.Branch.get_vtp">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_vtp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape_vtp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets a polydata with the branch shape</span>
+
+<span class="sd">        :param shape_vtp: if None (default) the a point is returned, otherwise this shape is used</span>
+<span class="sd">                          TODO: so far only isotropic shapes are recommended and starting monomer tangent is not considered yet</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">shape_vtp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">point_to_poly</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_point</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">poly_translate</span><span class="p">(</span><span class="n">shape_vtp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_point</span><span class="p">())</span></div>
+</div>
+
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Antonio Martinez-Sanchez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -5,18 +5,26 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "polnet"
 version = "0.0.2"
+description = "Python package for generating synthetic datasets of the cellular context for Cryo-Electron Tomography."
+readme = "README.md"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Antonio Martinez-Sanchez", email = "an.martinez.s.sw@gmail.com"},
+]
+keywords = ["cryo electron tomogramphy", "synthetic data"]
+
 dependencies = [
-    "numpy",
-    "scipy",
-    "mrcfile",
-    "jax",
-    "vtk",
-    "pandas",
-    "pynrrd",
-    "scikit-image",
-    "jupyter",
-    "wget",
-    "ipyfilechooser"
+    "numpy == 1.26.3",
+    "scipy == 1.11.4",
+    "mrcfile == 1.4.3",
+    "jax == 0.4.23",
+    "vtk == 9.3.0",
+    "pandas == 2.1.4",
+    "pynrrd == 1.0.0",
+    "scikit-image == 0.22.0",
+    "jupyter == 1.0.0",
+    "wget == 3.2",
+    "ipyfilechooser == 0.6.0"
 ]
 
 [tool.setuptools.packages]

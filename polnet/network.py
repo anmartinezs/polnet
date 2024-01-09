@@ -23,6 +23,7 @@ class Network(ABC):
     def __init__(self, voi, v_size, svol=None):
         """
         Construction
+
         :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers
         :param v_size: voxel size (default 1)
         :param svol: monomer subvolume (or list of) as a numpy ndarray (default None)
@@ -45,6 +46,7 @@ class Network(ABC):
     def set_min_nmmer(self, min_nmmer):
         """
         Set a minimum number of monomers for the generated filaments
+
         :param min_nmmer: integer with the minimum number of monomenrs per filament
         :return:
         """
@@ -77,6 +79,7 @@ class Network(ABC):
     def add_polymer(self, polymer, occ_mode='volume'):
         """
         Add a new polymer to the network
+
         :param polymer: polymer to add
         :param occ_mode: occupancy mode, valid: 'volume' (default), 'area' for membrane-bound polymer
         :return:
@@ -94,12 +97,14 @@ class Network(ABC):
     def build_network(self):
         """
         Builds an instance of the network
+
         :return: None        """
         raise NotImplemented
 
     def get_voi(self):
         """
         Get the VOI
+
         :return: an ndarray
         """
         return self.__voi
@@ -107,6 +112,7 @@ class Network(ABC):
     def get_gtruth(self, thick=1):
         """
         Get the ground truth tomogram
+
         :param thick: ground truth tickness in voxels (default 1)
         :return: a binary numpy 3D array
         """
@@ -118,6 +124,7 @@ class Network(ABC):
     def set_voi(self, voi):
         """
         Set the VOI
+
         :param voi:
         """
         assert isinstance(voi, np.ndarray)
@@ -129,6 +136,7 @@ class Network(ABC):
     def get_vtp(self):
         """
         Get Polymers Network as a vtkPolyData with their surfaces
+
         :return: a vtkPolyData
         """
 
@@ -144,6 +152,7 @@ class Network(ABC):
     def get_skel(self, add_verts=True, add_lines=True, verts_rad=0):
         """
         Get the polymer as a skeleton, each monomer is a point or sphere and lines connecting monomers
+
         :param add_verts: if True (default) the vertices are included in the vtkPolyData
         :param add_lines: if True (default) the lines are included in the vtkPolyData
         :param verts_rad: if verts is True then sets the vertex radius, if <=0 a vertices are just points
@@ -162,6 +171,7 @@ class Network(ABC):
     def gen_vtp_points_tomo(self):
         """
         Generates a binary tomogram where True elements correspond with the polydata closes voxel projection
+
         :return: a binary VOI shaped numpy array
         """
         nx, ny, nz = self.__voi.shape
@@ -177,6 +187,7 @@ class Network(ABC):
     def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max', off_svol=None):
         """
         Insert a polymer network as set of subvolumes into a tomogram
+
         :param m_svol: input monomer (or list) sub-volume reference
         :param tomo: tomogram where m_svol is added
         :param v_size: tomogram voxel size (default 1)
@@ -197,6 +208,7 @@ class Network(ABC):
     def add_monomer_to_voi(self, mmer, mmer_svol=None):
         """
         Adds a monomer to VOI mask
+
         :param mmer: monomer to define rigid transformations
         :param mmer_voi: subvolume (binary numpy ndarray) with monomer VOI
         """
@@ -216,6 +228,7 @@ class Network(ABC):
     def count_proteins(self):
         """
         Genrrates output statistics for this network
+
         :return: a dictionary with the number of proteins for protein id
         """
         counts = dict()
@@ -238,6 +251,7 @@ class NetSAWLC(Network):
                  poly=None, svol=None, tries_mmer=20, tries_pmer=100):
         """
         Construction
+
         :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers
         :param v_size: voxel size (default 1)
         :param l_length: polymer link length
@@ -284,6 +298,7 @@ class NetSAWLC(Network):
     def build_network(self):
         """
         Add polymers following SAWLC model until an occupancy limit is passed
+
         :return:
         """
 
@@ -362,6 +377,7 @@ class NetSAWLCInter(Network):
                  occ, over_tolerance=0, poly=None, svols=None, codes=None, compaq=False, tries_mmer=100, rots_mmer=10):
         """
         Construction
+
         :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers
         :param v_size: voxel size (default 1)
         :param l_lengths: polymer link lengths
@@ -416,6 +432,7 @@ class NetSAWLCInter(Network):
     def build_network(self):
         """
         Add polymers following SAWLC model until an occupancy limit is passed
+
         :return:
         """
 
@@ -505,6 +522,7 @@ class NetHelixFiber(Network):
                  over_tolerance=0, unit_diam=None):
         """
         Construction
+
         :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers
         :param v_size: voxel size (default 1)
         :param l_length: polymer link length
@@ -542,6 +560,7 @@ class NetHelixFiber(Network):
     def build_network(self):
         """
         Add helix fibres until an occupancy limit is passed
+
         :return:
         """
 
@@ -588,6 +607,7 @@ class NetHelixFiberB(Network):
                  b_prop, max_p_branch=0, over_tolerance=0):
         """
         Construction
+
         :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for polymers
         :param v_size: voxel size (default 1)
         :param l_length: polymer link length
@@ -627,6 +647,7 @@ class NetHelixFiberB(Network):
     def build_network(self):
         """
         Add helix fibres until an occupancy limit is passed
+
         :return:
         """
 
@@ -679,6 +700,7 @@ class NetHelixFiberB(Network):
     def get_branch_list(self):
         """
         Get all branches in a list
+
         :return: a single list with the branches
         """
         hold_list = list()
@@ -690,6 +712,7 @@ class NetHelixFiberB(Network):
     def get_skel(self):
         """
         Get Polymers Network as a vtkPolyData as points and lines with branches
+
         :return: a vtkPolyData
         """
 
@@ -731,6 +754,7 @@ class NetHelixFiberB(Network):
     def get_branches_vtp(self, shape_vtp=None):
         """
         Get Branches as a vtkPolyData with points
+
         :param shape_vtp: if None (default) the a point is returned, otherwise this shape is used
                           TODO: so far only isotropic shapes are recommended and starting monomer tangent is not considered yet
         :return: a vtkPolyData
@@ -755,6 +779,7 @@ class NetHelixFiberB(Network):
     def __gen_random_branch(self):
         """
         Generates a position point randomly for a branch on the filament network, no more than one branch per polymer
+
         :return: a branch
         """
 
@@ -779,6 +804,7 @@ class NetHelixFiberB(Network):
     def __add_branch(self, polymer, branch):
         """
         Add a new branch to the polymer network
+
         :param polymer: targeting polymer where the branch is going to be added (starting polumer is obtained from
                         the branch)
         :param branch: branch to be added
@@ -795,6 +821,7 @@ class Branch:
     def __init__(self, point, s_pmer_id, s_mmer_id, t_pmer_id=None):
         """
         Constructor
+
         :param point: branch point coordinates (3-array)
         :param s_pmer_id: starting polymer ID
         :param s_mmer_id: starting monomer ID
@@ -842,6 +869,7 @@ class Branch:
     def get_vtp(self, shape_vtp=None):
         """
         Gets a polydata with the branch shape
+
         :param shape_vtp: if None (default) the a point is returned, otherwise this shape is used
                           TODO: so far only isotropic shapes are recommended and starting monomer tangent is not considered yet
         :return:

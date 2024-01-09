@@ -27,6 +27,7 @@ class Monomer:
     def __init__(self, m_surf, diam):
         """
         Constructor
+
         :param m_surf: monomer surface (as vtkPolyData object)
         :param diam: monomer diameter
         """
@@ -48,6 +49,7 @@ class Monomer:
     def get_center_mass(self):
         """
         Computer and return the monomer center of mass
+
         :return: a numpy array
         """
         return np.asarray(poly_center_mass(self.__m_surf))
@@ -58,6 +60,7 @@ class Monomer:
     def get_trans_list(self):
         """
         Get transformations list
+
         :return: a list with al transformations, each element is duple with a first element
         indicating the transformation type ('r' or 't')
         """
@@ -73,6 +76,7 @@ class Monomer:
     def rotate_q(self, q):
         """
         Applies rotation rigid transformation around center from an input unit quaternion.
+
         :param q: input quaternion
         :return:
         """
@@ -84,6 +88,7 @@ class Monomer:
     def translate(self, t_v):
         """
         Applies rotation rigid transformation.
+
         :param t_v: translation vector (x, y, z)
         :return:
         """
@@ -104,6 +109,7 @@ class Monomer:
     def bound_in_bounds(self, bounds):
         """
         Check if the object's bound are at least partially in another bound
+
         :param bounds: input bound
         :return:
         """
@@ -120,6 +126,7 @@ class Monomer:
         """
         Determines if the monomer overlaps a VOI, that requires the next condition:
             - Any particle on the monomer surface is within the VOI
+
         :param voi: input VOI (Volume Of Interest), binary tomogram with True for VOI voxels
         :param v_size: voxel size, it must greater than 0 (default 1)
         :param over_tolerance: maximum overlap allowed (default 0)
@@ -181,6 +188,7 @@ class Monomer:
         """
         Get the polymer area projected on a surface (currently only a plane containing the center, the monomer is
         approximated as ssphere)
+
         :return: the computed area
         """
         diam = poly_diam(self.__m_surf)
@@ -196,6 +204,7 @@ class Monomer:
     def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max', off_svol=None):
         """
         Insert a monomer subvolume into a tomogram
+
         :param m_svol: input monomer sub-volume
         :param tomo: tomogram where m_svol is added
         :param v_size: tomogram voxel size (default 1)
@@ -229,6 +238,7 @@ class Monomer:
     def overlap_mmer(self, mmer, over_tolerance=0):
         """
         Determines if the monomer overlaps with another
+
         :param mmer: input monomer to check overlap with self
         :param over_tolerance: maximum overlap allowed (default 0)
         :return: True if overlapping, otherwise False
@@ -255,6 +265,7 @@ class Monomer:
     def overlap_net(self, net, over_tolerance=0, max_dist=None):
         """
         Determines if the monomer overlaps with another momonmer in a network
+
         :param mmer: input monomer to check overlap with self
         :param over_tolerance: maximum overlap allowed (default 0)
         :param max_dist: allows to externally set a maximum distance (in A) to seach for collisions, otherwise 1.2 monomer
@@ -295,6 +306,7 @@ class Polymer(ABC):
     def __init__(self, m_surf, id0=0, code0=''):
         """
         Constructor
+
         :param m_surf: monomer surface (as vtkPolyData object)
         :param id0: id for the initial monomer (default 0)
         :param code0: code string for the initial monomer (default '')
@@ -325,7 +337,8 @@ class Polymer(ABC):
 
     def get_mmer_id(self, m_id):
         """
-        Get monomer id from its postion
+        Get monomer id from its position
+
         :param m_id: monomoer position in the polymer
         :return: an integer with the monomer id
         """
@@ -333,7 +346,8 @@ class Polymer(ABC):
 
     def get_mmer_code(self, m_id):
         """
-        Get monomer code from its postion
+        Get monomer code from its position
+
         :param m_id: monomoer position in the polymer
         :return: an string with the monomer code
         """
@@ -342,6 +356,7 @@ class Polymer(ABC):
     def get_vol(self):
         """
         Get the polymer volume
+
         :return: the computed volume
         """
         vol = 0
@@ -354,7 +369,8 @@ class Polymer(ABC):
 
     def get_area(self, mode='sphere'):
         """
-        Get the polymer area proyeced in a surface
+        Get the polymer area projected in a surface
+
         :param mode: computations mode, valid: 'sphere' each monomer is approximated to a sphere
         :return: the computed volume
         """
@@ -375,6 +391,7 @@ class Polymer(ABC):
     def get_monomer(self, m_id):
         """
         Get a monomer
+
         :param m_id: monomer id, it must be [0, get_num_monomers()-1]
         :return: the Monomer instance
         """
@@ -403,6 +420,7 @@ class Polymer(ABC):
     def get_tail_point(self):
         """
         Get the central coordinate for the latest monomer
+
         :return: point coordinates as ndarray
         """
         return self.__r[-1]
@@ -410,6 +428,7 @@ class Polymer(ABC):
     def get_vtp(self):
         """
         Get the polymer a skeleton, each momomer is point and lines conecting monomers
+
         :return: a vtkPolyData
         """
 
@@ -427,6 +446,7 @@ class Polymer(ABC):
     def get_skel(self, add_verts=True, add_lines=True, verts_rad=0):
         """
         Get the polymer as a skeleton, each monomer is a point or sphere and lines connecting monomers
+
         :param add_verts: if True (default) the vertices are included in the vtkPolyData
         :param add_lines: if True (default) the lines are included in the vtkPolyData
         :param verts_rad: if verts is True then sets the vertex radius, if <=0 a vertices are just points
@@ -474,6 +494,7 @@ class Polymer(ABC):
     def add_monomer(self, r, t, q, m, id=0, code=''):
         """
         Add a new monomer surface to the polymer once affine transformation is known
+
         :param r: center point
         :param t: tangent vector
         :param q: unit quaternion for rotation
@@ -500,6 +521,7 @@ class Polymer(ABC):
     def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max', off_svol=None):
         """
         Insert a polymer as set of subvolumes into a tomogram
+
         :param m_svol: input monomer (or list) sub-volume reference
         :param tomo: tomogram where m_svol is added
         :param v_size: tomogram voxel size (default 1)
@@ -523,6 +545,7 @@ class Polymer(ABC):
     def overlap_polymer(self, monomer, over_tolerance=0):
         """
         Determines if a monomer overlaps with other polymer's monomers
+
         :param monomer: input monomer
         :param over_tolerance: fraction of overlapping tolerance (default 0)
         :return: True if there is an overlapping and False otherwise
@@ -560,6 +583,7 @@ class SAWLC(Polymer):
     def __init__(self, l_length, m_surf, p0=(0, 0, 0), id0=0, code0=''):
         """
         Constructor
+
         :param l_lengh: link length
         :param m_surf: monomer surface (as vtkPolyData object)
         :param p0: starting point
@@ -573,7 +597,8 @@ class SAWLC(Polymer):
 
     def set_reference(self, p0=(0., 0., 0), id0=0, code0=''):
         """
-        Initializes the chain with the specified point input point, if points were introduced before the are forgotten
+        Initializes the chain with the specified point input point, if points were introduced before they are forgotten
+
         :param p0: starting point
         :param id0: id for the initial monomer
         :param code0: code string for the initial monomer (default '')
@@ -591,6 +616,7 @@ class SAWLC(Polymer):
     def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1, fix_dst=None, ext_surf=None):
         """
         Generates a new monomer for the polymer according to the specified random model
+
         :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0)
         :param voi: VOI to define forbidden regions (default None, not applied)
         :param v_size: VOI voxel size, it must be greater than 0 (default 1)
@@ -638,6 +664,7 @@ class SAWLCPoly(Polymer):
     def __init__(self, poly, l_length, m_surf, p0=(0, 0, 0), id0=0, code=''):
         """
         Constructor
+
         :param poly: vtkPolyData where the monomer center will be embedded
         :param l_lengh: link length
         :param m_surf: monomer surface (as vtkPolyData object)
@@ -655,6 +682,7 @@ class SAWLCPoly(Polymer):
     def set_reference(self, p0=(0., 0., 0), id0=0, code0=''):
         """
         Initializes the chain with the specified point input point, if points were introduced before they are forgotten
+
         :param p0: starting point
         :param id0: id for the initial monomer (default 0)
         :param code0: code string for the initial monomer (default '')
@@ -672,6 +700,7 @@ class SAWLCPoly(Polymer):
     def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1, fix_dst=None):
         """
         Generates a new monomer for the polymer according to the specified random model
+
         :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0)
         :param voi: VOI to define forbidden regions (default None, not applied)
         :param v_size: VOI voxel size, it must be greater than 0 (default 1)
@@ -721,6 +750,7 @@ class HelixFiber(Polymer):
                  rot_rand=True):
         """
         Constructor
+
         :param l_length: link length
         :param m_surf: monomer surface (as vtkPolyData object)
         :param p_length: persistence length
@@ -747,6 +777,7 @@ class HelixFiber(Polymer):
     def set_reference(self, p0=(0., 0., 0.), vz=(0., 0., 1.), rot_rand=True):
         """
         Initializes the chain with the specified input point, if points are introduced before they will be forgotten
+
         :param p0: starting point
         :param vz: z-axis reference vector for helicoid parametrization
         :param rot_rand: if True (default) the rotation of the first monomer (and consequently its tangent) is
@@ -779,6 +810,7 @@ class HelixFiber(Polymer):
     def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1, net=None, branch=None, max_dist=None):
         """
         Generates a new monomer according the flexible fiber model
+
         :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0)
         :param voi: VOI to define forbidden regions (default None, not applied)
         :param v_size: VOI voxel size, it must be greater than 0 (default 1)
@@ -833,6 +865,7 @@ class HelixFiber(Polymer):
     def __compute_helical_parameters(self):
         """
         Private method (fill class member variables) to compute helical parameters (a and b) from persistence length
+
         :return:
         """
 
@@ -848,6 +881,7 @@ class HelixFiber(Polymer):
     def __compute_tangent(self, t):
         """
         Computes curve (z-aligned axis) normalized tangent vector
+
         :param t: input parameter, time assuming that speed is 1
         :return: returns the normalized tangent vector (3 elements array)
         """
@@ -880,6 +914,7 @@ class FiberUnitSDimer(FiberUnit):
     def __init__(self, sph_rad, v_size=1):
         """
         Constructor
+
         :param sph_rad: radius for spheres
         :param v_size: voxel size (default 1)
         """
@@ -954,6 +989,7 @@ class MTUnit(FiberUnit):
     def __init__(self, sph_rad=40, mt_rad=100.5, n_units=13, v_size=1):
         """
         Constructor
+
         :param sph_rad: radius for spheres (default 40, approximate tubulin radius in A)
         :param mt_rad: microtubule radius (default 100.5, approximate microtubule radius in A)
         :param n_units: number of units (default 13, number of protofilaments that compund a MT)

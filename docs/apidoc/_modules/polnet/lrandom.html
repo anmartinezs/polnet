@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>polnet.lrandom &mdash; PolNet 0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=10f1778b"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PolNet
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">polnet</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PolNet</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">polnet.lrandom</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for polnet.lrandom</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Classes with the implementation of the random models.</span>
+<span class="sd">A networks is a combination of a polymer in a volume</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Antonio Martinez-Sanchez&#39;</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="n">MAX_TRIES_ELLIP</span> <span class="o">=</span> <span class="mf">1e6</span>
+<span class="n">MAX_TRIES_EXP</span> <span class="o">=</span> <span class="mf">1e6</span>
+
+<span class="c1">#############################################</span>
+<span class="c1"># Functions</span>
+<span class="c1">#############################################</span>
+
+
+<div class="viewcode-block" id="gen_bounded_exp">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.gen_bounded_exp">[docs]</a>
+<span class="k">def</span> <span class="nf">gen_bounded_exp</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a random number following a &#39;bounded exponential distribution&#39;</span>
+<span class="sd">    Get random exponential numbers until falls into bounded range</span>
+
+<span class="sd">    :param mean: mean for the exponential distribution (1/lambda)</span>
+<span class="sd">    :param lb: lower bound</span>
+<span class="sd">    :param hb: higher bound</span>
+<span class="sd">    :return: a real number within the range, raises RuntimeError if no number found within range after MAX_TRIES_EXP</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">hold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">exponential</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="n">mean</span><span class="p">)</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="p">((</span><span class="n">hold</span> <span class="o">&lt;</span> <span class="n">lb</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">hold</span> <span class="o">&gt;</span> <span class="n">ub</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">count</span> <span class="o">&lt;</span> <span class="n">MAX_TRIES_EXP</span><span class="p">):</span>
+        <span class="n">hold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">exponential</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="n">mean</span><span class="p">)</span>
+        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="n">MAX_TRIES_EXP</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">hold</span></div>
+
+
+<span class="c1">#############################################</span>
+<span class="c1"># Classes</span>
+<span class="c1">#############################################</span>
+
+
+<div class="viewcode-block" id="PGenHelixFiber">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.PGenHelixFiber">[docs]</a>
+<span class="k">class</span> <span class="nc">PGenHelixFiber</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to model random distribution for helix fiber parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PGenHelixFiber.gen_length">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.PGenHelixFiber.gen_length">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_l</span><span class="p">,</span> <span class="n">max_l</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a length with a range following a uniform distribution</span>
+
+<span class="sd">        :param min_l: minimum length</span>
+<span class="sd">        :param max_l: maximum length</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">min_l</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">min_l</span> <span class="o">&lt;=</span> <span class="n">max_l</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">max_l</span> <span class="o">-</span> <span class="n">min_l</span><span class="p">)</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">+</span> <span class="n">min_l</span></div>
+
+
+<div class="viewcode-block" id="PGenHelixFiber.gen_persistence_length">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.PGenHelixFiber.gen_persistence_length">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_persistence_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_p</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a persistence length according an exponential distribution with lambda=1 and minimum value</span>
+
+<span class="sd">        :param min_p: minimum persistence value</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">min_p</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">exponential</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="PGenHelixFiber.gen_zf_length">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.PGenHelixFiber.gen_zf_length">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_zf_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_zf</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_zf</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a z-axis factor within a range</span>
+
+<span class="sd">        :param min_zf: minimum value (default 0)</span>
+<span class="sd">        :param max_zf: maximum value (default 1)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">min_zf</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">max_zf</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">max_zf</span> <span class="o">-</span> <span class="n">min_zf</span><span class="p">)</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">+</span> <span class="n">min_zf</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PGenHelixFiberB">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.PGenHelixFiberB">[docs]</a>
+<span class="k">class</span> <span class="nc">PGenHelixFiberB</span><span class="p">(</span><span class="n">PGenHelixFiber</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to model random distribution for helix fiber parameters with branches</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PGenHelixFiberB.gen_branch">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.PGenHelixFiberB.gen_branch">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_branch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b_prob</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a boolean that is True (branching) with some input probability</span>
+
+<span class="sd">        :param b_prob: branching probability [0, 1) (default 0.5)</span>
+<span class="sd">        :return: a boolean</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">b_prob</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SurfGen">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.SurfGen">[docs]</a>
+<span class="k">class</span> <span class="nc">SurfGen</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract class for modeling 3D parametric surface random parameter generators</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SurfGen.gen_den_cf">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.SurfGen.gen_den_cf">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_den_cf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a uniform random real number between two input values</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SurfGen.gen_parameters">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.SurfGen.gen_parameters">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">gen_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="bp">NotImplemented</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="EllipGen">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.EllipGen">[docs]</a>
+<span class="k">class</span> <span class="nc">EllipGen</span><span class="p">(</span><span class="n">SurfGen</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for model the paramaters for modelling an Ellipsoid</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius_rg</span><span class="p">,</span> <span class="n">max_ecc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_tries</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mf">1e6</span><span class="p">)):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param radius_rg: ranges for semi-axis parameters</span>
+<span class="sd">        :param max_ecc: maximum eccentricity for both planes (default 1), in range [0, 1]</span>
+<span class="sd">        :param max_tries: raises an RuntimeError exception if there is no proper settings are found before trying</span>
+<span class="sd">                 &#39;max_tries&#39; times</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">radius_rg</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">radius_rg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">radius_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">radius_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">max_ecc</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">max_ecc</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">max_tries</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">max_tries</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__max_ecc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__max_tries</span> <span class="o">=</span> <span class="n">radius_rg</span><span class="p">,</span> <span class="n">max_ecc</span><span class="p">,</span> <span class="n">max_tries</span>
+
+<div class="viewcode-block" id="EllipGen.gen_parameters">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.EllipGen.gen_parameters">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates randomly the three semi-axes parameters following a uniform distribution</span>
+
+<span class="sd">        :return: an array with the three semi-axes sorted in descending order</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__max_tries</span><span class="p">):</span>
+            <span class="n">axes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                                       <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                                       <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">]))))[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">ecc1</span><span class="p">,</span> <span class="n">ecc2</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">ecc1</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__max_ecc</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">ecc2</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__max_ecc</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">axes</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span></div>
+
+
+<div class="viewcode-block" id="EllipGen.gen_parameters_exp">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.EllipGen.gen_parameters_exp">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_parameters_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates randomly the three semi-axes parameters following a bounded exponential distribution</span>
+
+<span class="sd">        :return: an array with the three semi-axes sorted in descending order</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__max_tries</span><span class="p">):</span>
+            <span class="n">axes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">gen_bounded_exp</span><span class="p">(</span><span class="mf">8.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                                       <span class="n">gen_bounded_exp</span><span class="p">(</span><span class="mf">8.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                                       <span class="n">gen_bounded_exp</span><span class="p">(</span><span class="mf">8.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">]))))[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">ecc1</span><span class="p">,</span> <span class="n">ecc2</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">ecc1</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__max_ecc</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">ecc2</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__max_ecc</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">axes</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SphGen">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.SphGen">[docs]</a>
+<span class="k">class</span> <span class="nc">SphGen</span><span class="p">(</span><span class="n">SurfGen</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for model the parameters for modelling an Sphere</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius_rg</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param radius_rg: ranges for radius</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">radius_rg</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">radius_rg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">radius_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">radius_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span> <span class="o">=</span> <span class="n">radius_rg</span>
+
+<div class="viewcode-block" id="SphGen.gen_parameters">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.SphGen.gen_parameters">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates randomly sphere radii</span>
+
+<span class="sd">        :return: a float with the radius value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TorGen">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.TorGen">[docs]</a>
+<span class="k">class</span> <span class="nc">TorGen</span><span class="p">(</span><span class="n">SurfGen</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for model the paramaters for modelling a Torus</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius_rg</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param radius_rg: ranges for radii parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">radius_rg</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">radius_rg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">radius_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">radius_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span> <span class="o">=</span> <span class="n">radius_rg</span>
+
+<div class="viewcode-block" id="TorGen.gen_parameters">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.TorGen.gen_parameters">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates randomly the two Torus radii</span>
+
+<span class="sd">        :return: a array with the two radii (&#39;a&#39; torus radius, and &#39;b&#39; tube radius, where a &gt; b)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                                   <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__radius_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">]))))[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SGen">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.SGen">[docs]</a>
+<span class="k">class</span> <span class="nc">SGen</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract class for a (random) sequence</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SGen.gen_next_mmer_id">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.SGen.gen_next_mmer_id">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">gen_next_mmer_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_mmers</span><span class="p">,</span> <span class="n">prev_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generated the id for the next monomer</span>
+
+<span class="sd">        :param n_mmers: number of diferent monomers</span>
+<span class="sd">        :param prev_id: previous monomer identifier</span>
+<span class="sd">        :return: an integer indication the next monomer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="bp">NotImplemented</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SGenFixed">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.SGenFixed">[docs]</a>
+<span class="k">class</span> <span class="nc">SGenFixed</span><span class="p">(</span><span class="n">SGen</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A fixed sequence sequence is generated</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SGenFixed.gen_next_mmer_id">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.SGenFixed.gen_next_mmer_id">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_next_mmer_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_surf</span><span class="p">,</span> <span class="n">prev_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Generated the id for the next monomer</span>
+
+<span class="sd">            :param n_mmers: number of diferent monomers</span>
+<span class="sd">            :param prev_id: previous monomer identifier</span>
+<span class="sd">            :return: an integer indication the next monomer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">curr_id</span> <span class="o">=</span> <span class="n">prev_id</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">curr_id</span> <span class="o">&gt;=</span> <span class="n">n_surf</span><span class="p">:</span> <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span> <span class="k">return</span> <span class="n">curr_id</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SGenUniform">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.SGenUniform">[docs]</a>
+<span class="k">class</span> <span class="nc">SGenUniform</span><span class="p">(</span><span class="n">SGen</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Uniformly random distribution</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SGenUniform.gen_next_mmer_id">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.SGenUniform.gen_next_mmer_id">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_next_mmer_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_surf</span><span class="p">,</span> <span class="n">prev_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Generated the id for the next monomer</span>
+
+<span class="sd">            :param n_mmers: number of diferent monomers</span>
+<span class="sd">            :param prev_id: previous monomer identifier (default None, not needed because this model is memoryless)</span>
+<span class="sd">            :return: an integer indication the next monomer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_surf</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SGenProp">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.SGenProp">[docs]</a>
+<span class="k">class</span> <span class="nc">SGenProp</span><span class="p">(</span><span class="n">SGen</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates numbers according to some proportion</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop_l</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param prop_l: proportions list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">prop_l</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">sum</span><span class="p">(</span><span class="n">prop_l</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__n_surf</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prop_l</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__props</span> <span class="o">=</span> <span class="n">prop_l</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mmer_ids</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__props</span><span class="p">))</span>
+
+<div class="viewcode-block" id="SGenProp.gen_next_mmer_id">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.SGenProp.gen_next_mmer_id">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_next_mmer_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_surf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prev_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Generated the id for the next monomer</span>
+
+<span class="sd">            :param n_mmers: number of different monomers, (default None, not needed because this information is</span>
+<span class="sd">            introduced in this model during construction)</span>
+<span class="sd">            :param prev_id: previous monomer identifier (default None, not needed because this model is memoryless)</span>
+<span class="sd">            :return: an integer indication the next monomer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__mmer_ids</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__props</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="OccGen">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.OccGen">[docs]</a>
+<span class="k">class</span> <span class="nc">OccGen</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for model the random (uniform) generation of occupancies</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">occ_rg</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param occ_rg: range for occupancy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">occ_rg</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">occ_rg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">occ_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">occ_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">occ_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">occ_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__occ_rg</span> <span class="o">=</span> <span class="n">occ_rg</span>
+
+<div class="viewcode-block" id="OccGen.gen_occupancy">
+<a class="viewcode-back" href="../../polnet.html#polnet.lrandom.OccGen.gen_occupancy">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_occupancy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates randomly an occupancy value</span>
+
+<span class="sd">        :return: a float with the generated occupancy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__occ_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__occ_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Antonio Martinez-Sanchez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

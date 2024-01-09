@@ -26,6 +26,7 @@ class Mb(ABC):
     def __init__(self, tomo_shape, v_size=1, center=(0, 0, 0), rot_q=(1, 0, 0, 0), thick=1, layer_s=1):
         """
         Constructor
+
         :param tomo_shape: reference tomogram shape (X, Y and Z dimensions)
         :param v_size: reference tomogram voxel size (default 1)
         :param center: ellipsoid center (VERY IMPORTANT: coordinates are not in voxels)
@@ -46,6 +47,7 @@ class Mb(ABC):
     def get_thick(self):
         """
         Get membrane thickness, bilayer gap
+
         :return: thickness as a float
         """
         return self.__thick
@@ -53,6 +55,7 @@ class Mb(ABC):
     def get_layer_s(self):
         """
         Get Gaussian sigma for each layer
+
         :return: layer sigma as a float
         """
         return self.__layer_s
@@ -60,6 +63,7 @@ class Mb(ABC):
     def get_vol(self):
         """
         Get the polymer volume
+
         :param fast: if True (default) the volume monomer is only computed once
         :return: the computed volume
         """
@@ -68,6 +72,7 @@ class Mb(ABC):
     def get_tomo(self):
         """
         Get the membrane within a tomogram
+
         :return: a numpy 3D array
         """
         return self.__tomo
@@ -75,6 +80,7 @@ class Mb(ABC):
     def get_mask(self):
         """
         Get the membrane within a binary tomogram
+
         :return: a binary numpy 3D array
         """
         return self.__mask
@@ -82,6 +88,7 @@ class Mb(ABC):
     def get_vtp(self):
         """
         Get the membrane as an VTK surface
+
         :return: a vtkPolyData object
         """
         return self.__surf
@@ -89,6 +96,7 @@ class Mb(ABC):
     def masking(self, mask):
         """
         Removes membrane voxels in an external mask
+
         :param mask: the input external mask, binary ndarray with the same shape as the membrane tomogram, tomogram
         voxels at mask 0-valued positions will be set to 0
         :return: None
@@ -104,6 +112,7 @@ class Mb(ABC):
     def insert_density_svol(self, tomo, merge='max', mode='tomo', grow=0):
         """
         Insert a membrane into a tomogram
+
         :param tomo: tomogram where m_svol is added
         :param merge: merging mode, valid: 'min' (default), 'max', 'sum' and 'insert'
         :param mode: determines which data are inserted, valid: 'tomo' (default), 'mask' and 'voi'
@@ -126,6 +135,7 @@ class Mb(ABC):
     def __build_tomos(self):
         """
         Generates the membrane within a tomogram
+
         :return: the generated tomogram and its binary mask
         """
         raise NotImplemented
@@ -139,6 +149,7 @@ class MbEllipsoid(Mb):
     def __init__(self, tomo_shape, v_size=1, center=(0, 0, 0), rot_q=(1, 0, 0, 0), thick=1, layer_s=1, a=1, b=1, c=1):
         """
         Constructor
+
         :param tomo_shape: reference tomogram shape (X, Y and Z dimensions)
         :param v_size: reference tomogram voxel size (default 1)
         :param center: ellipsoid center (VERY IMPORTANT: coordinates are not in voxels)
@@ -215,6 +226,7 @@ class MbSphere(Mb):
     def __init__(self, tomo_shape, v_size=1, center=(0, 0, 0), rot_q=(1, 0, 0, 0), thick=1, layer_s=1, rad=1):
         """
         Constructor
+
         :param tomo_shape: reference tomogram shape (X, Y and Z dimensions)
         :param v_size: reference tomogram voxel size (default 1)
         :param center: ellipsoid center (VERY IMPORTANT: coordinates are not in voxels)
@@ -290,6 +302,7 @@ class MbTorus(Mb):
     def __init__(self, tomo_shape, v_size=1, center=(0, 0, 0), rot_q=(1, 0, 0, 0), thick=1, layer_s=1, rad_a=1, rad_b=1):
         """
         Constructor
+
         :param tomo_shape: reference tomogram shape (X, Y and Z dimensions)
         :param v_size: reference tomogram voxel size (default 1)
         :param center: ellipsoid center (VERY IMPORTANT: coordinates are not in voxels)
@@ -359,6 +372,7 @@ class SetMembranes:
                  grow=0):
         """
         Construction
+
         :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for membranes
         :param v_size: voxel size
         :param gen_rnd_surf: an of object that inherits from lrandom.SurfGen class to generate random instances with
@@ -411,6 +425,7 @@ class SetMembranes:
     def build_set(self, verbosity=False):
         """
         Build a set of ellipsoid membranes and insert them in a tomogram and a vtkPolyData object
+
         :param verbosity: if True (default False) the output message with info about the membranes generated is printed
         :return:
         """
@@ -479,6 +494,7 @@ class SetMembranes:
     def get_voi(self):
         """
         Get the VOI
+
         :return: an ndarray
         """
         return self.__voi
@@ -486,6 +502,7 @@ class SetMembranes:
     def get_tomo(self):
         """
         Get the tomogram with the membranes within the VOI
+
         :return: an ndarray
         """
         # return np.invert(self.__voi) * self.__tomo
@@ -494,6 +511,7 @@ class SetMembranes:
     def get_gtruth(self):
         """
         Get the ground truth within the VOI
+
         :return: an ndarray
         """
         # return self.__voi * self.__gtruth
@@ -502,6 +520,7 @@ class SetMembranes:
     def get_vtp(self):
         """
         Get the set of membranes as a vtkPolyData with their surfaces
+
         :return: a vtkPolyData
         """
         return self.__surfs
@@ -509,6 +528,7 @@ class SetMembranes:
     def get_num_mbs(self):
         """
         Get the number of membranes in the set
+
         :return: an integer with the number of membranes
         """
         return self.__count_mbs
@@ -516,6 +536,7 @@ class SetMembranes:
     def check_overlap(self, mb, over_tolerance):
         """
         Determines if the membrane overlaps with any member within the membranes set
+
         :param mb: input Membrane to check for the overlapping
         :param over_tolerance: overlapping tolerance (percentage of membrane voxel overlapping)
         """
@@ -531,6 +552,7 @@ class SetMembranes:
     def compute_overlap(self, mb):
         """
         Computes membrane overlapping with the set
+
         :param mb: input Membrane to check for the overlapping
         """
         mb_mask = mb.get_mask()
@@ -542,6 +564,7 @@ class SetMembranes:
     def insert_mb(self, mb, merge='min', over_tolerance=None, check_vol=True, grow=0):
         """
         Insert the membrane into the set (tomogram, vtkPolyData and Ground Truth)
+
         :param mb: input membrane (Mb) object
         :param merge: merging mode for density insertion, valid: 'min' (default), 'max', 'sum' and 'insert'
         :param over_tolerance: overlapping tolerance (percentage of membrane voxel overlapping), if None then disabled

@@ -27,11 +27,11 @@ def create_poly_mrc(path):
     # tomo_vti.SetFileName(path)
     tomo_np = lio.load_mrc(path, mmap=False,no_saxes=False)
     # Normalization
-    print('MRC loaded')
+    # print('MRC loaded')
     tomo_np = utils.lin_map(tomo_np, lb=0, ub=1)
     tomo_vti = lio.numpy_to_vti(tomo_np)
     del tomo_np
-    print('VTKimage generated')
+    # print('VTKimage generated')
     
     iso = vtk.vtkContourFilter()
     iso.SetInputData(tomo_vti)
@@ -44,7 +44,7 @@ def create_poly_mrc(path):
     iso_actor = vtk.vtkActor()
     iso_actor.SetMapper(iso_mapper)
 
-    print('Iso-map constructed')
+    # print('Iso-map constructed')
 
     return tomo_vti, iso, iso_mapper, iso_actor
 

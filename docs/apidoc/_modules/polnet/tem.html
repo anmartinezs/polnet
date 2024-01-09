@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>polnet.tem &mdash; PolNet 0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=10f1778b"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PolNet
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">polnet</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PolNet</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">polnet.tem</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for polnet.tem</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Models for Transmision Electron Microscopy</span>
+<span class="sd">    * VERY IMPORTANT: this package makes usage of some IMOD binaries, so they must be installed in the system</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Antonio Martinez-Sanchez&#39;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="kn">from</span> <span class="nn">polnet</span> <span class="kn">import</span> <span class="n">lio</span>
+
+<span class="c1">## IMOD commands</span>
+<span class="n">IMOD_CMD_XYZPROJ</span> <span class="o">=</span> <span class="s1">&#39;xyzproj&#39;</span>
+<span class="n">IMOD_CMD_TILT</span> <span class="o">=</span> <span class="s1">&#39;tilt&#39;</span>
+<span class="n">IMOD_CMD_AHEADER</span> <span class="o">=</span> <span class="s1">&#39;alterheader&#39;</span>
+
+
+<div class="viewcode-block" id="TEM">
+<a class="viewcode-back" href="../../polnet.html#polnet.tem.TEM">[docs]</a>
+<span class="k">class</span> <span class="nc">TEM</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for modeling a Transmission Electron Microscope</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work_dir</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param work_dir: path to working directory where intermediate files are stored</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__work_dir</span> <span class="o">=</span> <span class="n">work_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__log_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__work_dir</span> <span class="o">+</span> <span class="s1">&#39;/TEM.log&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__create_work_dir</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__vol_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__work_dir</span> <span class="o">+</span> <span class="s1">&#39;/in_vol.mrc&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__micgraphs_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__work_dir</span> <span class="o">+</span> <span class="s1">&#39;/out_micrographs.mrc&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tangs_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__work_dir</span> <span class="o">+</span> <span class="s1">&#39;/out_tangs.tlt&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__rec3d_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__work_dir</span> <span class="o">+</span> <span class="s1">&#39;/out_rec3d.mrc&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__create_work_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create the working directory</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__work_dir</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__work_dir</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__save_tangs_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stores the tilt angles file according IMOD format</span>
+
+<span class="sd">        :param angs: non-empty iterable with the tilt angles</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tangs_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">ang</span> <span class="ow">in</span> <span class="n">angs</span><span class="p">:</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ang</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__load_tangs_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load the tilt angles file into an array</span>
+
+<span class="sd">        :return: output array with the tilt angles</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">angs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tangs_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+                <span class="n">angs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">angs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TEM.gen_tilt_series_imod">
+<a class="viewcode-back" href="../../polnet.html#polnet.tem.TEM.gen_tilt_series_imod">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_tilt_series_imod</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vol</span><span class="p">,</span> <span class="n">angs</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;real&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates the 2D projection series from a 3D volume using &#39;xyzproj&#39; IMOD binary</span>
+
+<span class="sd">        :param vol: input 3D volume</span>
+<span class="sd">        :param angs: non-empty iterable with the tilt angles or a range</span>
+<span class="sd">        :param ax: tilt axis, either &#39;X&#39;, &#39;Y&#39; or &#39;Z&#39; (default &#39;X&#39;)</span>
+<span class="sd">        :param mode: mode of output file, valid: &#39;byte&#39;, &#39;int&#39; or &#39;real&#39; (default)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Input parsing</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vol</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vol</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">angs</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">angs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">ax</span> <span class="o">==</span> <span class="s1">&#39;X&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">ax</span> <span class="o">==</span> <span class="s1">&#39;Y&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">ax</span> <span class="o">==</span> <span class="s1">&#39;Z&#39;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;byte&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;int&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;real&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Call to IMOD binary (xyzproj)</span>
+
+        <span class="c1"># Building the command</span>
+        <span class="n">xyzproj_cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">IMOD_CMD_XYZPROJ</span><span class="p">]</span>
+        <span class="n">in_vol_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__vol_file</span>
+        <span class="n">lio</span><span class="o">.</span><span class="n">write_mrc</span><span class="p">(</span><span class="n">vol</span><span class="p">,</span> <span class="n">in_vol_path</span><span class="p">)</span>
+        <span class="n">xyzproj_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-inp&#39;</span><span class="p">,</span> <span class="n">in_vol_path</span><span class="p">]</span>
+        <span class="n">out_vol_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__micgraphs_file</span>
+        <span class="n">xyzproj_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">out_vol_path</span><span class="p">]</span>
+        <span class="n">xyzproj_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-ax&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">angs</span><span class="p">,</span> <span class="nb">range</span><span class="p">):</span>
+            <span class="n">xyzproj_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-an&#39;</span><span class="p">]</span>
+            <span class="n">tangles</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">angs</span><span class="o">.</span><span class="n">start</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">angs</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">angs</span><span class="o">.</span><span class="n">step</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">xyzproj_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-ta&#39;</span><span class="p">]</span>
+            <span class="n">tangles</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">angs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">angs</span><span class="p">)):</span>
+                <span class="n">tangles</span> <span class="o">+=</span> <span class="s1">&#39;,&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">angs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">xyzproj_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="n">tangles</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;byte&#39;</span><span class="p">:</span>
+            <span class="n">xyzproj_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-m&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;int&#39;</span><span class="p">:</span>
+            <span class="n">xyzproj_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-m&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;real&#39;</span><span class="p">:</span>
+            <span class="n">xyzproj_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-m&#39;</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Command calling</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__log_file</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_log</span><span class="p">:</span>
+                <span class="n">file_log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">[&#39;</span> <span class="o">+</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%c</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;]RUNNING COMMAND:-&gt; &#39;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">xyzproj_cmd</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">xyzproj_cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">file_log</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__save_tangs_file</span><span class="p">(</span><span class="n">angs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR: Error calling the command:&#39;</span><span class="p">,</span> <span class="n">xyzproj_cmd</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR: Log file could not be written:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__log_file</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IOError</span></div>
+
+
+<div class="viewcode-block" id="TEM.add_detector_noise">
+<a class="viewcode-back" href="../../polnet.html#polnet.tem.TEM.add_detector_noise">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_detector_noise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add detector noise to micrographs. Readout noise has Gaussian distribution and dark current is typically</span>
+<span class="sd">        one order magnitude lower, so the last one is neglected.</span>
+
+<span class="sd">        :param snr: target snr to determine the level of noise to be added, linear scale so greater than zero</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Input parsing</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__micgraphs_file</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">snr</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+        <span class="c1"># Load micrographs</span>
+        <span class="n">mics</span> <span class="o">=</span> <span class="n">lio</span><span class="o">.</span><span class="n">load_mrc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__micgraphs_file</span><span class="p">)</span>
+
+        <span class="c1"># Adding readout noise with Gaussian distribution to every micrograph</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mics</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+            <span class="n">mic</span> <span class="o">=</span> <span class="n">mics</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">mic</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="n">mn</span> <span class="o">=</span> <span class="n">mic</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">sg_fg</span> <span class="o">=</span> <span class="n">mn</span> <span class="o">/</span> <span class="n">snr</span>
+            <span class="n">mics</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">mic</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mn</span><span class="p">,</span> <span class="n">sg_fg</span><span class="p">,</span> <span class="n">mic</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="c1"># Update micrographs file</span>
+        <span class="n">lio</span><span class="o">.</span><span class="n">write_mrc</span><span class="p">(</span><span class="n">mics</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__micgraphs_file</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TEM.recon3D_imod">
+<a class="viewcode-back" href="../../polnet.html#polnet.tem.TEM.recon3D_imod">[docs]</a>
+    <span class="k">def</span> <span class="nf">recon3D_imod</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs a 3D reconstruction from the tilted series micrograph using &#39;tilt&#39; IMOD binary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Call to IMOD binary (tilt)</span>
+
+        <span class="c1"># Building the command</span>
+        <span class="n">tilt_cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">IMOD_CMD_TILT</span><span class="p">]</span>
+        <span class="n">vol</span> <span class="o">=</span> <span class="n">lio</span><span class="o">.</span><span class="n">load_mrc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__vol_file</span><span class="p">,</span> <span class="n">mmap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">no_saxes</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">tilt_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-inp&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__micgraphs_file</span><span class="p">]</span>
+        <span class="n">tilt_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-output&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__rec3d_file</span><span class="p">]</span>
+        <span class="n">tilt_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-TILTFILE&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__tangs_file</span><span class="p">]</span>
+        <span class="n">tilt_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-THICKNESS&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">vol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+
+        <span class="c1"># Command calling</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__log_file</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_log</span><span class="p">:</span>
+                <span class="n">file_log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">[&#39;</span> <span class="o">+</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%c</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;]RUNNING COMMAND:-&gt; &#39;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tilt_cmd</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">tilt_cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">file_log</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR: Error calling the command:&#39;</span><span class="p">,</span> <span class="n">tilt_cmd</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR: Log file could not be written:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__log_file</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IOError</span>
+
+        <span class="c1"># Swap Y-Z axes from the output given by IMOD</span>
+        <span class="n">hold_rec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">lio</span><span class="o">.</span><span class="n">load_mrc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__rec3d_file</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># Flip Z-axis</span>
+        <span class="n">lio</span><span class="o">.</span><span class="n">write_mrc</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">hold_rec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">__rec3d_file</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="TEM.set_header">
+<a class="viewcode-back" href="../../polnet.html#polnet.tem.TEM.set_header">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="s1">&#39;mics&#39;</span><span class="p">,</span> <span class="n">p_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set 3D reconstructed tomogram pixel (voxel) size using alter &#39;alterheader&#39; IMOD script</span>
+
+<span class="sd">        :param data: determines the data where the changes will be applied, valid: &#39;mics&#39; or &#39;rec3d&#39;</span>
+<span class="sd">        :param p_size: pixel size X, Y and Z dimensions</span>
+<span class="sd">        :param origin: origin X, Y and Z dimensions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">data</span> <span class="o">==</span> <span class="s1">&#39;mics&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">data</span> <span class="o">==</span> <span class="s1">&#39;rec3d&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">p_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p_size</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">p_size</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+        <span class="k">if</span> <span class="n">origin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">origin</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+
+        <span class="c1"># Call to IMOD binary (tilt)</span>
+
+        <span class="c1"># Building the command</span>
+        <span class="n">aheader_cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">IMOD_CMD_AHEADER</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="o">==</span> <span class="s1">&#39;mics&#39;</span><span class="p">:</span>
+            <span class="n">aheader_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__micgraphs_file</span><span class="p">,]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">aheader_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__rec3d_file</span><span class="p">,]</span>
+        <span class="k">if</span> <span class="n">p_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">aheader_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-del&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">p_size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">p_size</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">p_size</span><span class="p">[</span><span class="mi">2</span><span class="p">])]</span>
+        <span class="k">if</span> <span class="n">origin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">aheader_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-org&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">origin</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">origin</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">origin</span><span class="p">[</span><span class="mi">2</span><span class="p">])]</span>
+
+        <span class="c1"># Command calling</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__log_file</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_log</span><span class="p">:</span>
+                <span class="n">file_log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">[&#39;</span> <span class="o">+</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%c</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;]RUNNING COMMAND:-&gt; &#39;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">aheader_cmd</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">aheader_cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">file_log</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR: Error calling the command:&#39;</span><span class="p">,</span> <span class="n">aheader_cmd</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR: Log file could not be written:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__log_file</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IOError</span></div>
+
+
+<div class="viewcode-block" id="TEM.invert_mics_den">
+<a class="viewcode-back" href="../../polnet.html#polnet.tem.TEM.invert_mics_den">[docs]</a>
+    <span class="k">def</span> <span class="nf">invert_mics_den</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Invert micrographs density</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mics</span> <span class="o">=</span> <span class="n">lio</span><span class="o">.</span><span class="n">load_mrc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__micgraphs_file</span><span class="p">)</span>
+        <span class="n">lio</span><span class="o">.</span><span class="n">write_mrc</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">mics</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__micgraphs_file</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TEM.add_mics_misalignment">
+<a class="viewcode-back" href="../../polnet.html#polnet.tem.TEM.add_mics_misalignment">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_mics_misalignment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mn</span><span class="p">,</span> <span class="n">mx</span><span class="p">,</span> <span class="n">n_sigma</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add random X and Y misalignment to each micrograh in the tilt series following a sinusoidal model:</span>
+<span class="sd">        f(t_angle) = mn + mx(sin(t_angle)/sin(max_t_angle))</span>
+
+<span class="sd">        :param mn: minimun mislignment value (t_angle = 0)</span>
+<span class="sd">        :param mx: maximum mislignment value (t_angle = max_t_angle)</span>
+<span class="sd">        :param n_sigma: sigma value for Gaussian noise.</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="n">mx</span> <span class="o">&gt;=</span> <span class="n">mn</span>
+
+        <span class="c1"># Micrographs loop</span>
+        <span class="n">mics</span> <span class="o">=</span> <span class="n">lio</span><span class="o">.</span><span class="n">load_mrc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__micgraphs_file</span><span class="p">)</span>
+        <span class="n">angs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__load_tangs_file</span><span class="p">()))</span>
+        <span class="n">n_angs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">angs</span><span class="p">)</span>
+        <span class="n">shifts</span> <span class="o">=</span> <span class="n">mn</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angs</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angs</span><span class="o">.</span><span class="n">max</span><span class="p">())</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_sigma</span><span class="p">,</span> <span class="n">n_angs</span><span class="p">)</span>
+        <span class="n">split_fs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_angs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">shift</span><span class="p">,</span> <span class="n">split_f</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_angs</span><span class="p">),</span> <span class="n">shifts</span><span class="p">,</span> <span class="n">split_fs</span><span class="p">):</span>
+            <span class="n">shift_x</span> <span class="o">=</span> <span class="n">shift</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">split_f</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">shift_y</span> <span class="o">=</span> <span class="n">split_f</span> <span class="o">*</span> <span class="n">shift_x</span>
+            <span class="n">mics</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">mics</span><span class="p">[:,:,</span><span class="n">i</span><span class="p">],</span> <span class="p">(</span><span class="n">shift_x</span><span class="p">,</span> <span class="n">shift_y</span><span class="p">),</span> <span class="n">output</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span>
+                                             <span class="n">cval</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">prefilter</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Save shited micrographs</span>
+        <span class="n">lio</span><span class="o">.</span><span class="n">write_mrc</span><span class="p">(</span><span class="n">mics</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__micgraphs_file</span><span class="p">)</span></div>
+</div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Antonio Martinez-Sanchez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

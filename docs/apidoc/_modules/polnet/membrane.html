@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>polnet.membrane &mdash; PolNet 0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=10f1778b"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PolNet
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">polnet</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PolNet</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">polnet.membrane</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for polnet.membrane</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Classes for modeling membranes.</span>
+<span class="sd">A membrane is modelled as two parallel surfaces with Gaussian profile</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Antonio Martinez-Sanchez&#39;</span>
+
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="kn">from</span> <span class="nn">polnet.poly</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">polnet.affine</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">polnet.lrandom</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="n">MAX_TRIES_MB</span> <span class="o">=</span> <span class="mi">10</span>
+
+
+<div class="viewcode-block" id="MbError">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.MbError">[docs]</a>
+<span class="k">class</span> <span class="nc">MbError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="Mb">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.Mb">[docs]</a>
+<span class="k">class</span> <span class="nc">Mb</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract class to model membranes with different geometries</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tomo_shape</span><span class="p">,</span> <span class="n">v_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">rot_q</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">thick</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">layer_s</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param tomo_shape: reference tomogram shape (X, Y and Z dimensions)</span>
+<span class="sd">        :param v_size: reference tomogram voxel size (default 1)</span>
+<span class="sd">        :param center: ellipsoid center (VERY IMPORTANT: coordinates are not in voxels)</span>
+<span class="sd">        :param rot_q: rotation expressed as quaternion with respect ellipsoid center (default [1, 0, 0, 0] no rotation)</span>
+<span class="sd">        :param thick: membrane thickness (default 1)</span>
+<span class="sd">        :param layer_s: Gaussian sigma for each layer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">tomo_shape</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tomo_shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">v_size</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">thick</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">layer_s</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">center</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">rot_q</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rot_q</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tomo_shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span> <span class="o">=</span> <span class="n">tomo_shape</span><span class="p">,</span> <span class="n">v_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__center</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__rot_q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rot_q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__thick</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__layer_s</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">thick</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">layer_s</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__surf</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Mb.get_thick">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.Mb.get_thick">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_thick</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get membrane thickness, bilayer gap</span>
+
+<span class="sd">        :return: thickness as a float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__thick</span></div>
+
+
+<div class="viewcode-block" id="Mb.get_layer_s">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.Mb.get_layer_s">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_layer_s</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get Gaussian sigma for each layer</span>
+
+<span class="sd">        :return: layer sigma as a float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__layer_s</span></div>
+
+
+<div class="viewcode-block" id="Mb.get_vol">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.Mb.get_vol">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_vol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the polymer volume</span>
+
+<span class="sd">        :param fast: if True (default) the volume monomer is only computed once</span>
+<span class="sd">        :return: the computed volume</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span><span class="o">**</span><span class="mi">3</span></div>
+
+
+<div class="viewcode-block" id="Mb.get_tomo">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.Mb.get_tomo">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_tomo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the membrane within a tomogram</span>
+
+<span class="sd">        :return: a numpy 3D array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span></div>
+
+
+<div class="viewcode-block" id="Mb.get_mask">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.Mb.get_mask">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the membrane within a binary tomogram</span>
+
+<span class="sd">        :return: a binary numpy 3D array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mask</span></div>
+
+
+<div class="viewcode-block" id="Mb.get_vtp">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.Mb.get_vtp">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_vtp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the membrane as an VTK surface</span>
+
+<span class="sd">        :return: a vtkPolyData object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__surf</span></div>
+
+
+<div class="viewcode-block" id="Mb.masking">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.Mb.masking">[docs]</a>
+    <span class="k">def</span> <span class="nf">masking</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Removes membrane voxels in an external mask</span>
+
+<span class="sd">        :param mask: the input external mask, binary ndarray with the same shape as the membrane tomogram, tomogram</span>
+<span class="sd">        voxels at mask 0-valued positions will be set to 0</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">mask</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">bool</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="ow">and</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">mask_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="p">[</span><span class="n">mask_ids</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mask</span><span class="p">[</span><span class="n">mask_ids</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__surf</span> <span class="o">=</span> <span class="n">poly_mask</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__surf</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="Mb.insert_density_svol">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.Mb.insert_density_svol">[docs]</a>
+    <span class="k">def</span> <span class="nf">insert_density_svol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tomo</span><span class="p">,</span> <span class="n">merge</span><span class="o">=</span><span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;tomo&#39;</span><span class="p">,</span> <span class="n">grow</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Insert a membrane into a tomogram</span>
+
+<span class="sd">        :param tomo: tomogram where m_svol is added</span>
+<span class="sd">        :param merge: merging mode, valid: &#39;min&#39; (default), &#39;max&#39;, &#39;sum&#39; and &#39;insert&#39;</span>
+<span class="sd">        :param mode: determines which data are inserted, valid: &#39;tomo&#39; (default), &#39;mask&#39; and &#39;voi&#39;</span>
+<span class="sd">        :param grow: number of voxel to grow the membrane tomogram to insert (default 0), only used in &#39;voi&#39; mode</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;tomo&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;mask&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;voi&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;tomo&#39;</span><span class="p">:</span>
+            <span class="n">hold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;mask&#39;</span><span class="p">:</span>
+            <span class="n">hold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mask</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;voi&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">grow</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">hold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">morphology</span><span class="o">.</span><span class="n">binary_dilation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__mask</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="n">grow</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">hold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__mask</span><span class="p">)</span>
+        <span class="n">insert_svol_tomo</span><span class="p">(</span><span class="n">hold</span><span class="p">,</span> <span class="n">tomo</span><span class="p">,</span> <span class="mf">.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">merge</span><span class="o">=</span><span class="n">merge</span><span class="p">)</span></div>
+
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">__build_tomos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates the membrane within a tomogram</span>
+
+<span class="sd">        :return: the generated tomogram and its binary mask</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="bp">NotImplemented</span></div>
+
+
+
+<div class="viewcode-block" id="MbEllipsoid">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.MbEllipsoid">[docs]</a>
+<span class="k">class</span> <span class="nc">MbEllipsoid</span><span class="p">(</span><span class="n">Mb</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for generating a membrane with Ellipsoid shape</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tomo_shape</span><span class="p">,</span> <span class="n">v_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">rot_q</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">thick</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">layer_s</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param tomo_shape: reference tomogram shape (X, Y and Z dimensions)</span>
+<span class="sd">        :param v_size: reference tomogram voxel size (default 1)</span>
+<span class="sd">        :param center: ellipsoid center (VERY IMPORTANT: coordinates are not in voxels)</span>
+<span class="sd">        :param rot_q: rotation expressed as quaternion with respect ellipsoid center (default [1, 0, 0, 0] no rotation)</span>
+<span class="sd">        :param thick: membrane thickness (default 1)</span>
+<span class="sd">        :param layer_s: Gaussian sigma for each layer</span>
+<span class="sd">        :param a: (default 1) semi axis length in X axis (before rotation)</span>
+<span class="sd">        :param b: (default 1) semi axis length in Y axis (before rotation)</span>
+<span class="sd">        :param c: (default 1) semi axis length in Z axis (before rotation)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MbEllipsoid</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">tomo_shape</span><span class="p">,</span> <span class="n">v_size</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">rot_q</span><span class="p">,</span> <span class="n">thick</span><span class="p">,</span> <span class="n">layer_s</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">a</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">b</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">c</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__c</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">b</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__build_tomos</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_Mb__build_tomos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="c1"># Input parsing</span>
+        <span class="n">t_v</span><span class="p">,</span> <span class="n">s_v</span> <span class="o">=</span> <span class="mf">.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__thick</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__v_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__layer_s</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__v_size</span>
+        <span class="n">a_v</span><span class="p">,</span> <span class="n">b_v</span><span class="p">,</span> <span class="n">c_v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__a</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__v_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__b</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__v_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__c</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__v_size</span>
+        <span class="n">ao_v</span><span class="p">,</span> <span class="n">bo_v</span><span class="p">,</span> <span class="n">co_v</span> <span class="o">=</span> <span class="n">a_v</span> <span class="o">+</span> <span class="n">t_v</span><span class="p">,</span> <span class="n">b_v</span> <span class="o">+</span> <span class="n">t_v</span><span class="p">,</span> <span class="n">c_v</span> <span class="o">+</span> <span class="n">t_v</span>
+        <span class="n">ai_v</span><span class="p">,</span> <span class="n">bi_v</span><span class="p">,</span> <span class="n">ci_v</span> <span class="o">=</span> <span class="n">a_v</span> <span class="o">-</span> <span class="n">t_v</span><span class="p">,</span> <span class="n">b_v</span> <span class="o">-</span> <span class="n">t_v</span><span class="p">,</span> <span class="n">c_v</span> <span class="o">-</span> <span class="n">t_v</span>
+        <span class="n">ao_v_p1</span><span class="p">,</span> <span class="n">bo_v_p1</span><span class="p">,</span> <span class="n">co_v_p1</span> <span class="o">=</span> <span class="n">ao_v</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bo_v</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">co_v</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">ao_v_m1</span><span class="p">,</span> <span class="n">bo_v_m1</span><span class="p">,</span> <span class="n">co_v_m1</span> <span class="o">=</span> <span class="n">ao_v</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bo_v</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">co_v</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">ai_v_p1</span><span class="p">,</span> <span class="n">bi_v_p1</span><span class="p">,</span> <span class="n">ci_v_p1</span> <span class="o">=</span> <span class="n">ai_v</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bi_v</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ci_v</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">ai_v_m1</span><span class="p">,</span> <span class="n">bi_v_m1</span><span class="p">,</span> <span class="n">ci_v_m1</span> <span class="o">=</span> <span class="n">ai_v</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bi_v</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ci_v</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">p0_v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__center</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__v_size</span>
+
+        <span class="c1"># Generating the grid</span>
+        <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Mb__tomo_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Mb__tomo_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Mb__tomo_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">dx2</span><span class="p">,</span> <span class="n">dy2</span><span class="p">,</span> <span class="n">dz2</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span> <span class="o">*</span> <span class="n">dx</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span> <span class="o">*</span> <span class="n">dy</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span> <span class="o">*</span> <span class="n">dz</span><span class="p">)</span>
+        <span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="n">dx2</span>
+        <span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">dy2</span>
+        <span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-=</span> <span class="n">dz2</span>
+        <span class="n">x_l</span><span class="p">,</span> <span class="n">y_l</span><span class="p">,</span> <span class="n">z_l</span> <span class="o">=</span> <span class="o">-</span><span class="n">dx2</span><span class="p">,</span> <span class="o">-</span><span class="n">dy2</span><span class="p">,</span> <span class="o">-</span><span class="n">dz2</span>
+        <span class="n">x_h</span><span class="p">,</span> <span class="n">y_h</span><span class="p">,</span> <span class="n">z_h</span> <span class="o">=</span> <span class="o">-</span><span class="n">dx2</span> <span class="o">+</span> <span class="n">dx</span><span class="p">,</span> <span class="o">-</span><span class="n">dy2</span> <span class="o">+</span> <span class="n">dy</span><span class="p">,</span> <span class="o">-</span><span class="n">dz2</span> <span class="o">+</span> <span class="n">dz</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">x_l</span><span class="p">,</span> <span class="n">x_h</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">y_l</span><span class="p">,</span> <span class="n">y_h</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">z_l</span><span class="p">,</span> <span class="n">z_h</span><span class="p">),</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;xy&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Mask generation</span>
+        <span class="n">R_o</span> <span class="o">=</span> <span class="p">((</span><span class="n">X</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">ao_v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Y</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">bo_v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Z</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">co_v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">R_i</span> <span class="o">=</span> <span class="p">((</span><span class="n">X</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">ai_v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Y</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">bi_v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Z</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">ci_v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__mask</span> <span class="o">=</span> <span class="n">tomo_rotate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">R_i</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">R_o</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__rot_q</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MbError</span>
+
+        <span class="c1"># Surface generation</span>
+        <span class="n">R_i</span> <span class="o">=</span> <span class="p">((</span><span class="n">X</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">a_v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Y</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">b_v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Z</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">c_v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">R_i</span> <span class="o">=</span> <span class="n">tomo_rotate</span><span class="p">(</span><span class="n">R_i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__rot_q</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;reflect&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__surf</span> <span class="o">=</span> <span class="n">iso_surface</span><span class="p">(</span><span class="n">R_i</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">add_sfield_to_poly</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Mb__surf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__mask</span><span class="p">,</span> <span class="s1">&#39;mb_mask&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="n">interp</span><span class="o">=</span><span class="s1">&#39;NN&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;points&#39;</span><span class="p">)</span>
+        <span class="c1"># lio.save_vtp(self._Mb__surf, &#39;./out/hold.vtp&#39;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__surf</span> <span class="o">=</span> <span class="n">poly_threshold</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Mb__surf</span><span class="p">,</span> <span class="s1">&#39;mb_mask&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;points&#39;</span><span class="p">,</span> <span class="n">low_th</span><span class="o">=</span><span class="mf">.5</span><span class="p">)</span>
+        <span class="c1"># lio.save_vtp(self._Mb__surf, &#39;./out/hold2.vtp&#39;)</span>
+
+        <span class="c1"># Outer layer</span>
+        <span class="n">R_o</span> <span class="o">=</span> <span class="p">((</span><span class="n">X</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">ao_v_p1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Y</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">bo_v_p1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Z</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">co_v_p1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">R_i</span> <span class="o">=</span> <span class="p">((</span><span class="n">X</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">ao_v_m1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Y</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">bo_v_m1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Z</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">co_v_m1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">tomo_rotate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">R_i</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">R_o</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__rot_q</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Inner layer</span>
+        <span class="n">R_o</span> <span class="o">=</span> <span class="p">((</span><span class="n">X</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">ai_v_p1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Y</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">bi_v_p1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Z</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">ci_v_p1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">R_i</span> <span class="o">=</span> <span class="p">((</span><span class="n">X</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">ai_v_m1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Y</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">bi_v_m1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Z</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">ci_v_m1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">G</span> <span class="o">+=</span> <span class="n">tomo_rotate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">R_i</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">R_o</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__rot_q</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Smoothing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__tomo</span> <span class="o">=</span> <span class="n">lin_map</span><span class="p">(</span><span class="n">density_norm</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">s_v</span><span class="p">),</span> <span class="n">inv</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">ub</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="MbSphere">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.MbSphere">[docs]</a>
+<span class="k">class</span> <span class="nc">MbSphere</span><span class="p">(</span><span class="n">Mb</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for generating a membrane with Spherical shape</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tomo_shape</span><span class="p">,</span> <span class="n">v_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">rot_q</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">thick</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">layer_s</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rad</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param tomo_shape: reference tomogram shape (X, Y and Z dimensions)</span>
+<span class="sd">        :param v_size: reference tomogram voxel size (default 1)</span>
+<span class="sd">        :param center: ellipsoid center (VERY IMPORTANT: coordinates are not in voxels)</span>
+<span class="sd">        :param rot_q: rotation expressed as quaternion with respect ellipsoid center (default [1, 0, 0, 0] no rotation)</span>
+<span class="sd">        :param thick: membrane thickness (default 1)</span>
+<span class="sd">        :param layer_s: Gaussian sigma for each layer</span>
+<span class="sd">        :param rad: (default 1) sphere radius</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MbSphere</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">tomo_shape</span><span class="p">,</span> <span class="n">v_size</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">rot_q</span><span class="p">,</span> <span class="n">thick</span><span class="p">,</span> <span class="n">layer_s</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">rad</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__rad</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rad</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__build_tomos</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_Mb__build_tomos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="c1"># Input parsing</span>
+        <span class="n">t_v</span><span class="p">,</span> <span class="n">s_v</span> <span class="o">=</span> <span class="mf">.5</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Mb__thick</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__v_size</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__layer_s</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__v_size</span>
+        <span class="n">rad_v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__rad</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__v_size</span>
+        <span class="n">ao_v</span> <span class="o">=</span> <span class="n">rad_v</span> <span class="o">+</span> <span class="n">t_v</span>
+        <span class="n">ai_v</span> <span class="o">=</span> <span class="n">rad_v</span> <span class="o">-</span> <span class="n">t_v</span>
+        <span class="n">ao_v_p1</span> <span class="o">=</span> <span class="n">ao_v</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">ao_v_m1</span> <span class="o">=</span> <span class="n">ao_v</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">ai_v_p1</span> <span class="o">=</span> <span class="n">ai_v</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">ai_v_m1</span> <span class="o">=</span> <span class="n">ai_v</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">p0_v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__center</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__v_size</span>
+
+        <span class="c1"># Generating the bilayer</span>
+        <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Mb__tomo_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Mb__tomo_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Mb__tomo_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">dx2</span><span class="p">,</span> <span class="n">dy2</span><span class="p">,</span> <span class="n">dz2</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span> <span class="o">*</span> <span class="n">dx</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span> <span class="o">*</span> <span class="n">dy</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span> <span class="o">*</span> <span class="n">dz</span><span class="p">)</span>
+        <span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="n">dx2</span>
+        <span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">dy2</span>
+        <span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-=</span> <span class="n">dz2</span>
+        <span class="n">x_l</span><span class="p">,</span> <span class="n">y_l</span><span class="p">,</span> <span class="n">z_l</span> <span class="o">=</span> <span class="o">-</span><span class="n">dx2</span><span class="p">,</span> <span class="o">-</span><span class="n">dy2</span><span class="p">,</span> <span class="o">-</span><span class="n">dz2</span>
+        <span class="n">x_h</span><span class="p">,</span> <span class="n">y_h</span><span class="p">,</span> <span class="n">z_h</span> <span class="o">=</span> <span class="o">-</span><span class="n">dx2</span> <span class="o">+</span> <span class="n">dx</span><span class="p">,</span> <span class="o">-</span><span class="n">dy2</span> <span class="o">+</span> <span class="n">dy</span><span class="p">,</span> <span class="o">-</span><span class="n">dz2</span> <span class="o">+</span> <span class="n">dz</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">x_l</span><span class="p">,</span> <span class="n">x_h</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">y_l</span><span class="p">,</span> <span class="n">y_h</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">z_l</span><span class="p">,</span> <span class="n">z_h</span><span class="p">),</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;xy&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Mask generation</span>
+        <span class="n">R_o</span> <span class="o">=</span> <span class="p">((</span><span class="n">X</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">ao_v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Y</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">ao_v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Z</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">ao_v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">R_i</span> <span class="o">=</span> <span class="p">((</span><span class="n">X</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">ai_v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Y</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">ai_v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Z</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">ai_v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__mask</span> <span class="o">=</span> <span class="n">tomo_rotate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">R_i</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">R_o</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__rot_q</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Surface generation</span>
+        <span class="n">R_i</span> <span class="o">=</span> <span class="p">((</span><span class="n">X</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">rad_v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Y</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">rad_v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Z</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">rad_v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">R_i</span> <span class="o">=</span> <span class="n">tomo_rotate</span><span class="p">(</span><span class="n">R_i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__rot_q</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;reflect&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__surf</span> <span class="o">=</span> <span class="n">iso_surface</span><span class="p">(</span><span class="n">R_i</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">add_sfield_to_poly</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Mb__surf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__mask</span><span class="p">,</span> <span class="s1">&#39;mb_mask&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="n">interp</span><span class="o">=</span><span class="s1">&#39;NN&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;points&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__surf</span> <span class="o">=</span> <span class="n">poly_threshold</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Mb__surf</span><span class="p">,</span> <span class="s1">&#39;mb_mask&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;points&#39;</span><span class="p">,</span> <span class="n">low_th</span><span class="o">=</span><span class="mf">.5</span><span class="p">)</span>
+
+        <span class="c1"># Outer layer</span>
+        <span class="n">R_o</span> <span class="o">=</span> <span class="p">((</span><span class="n">X</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">ao_v_p1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Y</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">ao_v_p1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Z</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">ao_v_p1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">R_i</span> <span class="o">=</span> <span class="p">((</span><span class="n">X</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">ao_v_m1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Y</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">ao_v_m1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Z</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">ao_v_m1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">tomo_rotate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">R_i</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">R_o</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__rot_q</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># R = (X - p0_v[0])**2 + (Y - p0_v[1])**2 + (Z - p0_v[2])**2</span>
+        <span class="c1"># G = tomo_rotate(np.logical_and(R &gt;= ao_v_m1**2, R &lt;= ao_v_p1**2), self._Mb__rot_q, order=0)</span>
+
+        <span class="c1"># Inner layer</span>
+        <span class="n">R_o</span> <span class="o">=</span> <span class="p">((</span><span class="n">X</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">ai_v_p1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Y</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">ai_v_p1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Z</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">ai_v_p1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">R_i</span> <span class="o">=</span> <span class="p">((</span><span class="n">X</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">ai_v_m1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Y</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">ai_v_m1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">((</span><span class="n">Z</span> <span class="o">-</span> <span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">ai_v_m1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">G</span> <span class="o">+=</span> <span class="n">tomo_rotate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">R_i</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">R_o</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__rot_q</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># G += tomo_rotate(np.logical_and(R &gt;= ai_v_m1**2, R_o &lt;= ai_v_p1**2), self._Mb__rot_q, order=0)</span>
+
+        <span class="c1"># Smoothing</span>
+        <span class="c1"># TODO: is it required the density_norm() having lin_map()?</span>
+        <span class="c1"># self._Mb__tomo = lin_map(density_norm(sp.ndimage.gaussian_filter(G.astype(float), s_v), inv=True), ub=0, lb=1)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__tomo</span> <span class="o">=</span> <span class="n">lin_map</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">s_v</span><span class="p">),</span> <span class="n">ub</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="MbTorus">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.MbTorus">[docs]</a>
+<span class="k">class</span> <span class="nc">MbTorus</span><span class="p">(</span><span class="n">Mb</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for generating a membrane with Toroidal shape</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tomo_shape</span><span class="p">,</span> <span class="n">v_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">rot_q</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">thick</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">layer_s</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rad_a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rad_b</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param tomo_shape: reference tomogram shape (X, Y and Z dimensions)</span>
+<span class="sd">        :param v_size: reference tomogram voxel size (default 1)</span>
+<span class="sd">        :param center: ellipsoid center (VERY IMPORTANT: coordinates are not in voxels)</span>
+<span class="sd">        :param rot_q: rotation expressed as quaternion with respect ellipsoid center (default [1, 0, 0, 0] no rotation)</span>
+<span class="sd">        :param thick: membrane thickness (default 1)</span>
+<span class="sd">        :param layer_s: Gaussian sigma for each layer</span>
+<span class="sd">        :param rad_a: (default 1) torus radius</span>
+<span class="sd">        :param rad_b: (default 1) torus tube radius</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MbTorus</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">tomo_shape</span><span class="p">,</span> <span class="n">v_size</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">rot_q</span><span class="p">,</span> <span class="n">thick</span><span class="p">,</span> <span class="n">layer_s</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">rad_a</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">rad_b</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__rad_a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__rad_b</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rad_a</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">rad_b</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__build_tomos</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_Mb__build_tomos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="c1"># Input parsing</span>
+        <span class="n">t_v</span><span class="p">,</span> <span class="n">s_v</span> <span class="o">=</span> <span class="mf">.5</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Mb__thick</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__v_size</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__layer_s</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__v_size</span>
+        <span class="n">rad_a_v</span><span class="p">,</span> <span class="n">rad_b_v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__rad_a</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__v_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__rad_b</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__v_size</span>
+        <span class="n">bo_v</span><span class="p">,</span> <span class="n">bi_v</span> <span class="o">=</span> <span class="n">rad_b_v</span> <span class="o">+</span> <span class="n">t_v</span><span class="p">,</span> <span class="n">rad_b_v</span> <span class="o">-</span> <span class="n">t_v</span>
+        <span class="n">bo_v_p1</span><span class="p">,</span> <span class="n">bo_v_m1</span> <span class="o">=</span> <span class="n">bo_v</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bo_v</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">bi_v_p1</span><span class="p">,</span> <span class="n">bi_v_m1</span> <span class="o">=</span> <span class="n">bi_v</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bi_v</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">p0_v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__center</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__v_size</span>
+
+        <span class="c1"># Generating the bilayer</span>
+        <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Mb__tomo_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Mb__tomo_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Mb__tomo_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">dx2</span><span class="p">,</span> <span class="n">dy2</span><span class="p">,</span> <span class="n">dz2</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span> <span class="o">*</span> <span class="n">dx</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span> <span class="o">*</span> <span class="n">dy</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span> <span class="o">*</span> <span class="n">dz</span><span class="p">)</span>
+        <span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="n">dx2</span>
+        <span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">dy2</span>
+        <span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-=</span> <span class="n">dz2</span>
+        <span class="n">x_l</span><span class="p">,</span> <span class="n">y_l</span><span class="p">,</span> <span class="n">z_l</span> <span class="o">=</span> <span class="o">-</span><span class="n">dx2</span><span class="p">,</span> <span class="o">-</span><span class="n">dy2</span><span class="p">,</span> <span class="o">-</span><span class="n">dz2</span>
+        <span class="n">x_h</span><span class="p">,</span> <span class="n">y_h</span><span class="p">,</span> <span class="n">z_h</span> <span class="o">=</span> <span class="o">-</span><span class="n">dx2</span> <span class="o">+</span> <span class="n">dx</span><span class="p">,</span> <span class="o">-</span><span class="n">dy2</span> <span class="o">+</span> <span class="n">dy</span><span class="p">,</span> <span class="o">-</span><span class="n">dz2</span> <span class="o">+</span> <span class="n">dz</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">x_l</span><span class="p">,</span> <span class="n">x_h</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">y_l</span><span class="p">,</span> <span class="n">y_h</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">z_l</span><span class="p">,</span> <span class="n">z_h</span><span class="p">),</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;xy&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Mask generation</span>
+        <span class="n">R_o</span> <span class="o">=</span> <span class="p">((</span><span class="n">rad_a_v</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">X</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Z</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">bo_v</span><span class="o">*</span><span class="n">bo_v</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span>
+        <span class="n">R_i</span> <span class="o">=</span> <span class="p">((</span><span class="n">rad_a_v</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">X</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Z</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">bi_v</span><span class="o">*</span><span class="n">bi_v</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__mask</span> <span class="o">=</span> <span class="n">tomo_rotate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">R_i</span><span class="p">,</span> <span class="n">R_o</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__rot_q</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Surface generation</span>
+        <span class="n">R_i</span> <span class="o">=</span> <span class="p">((</span><span class="n">rad_a_v</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">X</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Z</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">rad_b_v</span><span class="o">*</span><span class="n">rad_b_v</span><span class="p">)</span>
+        <span class="n">R_i</span> <span class="o">=</span> <span class="n">tomo_rotate</span><span class="p">(</span><span class="n">R_i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__rot_q</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;reflect&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__surf</span> <span class="o">=</span> <span class="n">iso_surface</span><span class="p">(</span><span class="n">R_i</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">add_sfield_to_poly</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Mb__surf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__mask</span><span class="p">,</span> <span class="s1">&#39;mb_mask&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="n">interp</span><span class="o">=</span><span class="s1">&#39;NN&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;points&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__surf</span> <span class="o">=</span> <span class="n">poly_threshold</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Mb__surf</span><span class="p">,</span> <span class="s1">&#39;mb_mask&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;points&#39;</span><span class="p">,</span> <span class="n">low_th</span><span class="o">=</span><span class="mf">.5</span><span class="p">)</span>
+
+        <span class="c1"># Outer layer</span>
+        <span class="n">R_o</span> <span class="o">=</span> <span class="p">((</span><span class="n">rad_a_v</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">X</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Z</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">bo_v_p1</span><span class="o">*</span><span class="n">bo_v_p1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span>
+        <span class="n">R_i</span> <span class="o">=</span> <span class="p">((</span><span class="n">rad_a_v</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">X</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Z</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">bo_v_m1</span><span class="o">*</span><span class="n">bo_v_m1</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">tomo_rotate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">R_i</span><span class="p">,</span> <span class="n">R_o</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__rot_q</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Inner layer</span>
+        <span class="n">R_o</span> <span class="o">=</span> <span class="p">((</span><span class="n">rad_a_v</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">X</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Z</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">bi_v_p1</span> <span class="o">*</span> <span class="n">bi_v_p1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span>
+        <span class="n">R_i</span> <span class="o">=</span> <span class="p">((</span><span class="n">rad_a_v</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">X</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Z</span><span class="o">-</span><span class="n">p0_v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">bi_v_m1</span> <span class="o">*</span> <span class="n">bi_v_m1</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span>
+        <span class="n">G</span> <span class="o">+=</span> <span class="n">tomo_rotate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">R_i</span><span class="p">,</span> <span class="n">R_o</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__rot_q</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Smoothing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Mb__tomo</span> <span class="o">=</span> <span class="n">lin_map</span><span class="p">(</span><span class="n">density_norm</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">s_v</span><span class="p">),</span> <span class="n">inv</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">ub</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="SetMembranes">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.SetMembranes">[docs]</a>
+<span class="k">class</span> <span class="nc">SetMembranes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for modelling a set of membranes within a tomogram</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">voi</span><span class="p">,</span> <span class="n">v_size</span><span class="p">,</span> <span class="n">gen_rnd_surfs</span><span class="p">,</span> <span class="n">param_rg</span><span class="p">,</span> <span class="n">thick_rg</span><span class="p">,</span> <span class="n">layer_rg</span><span class="p">,</span> <span class="n">occ</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">bg_voi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">grow</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construction</span>
+
+<span class="sd">        :param voi: a 3D numpy array to define a VOI (Volume Of Interest) for membranes</span>
+<span class="sd">        :param v_size: voxel size</span>
+<span class="sd">        :param gen_rnd_surf: an of object that inherits from lrandom.SurfGen class to generate random instances with</span>
+<span class="sd">                             membrane surface parameters, therefore the objects class determine the shape of the membranes</span>
+<span class="sd">                             generated</span>
+<span class="sd">        :param thick_rg: membrane thickness range (2-tuple)</span>
+<span class="sd">        :param layer_s: lipid layer range (2-tuple)</span>
+<span class="sd">        :param occ: occupancy threshold in percentage [0, 100]%</span>
+<span class="sd">        :param over_tolerance: fraction of overlapping tolerance for self avoiding (default 0, in range [0,1))</span>
+<span class="sd">        :param bg_voi: background VOI (Default None), if present membrane areas in this VOI will be removed and</span>
+<span class="sd">        :param grow: number of voxel to grow the VOI</span>
+<span class="sd">        not considered for overlapping. It must be binary with the same shape of voi</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Input parsing</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">voi</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">voi</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">gen_rnd_surfs</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">SurfGen</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">param_rg</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">param_rg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">param_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">param_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">thick_rg</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">thick_rg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">thick_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">thick_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">layer_rg</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">layer_rg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">layer_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">layer_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">occ</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">occ</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">over_tolerance</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">over_tolerance</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">bg_voi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bg_voi</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">bg_voi</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">voi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">bg_voi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="ow">and</span> <span class="n">voi</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">bg_voi</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">assert</span> <span class="n">grow</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+
+        <span class="c1"># Variables assignment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__voi</span> <span class="o">=</span> <span class="n">voi</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__bg_voi</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">bg_voi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__bg_voi</span> <span class="o">=</span> <span class="n">bg_voi</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__vol</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__voi</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">*</span> <span class="n">v_size</span> <span class="o">*</span> <span class="n">v_size</span> <span class="o">*</span> <span class="n">v_size</span> <span class="c1"># without the float cast it may raise overflow warining in Windows</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span> <span class="o">=</span> <span class="n">v_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__gtruth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">voi</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">),</span> \
+                                     <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">voi</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__surfs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__app_vtp</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">(),</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkAppendPolyData</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__count_mbs</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__gen_rnd_surfs</span> <span class="o">=</span> <span class="n">gen_rnd_surfs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__param_rg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__thick_rg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__layer_rg</span> <span class="o">=</span> <span class="n">param_rg</span><span class="p">,</span> <span class="n">thick_rg</span><span class="p">,</span> <span class="n">layer_rg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__over_tolerance</span> <span class="o">=</span> <span class="n">occ</span><span class="p">,</span> <span class="n">over_tolerance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__grow</span> <span class="o">=</span> <span class="n">grow</span>
+
+<div class="viewcode-block" id="SetMembranes.get_vol">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.SetMembranes.get_vol">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_vol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__vol</span></div>
+
+
+<div class="viewcode-block" id="SetMembranes.get_mb_occupancy">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.SetMembranes.get_mb_occupancy">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mb_occupancy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__gtruth</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SetMembranes.build_set">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.SetMembranes.build_set">[docs]</a>
+    <span class="k">def</span> <span class="nf">build_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build a set of ellipsoid membranes and insert them in a tomogram and a vtkPolyData object</span>
+
+<span class="sd">        :param verbosity: if True (default False) the output message with info about the membranes generated is printed</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Initialization</span>
+        <span class="n">count_mb</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">count_exp</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Network loop</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_mb_occupancy</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">__occ</span><span class="p">:</span>
+
+            <span class="c1"># Polymer initialization</span>
+            <span class="n">p0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(),</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(),</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()))</span>
+            <span class="n">thick</span><span class="p">,</span> <span class="n">layer_s</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__thick_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__thick_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> \
+                             <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__layer_rg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__layer_rg</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">rot_q</span> <span class="o">=</span> <span class="n">gen_rand_unit_quaternion</span><span class="p">()</span>
+
+            <span class="k">try</span><span class="p">:</span>
+
+                <span class="c1"># Membrane generation according the predefined surface model</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__gen_rnd_surfs</span><span class="p">,</span> <span class="n">EllipGen</span><span class="p">):</span>
+                    <span class="n">ellip_axes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__gen_rnd_surfs</span><span class="o">.</span><span class="n">gen_parameters_exp</span><span class="p">()</span>
+                    <span class="n">hold_mb</span> <span class="o">=</span> <span class="n">MbEllipsoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">v_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span><span class="p">,</span>
+                                          <span class="n">center</span><span class="o">=</span><span class="n">p0</span><span class="p">,</span> <span class="n">rot_q</span><span class="o">=</span><span class="n">rot_q</span><span class="p">,</span> <span class="n">thick</span><span class="o">=</span><span class="n">thick</span><span class="p">,</span> <span class="n">layer_s</span><span class="o">=</span><span class="n">layer_s</span><span class="p">,</span>
+                                          <span class="n">a</span><span class="o">=</span><span class="n">ellip_axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">b</span><span class="o">=</span><span class="n">ellip_axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">ellip_axes</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                    <span class="n">hold_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ellip_axes</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__gen_rnd_surfs</span><span class="p">,</span> <span class="n">SphGen</span><span class="p">):</span>
+                    <span class="n">rad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__gen_rnd_surfs</span><span class="o">.</span><span class="n">gen_parameters</span><span class="p">()</span>
+                    <span class="n">hold_mb</span> <span class="o">=</span> <span class="n">MbSphere</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">v_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span><span class="p">,</span>
+                                       <span class="n">center</span><span class="o">=</span><span class="n">p0</span><span class="p">,</span> <span class="n">rot_q</span><span class="o">=</span><span class="n">rot_q</span><span class="p">,</span> <span class="n">thick</span><span class="o">=</span><span class="n">thick</span><span class="p">,</span> <span class="n">layer_s</span><span class="o">=</span><span class="n">layer_s</span><span class="p">,</span> <span class="n">rad</span><span class="o">=</span><span class="n">rad</span><span class="p">)</span>
+                    <span class="n">hold_rad</span> <span class="o">=</span> <span class="n">rad</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__gen_rnd_surfs</span><span class="p">,</span> <span class="n">TorGen</span><span class="p">):</span>
+                    <span class="n">tor_axes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__gen_rnd_surfs</span><span class="o">.</span><span class="n">gen_parameters</span><span class="p">()</span>
+                    <span class="n">hold_mb</span> <span class="o">=</span> <span class="n">MbTorus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__voi</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">v_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span><span class="p">,</span>
+                                      <span class="n">center</span><span class="o">=</span><span class="n">p0</span><span class="p">,</span> <span class="n">rot_q</span><span class="o">=</span><span class="n">rot_q</span><span class="p">,</span> <span class="n">thick</span><span class="o">=</span><span class="n">thick</span><span class="p">,</span> <span class="n">layer_s</span><span class="o">=</span><span class="n">layer_s</span><span class="p">,</span>
+                                      <span class="n">rad_a</span><span class="o">=</span><span class="n">tor_axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rad_b</span><span class="o">=</span><span class="n">tor_axes</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="n">hold_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">tor_axes</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR: not valid random surface parameters generator: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__gen_rnd_surfs</span><span class="o">.</span><span class="vm">__class__</span><span class="p">))</span>
+                    <span class="k">raise</span> <span class="n">MbError</span>
+
+                <span class="c1"># Background masking</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__bg_voi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">hold_mb</span><span class="o">.</span><span class="n">masking</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__bg_voi</span><span class="p">)</span>
+
+                <span class="c1"># Insert membrane</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">insert_mb</span><span class="p">(</span><span class="n">hold_mb</span><span class="p">,</span> <span class="n">merge</span><span class="o">=</span><span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__over_tolerance</span><span class="p">,</span> <span class="n">check_vol</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">grow</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__grow</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">verbosity</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Membrane &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">count_mb</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;, total occupancy: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_mb_occupancy</span><span class="p">())</span> <span class="o">+</span>
+                          <span class="s1">&#39;, volume: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">hold_mb</span><span class="o">.</span><span class="n">get_vol</span><span class="p">())</span> <span class="o">+</span> <span class="s1">&#39;, thickness: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">hold_mb</span><span class="o">.</span><span class="n">get_thick</span><span class="p">())</span> <span class="o">+</span>
+                          <span class="s1">&#39;, layer_s: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">hold_mb</span><span class="o">.</span><span class="n">get_layer_s</span><span class="p">())</span> <span class="o">+</span> <span class="s1">&#39;, radius (avg): &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">hold_rad</span><span class="p">))</span>
+                <span class="n">count_mb</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># Handling the exception raised when a membrane could not be generated properly</span>
+            <span class="k">except</span> <span class="n">MbError</span><span class="p">:</span>
+                <span class="n">count_exp</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="c1"># print(&#39;JOl&#39;)</span>
+                <span class="c1"># print(&#39;Count: &#39; + str(count_exp))</span>
+                <span class="k">if</span> <span class="n">count_exp</span> <span class="o">==</span> <span class="n">MAX_TRIES_MB</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;WARNING: more than &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">MAX_TRIES_MB</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; tries failed to insert a membrane!&#39;</span><span class="p">)</span>
+                    <span class="k">break</span>
+            <span class="n">count_exp</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="SetMembranes.get_voi">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.SetMembranes.get_voi">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_voi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the VOI</span>
+
+<span class="sd">        :return: an ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__voi</span></div>
+
+
+<div class="viewcode-block" id="SetMembranes.get_tomo">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.SetMembranes.get_tomo">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_tomo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the tomogram with the membranes within the VOI</span>
+
+<span class="sd">        :return: an ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># return np.invert(self.__voi) * self.__tomo</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span></div>
+
+
+<div class="viewcode-block" id="SetMembranes.get_gtruth">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.SetMembranes.get_gtruth">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_gtruth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the ground truth within the VOI</span>
+
+<span class="sd">        :return: an ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># return self.__voi * self.__gtruth</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__gtruth</span></div>
+
+
+<div class="viewcode-block" id="SetMembranes.get_vtp">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.SetMembranes.get_vtp">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_vtp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the set of membranes as a vtkPolyData with their surfaces</span>
+
+<span class="sd">        :return: a vtkPolyData</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__surfs</span></div>
+
+
+<div class="viewcode-block" id="SetMembranes.get_num_mbs">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.SetMembranes.get_num_mbs">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_num_mbs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the number of membranes in the set</span>
+
+<span class="sd">        :return: an integer with the number of membranes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__count_mbs</span></div>
+
+
+<div class="viewcode-block" id="SetMembranes.check_overlap">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.SetMembranes.check_overlap">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_overlap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mb</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines if the membrane overlaps with any member within the membranes set</span>
+
+<span class="sd">        :param mb: input Membrane to check for the overlapping</span>
+<span class="sd">        :param over_tolerance: overlapping tolerance (percentage of membrane voxel overlapping)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mb_mask</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">get_mask</span><span class="p">()</span>
+        <span class="c1">#tomo_mb = np.zeros(shape=mb_mask.shape, dtype=bool)</span>
+        <span class="c1"># mb.insert_density_svol(tomo_mb, merge=&#39;max&#39;)</span>
+        <span class="c1"># tomo_over = np.logical_and(mb_mask, self.__gtruth)</span>
+        <span class="n">tomo_over</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">mb_mask</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__voi</span><span class="p">))</span>
+        <span class="k">if</span> <span class="mf">100.</span> <span class="o">*</span> <span class="p">(</span><span class="n">tomo_over</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_vol</span><span class="p">())</span> <span class="o">&gt;</span> <span class="n">over_tolerance</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="SetMembranes.compute_overlap">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.SetMembranes.compute_overlap">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_overlap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mb</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes membrane overlapping with the set</span>
+
+<span class="sd">        :param mb: input Membrane to check for the overlapping</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mb_mask</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">get_mask</span><span class="p">()</span>
+        <span class="n">tomo_mb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">mb_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">insert_density_svol</span><span class="p">(</span><span class="n">tomo_mb</span><span class="p">,</span> <span class="n">merge</span><span class="o">=</span><span class="s1">&#39;max&#39;</span><span class="p">)</span>
+        <span class="n">tomo_over</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">tomo_mb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__gtruth</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">__voi</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mf">100.</span> <span class="o">*</span> <span class="p">(</span><span class="n">tomo_over</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_vol</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="SetMembranes.insert_mb">
+<a class="viewcode-back" href="../../polnet.html#polnet.membrane.SetMembranes.insert_mb">[docs]</a>
+    <span class="k">def</span> <span class="nf">insert_mb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mb</span><span class="p">,</span> <span class="n">merge</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_vol</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">grow</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Insert the membrane into the set (tomogram, vtkPolyData and Ground Truth)</span>
+
+<span class="sd">        :param mb: input membrane (Mb) object</span>
+<span class="sd">        :param merge: merging mode for density insertion, valid: &#39;min&#39; (default), &#39;max&#39;, &#39;sum&#39; and &#39;insert&#39;</span>
+<span class="sd">        :param over_tolerance: overlapping tolerance (percentage of membrane voxel overlapping), if None then disabled</span>
+<span class="sd">        :param check_vol: if True (default) the input membrane volume is check and if equal to zero then the membrane</span>
+<span class="sd">                          is not inserted and MbError is raised</span>
+<span class="sd">        :param grow: number of voxel to grow the membrane tomogram to insert (default 0), only used in &#39;voi&#39; mode</span>
+<span class="sd">        :return: raises a ValueError if the membrane is not inserted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">check_vol</span> <span class="ow">and</span> <span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">get_vol</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">MbError</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">over_tolerance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_overlap</span><span class="p">(</span><span class="n">mb</span><span class="p">,</span> <span class="n">over_tolerance</span><span class="p">)):</span>
+            <span class="c1"># Density tomogram insertion</span>
+            <span class="n">mb</span><span class="o">.</span><span class="n">insert_density_svol</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tomo</span><span class="p">,</span> <span class="n">merge</span><span class="o">=</span><span class="n">merge</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;tomo&#39;</span><span class="p">)</span>
+            <span class="c1"># Ground Truth</span>
+            <span class="n">mb</span><span class="o">.</span><span class="n">insert_density_svol</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__gtruth</span><span class="p">,</span> <span class="n">merge</span><span class="o">=</span><span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;mask&#39;</span><span class="p">)</span>
+            <span class="c1"># VOI</span>
+            <span class="n">mb</span><span class="o">.</span><span class="n">insert_density_svol</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__voi</span><span class="p">,</span> <span class="n">merge</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;voi&#39;</span><span class="p">,</span> <span class="n">grow</span><span class="o">=</span><span class="n">grow</span><span class="p">)</span>
+            <span class="c1"># Surfaces insertion</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__app_vtp</span><span class="o">.</span><span class="n">AddInputData</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">get_vtp</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__app_vtp</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__surfs</span> <span class="o">=</span> <span class="n">poly_scale</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__app_vtp</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">__v_size</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__count_mbs</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MbError</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Antonio Martinez-Sanchez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -17,6 +17,7 @@ from vtkmodules.util.numpy_support import numpy_to_vtk
 def load_mrc(fname, mmap=False, no_saxes=True):
     """
     Load an input MRC tomogram as ndarray
+
     :param fname: the input MRC
     :param mmap: if True (default False) the data are read as a memory map
     :param no_saxes: if True (default) then X and Y axes are swaped to cancel the swaping made by mrcfile package
@@ -34,6 +35,7 @@ def load_mrc(fname, mmap=False, no_saxes=True):
 def write_mrc(tomo, fname, v_size=1, dtype=None, no_saxes=True):
     """
     Saves a tomo (3D dataset) as MRC file
+
     :param tomo: tomo to save as ndarray
     :param fname: output file path
     :param v_size: voxel size (default 1)
@@ -61,6 +63,7 @@ def write_mrc(tomo, fname, v_size=1, dtype=None, no_saxes=True):
 def read_mrc_v_size(fname):
     """
     Reads the voxel size of a mrc file from its header
+
     :param fname: filename of the MRC
     :return: a 3-tuple with the voxel size in Angstrom for each dimension (X, Y, Z)
     """
@@ -71,6 +74,7 @@ def read_mrc_v_size(fname):
 def save_vtp(poly, fname):
     """
     Store data vtkPolyData as a .vtp file
+
     :param poly: input vtkPolyData to store
     :param fname: output path file
     :return:
@@ -86,6 +90,7 @@ def save_vtp(poly, fname):
 def save_vti(image, fname):
     """
     Store data vtkPolyData as a .vti file
+
     :param image: input image as numpy array
     :param fname: output path file
     :return:
@@ -101,6 +106,7 @@ def save_vti(image, fname):
 def load_poly(fname):
     """
     Load data vtkPolyData object from a file
+
     :param fname: input .vtp file
     :return: the vtkPolyData object loaded
     """
@@ -115,6 +121,7 @@ def load_poly(fname):
 def load_csv_into_tomo_tables(in_csv_file):
     """
     Load a CSV file as a dictionary of tables, one for each density
+
     :param in_csv_file: input CSV file path
     :return: a dictionary where each density path is an entry for a table, each table contains all particles of single
              density
@@ -138,6 +145,7 @@ def load_csv_into_tomo_tables(in_csv_file):
 def write_table(table, out_file):
     """
     Store a table in a CSV file
+
     :param table: input table dictionary
     :param out_file: path for the output file
     :return:
@@ -156,6 +164,7 @@ def write_table(table, out_file):
 def numpy_to_vti(tomo: np.ndarray, dtype=vtk.VTK_FLOAT) -> vtk.vtkImageData:
     """
     Converts a tomogram as a 3D numpy array into an vtkImageData object
+
     :param tomo: 3D numpy array
     :param dtype: VTK data type, default VTK_FLOAT
     :return: a vktImageData

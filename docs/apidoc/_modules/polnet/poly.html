@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>polnet.poly &mdash; PolNet 0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=10f1778b"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PolNet
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">polnet</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PolNet</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">polnet.poly</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for polnet.poly</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Functionality of processing PolyData</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Antonio Martinez-Sanchez&#39;</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">from</span> <span class="nn">polnet.affine</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">polnet.utils</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">vtk</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
+
+<span class="c1"># CONSTANTS</span>
+
+<span class="n">GTRUTH_VTP_LBLS</span> <span class="o">=</span> <span class="s1">&#39;gt_labels&#39;</span>
+
+
+<span class="c1"># FUNCTIONS</span>
+<span class="kn">from</span> <span class="nn">polnet.utils</span> <span class="kn">import</span> <span class="n">wrap_angle</span>
+
+
+<div class="viewcode-block" id="find_point_on_poly">
+<a class="viewcode-back" href="../../polnet.html#polnet.poly.find_point_on_poly">[docs]</a>
+<span class="k">def</span> <span class="nf">find_point_on_poly</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">poly</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find the closest point on a poly to a reference point</span>
+
+<span class="sd">    :param point: input reference point</span>
+<span class="sd">    :param poly: poly data where the closest output point has to be found</span>
+<span class="sd">    :return: output point</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">point</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="n">point_tree</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkKdTreePointLocator</span><span class="p">()</span>
+    <span class="n">point_tree</span><span class="o">.</span><span class="n">SetDataSet</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span>
+    <span class="n">point_tree</span><span class="o">.</span><span class="n">BuildLocator</span><span class="p">()</span>
+    <span class="n">cpoint_id</span> <span class="o">=</span> <span class="n">point_tree</span><span class="o">.</span><span class="n">FindClosestPoint</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
+    <span class="n">normals</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">GetPointData</span><span class="p">()</span><span class="o">.</span><span class="n">GetNormals</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">poly</span><span class="o">.</span><span class="n">GetPoint</span><span class="p">(</span><span class="n">cpoint_id</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">normals</span><span class="o">.</span><span class="n">GetTuple</span><span class="p">(</span><span class="n">cpoint_id</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="gen_rand_quaternion_on_vector">
+<a class="viewcode-back" href="../../polnet.html#polnet.poly.gen_rand_quaternion_on_vector">[docs]</a>
+<span class="k">def</span> <span class="nf">gen_rand_quaternion_on_vector</span><span class="p">(</span><span class="n">vect</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a unit quaternion which represents a random rotation around an input reference vector from Z-axis</span>
+
+<span class="sd">    :param vect: reference vector</span>
+<span class="sd">    :return: a quaternion which represents the rotation from Z-axis unit vector to be aligned to reference vector, plus</span>
+<span class="sd">             a random rotation around the axis defined by the reference vector.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">vect</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vect</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="n">rnd_ang</span> <span class="o">=</span> <span class="mf">360.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">-</span> <span class="mf">180.</span>
+    <span class="n">q1</span> <span class="o">=</span> <span class="n">angle_axis_to_quat</span><span class="p">(</span><span class="n">rnd_ang</span><span class="p">,</span> <span class="n">vect</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">vect</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">vect</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">vect_to_zmat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vect</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;passive&#39;</span><span class="p">)</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">rot_to_quat</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">quat_mult</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">q1</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="gen_uni_s2_sample_on_poly">
+<a class="viewcode-back" href="../../polnet.html#polnet.poly.gen_uni_s2_sample_on_poly">[docs]</a>
+<span class="k">def</span> <span class="nf">gen_uni_s2_sample_on_poly</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">rad</span><span class="p">,</span> <span class="n">thick</span><span class="p">,</span> <span class="n">poly</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a coordinate from an approximately uniformly random distribution on the intersection between a holow</span>
+<span class="sd">    sphere a PolyData</span>
+
+<span class="sd">    :param center: sphere center</span>
+<span class="sd">    :param rad: sphere radius</span>
+<span class="sd">    :param poly: input poly (vtkPolyData object)</span>
+<span class="sd">    :param thick: hollow sphere thickness</span>
+<span class="sd">    :return: the random coordinate generated or None if no intersection</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">center</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">rad</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">thick</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">poly</span><span class="p">,</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">)</span>
+
+    <span class="c1"># Find poly points within rad+thick</span>
+    <span class="n">kdtree</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkKdTreePointLocator</span><span class="p">()</span>
+    <span class="n">kdtree</span><span class="o">.</span><span class="n">SetDataSet</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span>
+    <span class="n">kdtree</span><span class="o">.</span><span class="n">BuildLocator</span><span class="p">()</span>
+    <span class="n">pids</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkIdList</span><span class="p">()</span>
+    <span class="n">kdtree</span><span class="o">.</span><span class="n">FindPointsWithinRadius</span><span class="p">(</span><span class="n">rad</span> <span class="o">+</span> <span class="mf">.5</span><span class="o">*</span><span class="n">thick</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">pids</span><span class="p">)</span>
+
+    <span class="c1"># save_vtp(vtp_inter, &#39;./out/hold_3.vtp&#39;)</span>
+
+    <span class="c1"># Get a points randomly un util a point is found in the intersection</span>
+    <span class="n">min_dst</span><span class="p">,</span> <span class="n">n_pts</span> <span class="o">=</span> <span class="n">rad</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">thick</span><span class="p">,</span> <span class="n">pids</span><span class="o">.</span><span class="n">GetNumberOfIds</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_pts</span><span class="p">,</span> <span class="n">n_pts</span><span class="p">):</span>
+        <span class="n">pt</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">GetPoint</span><span class="p">(</span><span class="n">pids</span><span class="o">.</span><span class="n">GetId</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+        <span class="n">hold</span> <span class="o">=</span> <span class="n">center</span> <span class="o">-</span> <span class="n">pt</span>
+        <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">hold</span> <span class="o">*</span> <span class="n">hold</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">&gt;</span> <span class="n">min_dst</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pt</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="gen_uni_s2_sample_on_poly_inter">
+<a class="viewcode-back" href="../../polnet.html#polnet.poly.gen_uni_s2_sample_on_poly_inter">[docs]</a>
+<span class="k">def</span> <span class="nf">gen_uni_s2_sample_on_poly_inter</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">rad</span><span class="p">,</span> <span class="n">poly</span><span class="p">,</span> <span class="n">sph_res</span><span class="o">=</span><span class="mi">360</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a coordinate from an approximately uniformly random distribution on the intersection between an sphere</span>
+<span class="sd">    a PolyData</span>
+
+<span class="sd">    @Deprecated: the usage vtkIntersectionPolyDataFilter makes this function too slow</span>
+
+<span class="sd">    :param center: sphere center</span>
+<span class="sd">    :param rad: sphere radius</span>
+<span class="sd">    :param poly: input poly (vtkPolyData object)</span>
+<span class="sd">    :param sph_res: resolution for generating the surfaces polydata for both (longitude and latitude resolution),</span>
+<span class="sd">                    default is 360 (1 degree resolution)</span>
+<span class="sd">    :return: the random coordinate generated or None if no intersection</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">center</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">rad</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">poly</span><span class="p">,</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">)</span>
+
+    <span class="c1"># Generate the sphere polydata</span>
+    <span class="n">vtp_source</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkSphereSource</span><span class="p">()</span>
+    <span class="n">vtp_source</span><span class="o">.</span><span class="n">SetCenter</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">vtp_source</span><span class="o">.</span><span class="n">SetRadius</span><span class="p">(</span><span class="n">rad</span><span class="p">)</span>
+    <span class="n">vtp_source</span><span class="o">.</span><span class="n">SetPhiResolution</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span>
+    <span class="n">vtp_source</span><span class="o">.</span><span class="n">SetThetaResolution</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span>
+    <span class="n">vtp_source</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+    <span class="n">vtp_sphere</span> <span class="o">=</span> <span class="n">vtp_source</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span>
+
+    <span class="c1"># # Debug</span>
+    <span class="c1"># from polnet.lio import save_vtp</span>
+    <span class="c1"># save_vtp(vtp_sphere, &#39;./out/hold_1.vtp&#39;)</span>
+    <span class="c1"># save_vtp(poly, &#39;./out/hold_2.vtp&#39;)</span>
+
+    <span class="c1"># Compute polydata objects intersection</span>
+    <span class="n">inter_flt</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkIntersectionPolyDataFilter</span><span class="p">()</span>
+    <span class="n">inter_flt</span><span class="o">.</span><span class="n">SetInputDataObject</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">vtp_sphere</span><span class="p">)</span>
+    <span class="n">inter_flt</span><span class="o">.</span><span class="n">SetInputDataObject</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">poly</span><span class="p">)</span>
+    <span class="n">inter_flt</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+    <span class="n">vtp_inter</span> <span class="o">=</span> <span class="n">inter_flt</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span>
+
+    <span class="c1"># save_vtp(vtp_inter, &#39;./out/hold_3.vtp&#39;)</span>
+
+    <span class="c1"># Get a point randomly on intersection</span>
+    <span class="n">n_pts</span> <span class="o">=</span> <span class="n">vtp_inter</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">n_pts</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">rnd_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">vtp_inter</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vtp_inter</span><span class="o">.</span><span class="n">GetPoint</span><span class="p">(</span><span class="n">rnd_id</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="poly_reverse_normals">
+<a class="viewcode-back" href="../../polnet.html#polnet.poly.poly_reverse_normals">[docs]</a>
+<span class="k">def</span> <span class="nf">poly_reverse_normals</span><span class="p">(</span><span class="n">poly</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reverse the normals of an input polydata</span>
+
+<span class="sd">    :param poly: input vtkPolyData object</span>
+<span class="sd">    :return: a vtkPolyData object copy of the input but with the normals reversed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">poly</span><span class="p">,</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">)</span>
+    <span class="n">reverse</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkReverseSense</span><span class="p">()</span>
+    <span class="n">reverse</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span>
+    <span class="n">reverse</span><span class="o">.</span><span class="n">ReverseNormalsOn</span><span class="p">()</span>
+    <span class="n">reverse</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">reverse</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="poly_volume">
+<a class="viewcode-back" href="../../polnet.html#polnet.poly.poly_volume">[docs]</a>
+<span class="k">def</span> <span class="nf">poly_volume</span><span class="p">(</span><span class="n">poly</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the volume of polydata</span>
+
+<span class="sd">    :param poly: input vtkPolyData</span>
+<span class="sd">    :return: the volume computed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">poly</span><span class="p">,</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">)</span>
+    <span class="n">mass</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkMassProperties</span><span class="p">()</span>
+    <span class="n">mass</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mass</span><span class="o">.</span><span class="n">GetVolume</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="poly_surface_area">
+<a class="viewcode-back" href="../../polnet.html#polnet.poly.poly_surface_area">[docs]</a>
+<span class="k">def</span> <span class="nf">poly_surface_area</span><span class="p">(</span><span class="n">poly</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the surface area of polydata</span>
+
+<span class="sd">    :param poly: input vtkPolyData</span>
+<span class="sd">    :return: the volume computed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">poly</span><span class="p">,</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">)</span>
+    <span class="n">mass</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkMassProperties</span><span class="p">()</span>
+    <span class="n">mass</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mass</span><span class="o">.</span><span class="n">GetSurfaceArea</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="add_sfield_to_poly">
+<a class="viewcode-back" href="../../polnet.html#polnet.poly.add_sfield_to_poly">[docs]</a>
+<span class="k">def</span> <span class="nf">add_sfield_to_poly</span><span class="p">(</span><span class="n">poly</span><span class="p">,</span> <span class="n">sfield</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="n">interp</span><span class="o">=</span><span class="s1">&#39;NN&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;points&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add the values of a scalar field to a vtkPolyData object as point property</span>
+
+<span class="sd">    :param poly: vtkPolyData objects where the scalar field values will be added</span>
+<span class="sd">    :param sfield: input scalar field as ndarray</span>
+<span class="sd">    :param name: string with name associated to the added property</span>
+<span class="sd">    :param dtype: data type, valid &#39;float&#39; or &#39;int&#39;</span>
+<span class="sd">    :param interp: interpolation mode, valid &#39;NN&#39;-&gt; nearest neighbour and &#39;trilin&#39;-&gt; trilinear</span>
+<span class="sd">    :param mode: determines if the scalar field is either added to vtkPolyData points (&#39;points&#39;, defualt) or</span>
+<span class="sd">                 cells (&#39;cells&#39;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sfield</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">dtype</span> <span class="o">==</span> <span class="s1">&#39;float&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">dtype</span> <span class="o">==</span> <span class="s1">&#39;int&#39;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">interp</span> <span class="o">==</span> <span class="s1">&#39;NN&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">interp</span> <span class="o">==</span> <span class="s1">&#39;trilin&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">interp</span> <span class="o">==</span> <span class="s1">&#39;trilin&#39;</span><span class="p">:</span>
+        <span class="n">interp_func</span> <span class="o">=</span> <span class="n">trilin_interp</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">interp_func</span> <span class="o">=</span> <span class="n">nn_iterp</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;points&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;cells&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;points&#39;</span><span class="p">:</span>
+        <span class="c1"># Creating and adding the new property as a new array for PointData</span>
+        <span class="n">n_points</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s1">&#39;int&#39;</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkIntArray</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkFloatArray</span><span class="p">()</span>
+        <span class="n">arr</span><span class="o">.</span><span class="n">SetName</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">arr</span><span class="o">.</span><span class="n">SetNumberOfComponents</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">arr</span><span class="o">.</span><span class="n">SetNumberOfValues</span><span class="p">(</span><span class="n">n_points</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_points</span><span class="p">):</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">GetPoint</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">arr</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">interp_func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">sfield</span><span class="p">))</span>
+        <span class="n">poly</span><span class="o">.</span><span class="n">GetPointData</span><span class="p">()</span><span class="o">.</span><span class="n">AddArray</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Creating and adding the new property as a new array for CellData</span>
+        <span class="k">if</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s1">&#39;int&#39;</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkIntArray</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkFloatArray</span><span class="p">()</span>
+        <span class="n">n_cells</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">GetNumberOfCells</span><span class="p">()</span>
+        <span class="n">arr</span><span class="o">.</span><span class="n">SetName</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">arr</span><span class="o">.</span><span class="n">SetNumberOfComponents</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">arr</span><span class="o">.</span><span class="n">SetNumberOfValues</span><span class="p">(</span><span class="n">n_cells</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_cells</span><span class="p">):</span>
+            <span class="n">cell</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkGenericCell</span><span class="p">()</span>
+            <span class="n">poly</span><span class="o">.</span><span class="n">GetCell</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">cell</span><span class="p">)</span>
+            <span class="n">pts</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">GetPoints</span><span class="p">()</span>
+            <span class="n">n_pts</span> <span class="o">=</span> <span class="n">pts</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s1">&#39;int&#39;</span><span class="p">:</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">n_pts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">n_pts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_pts</span><span class="p">):</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">pts</span><span class="o">.</span><span class="n">GetPoint</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                <span class="n">values</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">interp_func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">sfield</span><span class="p">)</span>
+            <span class="n">arr</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">stats</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="n">values</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">poly</span><span class="o">.</span><span class="n">GetCellData</span><span class="p">()</span><span class="o">.</span><span class="n">AddArray</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="poly_mask">
+<a class="viewcode-back" href="../../polnet.html#polnet.poly.poly_mask">[docs]</a>
+<span class="k">def</span> <span class="nf">poly_mask</span><span class="p">(</span><span class="n">poly</span><span class="p">:</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Removes the poly cells out of the mask</span>
+
+<span class="sd">    :param poly: input poly</span>
+<span class="sd">    :param mask: input mask</span>
+<span class="sd">    :return: the filtered (masked) poly</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">mask</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">bool</span>
+    <span class="n">m_x</span><span class="p">,</span> <span class="n">m_y</span><span class="p">,</span> <span class="n">m_z</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">del_cell_ids</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkIdTypeArray</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">poly</span><span class="o">.</span><span class="n">GetNumberOfCells</span><span class="p">()):</span>
+        <span class="n">cell</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkGenericCell</span><span class="p">()</span>
+        <span class="n">poly</span><span class="o">.</span><span class="n">GetCell</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">cell</span><span class="p">)</span>
+        <span class="n">pts</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">GetPoints</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">pts</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()):</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">pts</span><span class="o">.</span><span class="n">GetPoint</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">y</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="n">m_x</span> <span class="ow">or</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">y</span> <span class="o">&gt;=</span> <span class="n">m_y</span> <span class="ow">or</span> <span class="n">z</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">z</span> <span class="o">&gt;=</span> <span class="n">m_z</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">mask</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">]:</span>
+                <span class="n">del_cell_ids</span><span class="o">.</span><span class="n">InsertNextValue</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="k">break</span>
+    <span class="n">rm_filter</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkRemovePolyData</span><span class="p">()</span>
+    <span class="n">rm_filter</span><span class="o">.</span><span class="n">AddInputData</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span>
+    <span class="n">rm_filter</span><span class="o">.</span><span class="n">SetCellIds</span><span class="p">(</span><span class="n">del_cell_ids</span><span class="p">)</span>
+    <span class="n">rm_filter</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">rm_filter</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="merge_polys">
+<a class="viewcode-back" href="../../polnet.html#polnet.poly.merge_polys">[docs]</a>
+<span class="k">def</span> <span class="nf">merge_polys</span><span class="p">(</span><span class="n">poly_1</span><span class="p">,</span> <span class="n">poly_2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Merges two input poly_data in single one</span>
+
+<span class="sd">    :param poly_1: input poly_data 1</span>
+<span class="sd">    :param poly_2: input poly_data 2</span>
+<span class="sd">    :return: an poly_data that merges the two inputs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">poly_1</span><span class="p">,</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">poly_2</span><span class="p">,</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">)</span>
+    <span class="n">app_flt</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkAppendPolyData</span><span class="p">()</span>
+    <span class="n">app_flt</span><span class="o">.</span><span class="n">AddInputData</span><span class="p">(</span><span class="n">poly_1</span><span class="p">)</span>
+    <span class="n">app_flt</span><span class="o">.</span><span class="n">AddInputData</span><span class="p">(</span><span class="n">poly_2</span><span class="p">)</span>
+    <span class="n">app_flt</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">app_flt</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="add_label_to_poly">
+<a class="viewcode-back" href="../../polnet.html#polnet.poly.add_label_to_poly">[docs]</a>
+<span class="k">def</span> <span class="nf">add_label_to_poly</span><span class="p">(</span><span class="n">poly</span><span class="p">,</span> <span class="n">lbl</span><span class="p">,</span> <span class="n">p_name</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;cell&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add a label to all cells in a poly_data</span>
+
+<span class="sd">    :param poly: input poly_data</span>
+<span class="sd">    :param lbl: label (integer) value</span>
+<span class="sd">    :param p_name: property name used for labels, if not exist in poly_dota is created</span>
+<span class="sd">    :param mode: selected wheter the label is added to cells (&#39;cell&#39;), points (&#39;point&#39;) or both (&#39;both&#39;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;cell&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;point&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;both&#39;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">poly</span><span class="p">,</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyData</span><span class="p">)</span>
+    <span class="n">lbl</span><span class="p">,</span> <span class="n">p_name</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">lbl</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">p_name</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;cell&#39;</span> <span class="ow">or</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;both&#39;</span><span class="p">:</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkIntArray</span><span class="p">()</span>
+        <span class="n">n_cells</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">GetNumberOfCells</span><span class="p">()</span>
+        <span class="n">arr</span><span class="o">.</span><span class="n">SetName</span><span class="p">(</span><span class="n">p_name</span><span class="p">)</span>
+        <span class="n">arr</span><span class="o">.</span><span class="n">SetNumberOfComponents</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">arr</span><span class="o">.</span><span class="n">SetNumberOfValues</span><span class="p">(</span><span class="n">n_cells</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_cells</span><span class="p">):</span>
+            <span class="n">arr</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">lbl</span><span class="p">)</span>
+        <span class="n">poly</span><span class="o">.</span><span class="n">GetCellData</span><span class="p">()</span><span class="o">.</span><span class="n">AddArray</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;cell&#39;</span> <span class="ow">or</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;both&#39;</span><span class="p">:</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkIntArray</span><span class="p">()</span>
+        <span class="n">n_points</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()</span>
+        <span class="n">arr</span><span class="o">.</span><span class="n">SetName</span><span class="p">(</span><span class="n">p_name</span><span class="p">)</span>
+        <span class="n">arr</span><span class="o">.</span><span class="n">SetNumberOfComponents</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">arr</span><span class="o">.</span><span class="n">SetNumberOfValues</span><span class="p">(</span><span class="n">n_points</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_points</span><span class="p">):</span>
+            <span class="n">arr</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">lbl</span><span class="p">)</span>
+        <span class="n">poly</span><span class="o">.</span><span class="n">GetPointData</span><span class="p">()</span><span class="o">.</span><span class="n">AddArray</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="points_to_poly_spheres">
+<a class="viewcode-back" href="../../polnet.html#polnet.poly.points_to_poly_spheres">[docs]</a>
+<span class="k">def</span> <span class="nf">points_to_poly_spheres</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">rad</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    From an array of coordinates generates a poly_data associating a sphere centered at each point</span>
+
+<span class="sd">    :param points: array or list n points with shape [n, 3]</span>
+<span class="sd">    :param rad: sphere radius</span>
+<span class="sd">    :return: an output poly_data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">rad</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rad</span><span class="p">)</span>
+    <span class="n">app_flt</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkAppendPolyData</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)):</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">vtp_source</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkSphereSource</span><span class="p">()</span>
+        <span class="n">vtp_source</span><span class="o">.</span><span class="n">SetCenter</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">vtp_source</span><span class="o">.</span><span class="n">SetRadius</span><span class="p">(</span><span class="n">rad</span><span class="p">)</span>
+        <span class="n">vtp_source</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+        <span class="n">app_flt</span><span class="o">.</span><span class="n">AddInputData</span><span class="p">(</span><span class="n">vtp_source</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">())</span>
+
+    <span class="n">app_flt</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">app_flt</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="poly_max_distance">
+<a class="viewcode-back" href="../../polnet.html#polnet.poly.poly_max_distance">[docs]</a>
+<span class="k">def</span> <span class="nf">poly_max_distance</span><span class="p">(</span><span class="n">vtp</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the maximum distance in vtkPolyData</span>
+
+<span class="sd">    :param vtp: input vtkPolyData</span>
+<span class="sd">    :return: the maximum distance as real value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">vtp</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">vtp</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">ref_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vtp</span><span class="o">.</span><span class="n">GetPoint</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">vtp</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()):</span>
+                <span class="n">hold_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vtp</span><span class="o">.</span><span class="n">GetPoint</span><span class="p">(</span><span class="n">j</span><span class="p">))</span>
+                <span class="n">hold_mx</span> <span class="o">=</span> <span class="n">points_distance</span><span class="p">(</span><span class="n">ref_p</span><span class="p">,</span> <span class="n">hold_p</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">hold_mx</span> <span class="o">&gt;</span> <span class="n">mx</span><span class="p">:</span>
+                    <span class="n">mx</span> <span class="o">=</span> <span class="n">hold_mx</span>
+        <span class="k">return</span> <span class="n">mx</span></div>
+
+
+<div class="viewcode-block" id="poly_diam">
+<a class="viewcode-back" href="../../polnet.html#polnet.poly.poly_diam">[docs]</a>
+<span class="k">def</span> <span class="nf">poly_diam</span><span class="p">(</span><span class="n">vtp</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the diameter of a polydata, approximated to two times the maximumd point distance to its center of mass</span>
+
+<span class="sd">    :param vtp: input vtkPolyData</span>
+<span class="sd">    :return: the maximum distance as real value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">vtp</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">ref_p</span> <span class="o">=</span> <span class="n">poly_center_mass</span><span class="p">(</span><span class="n">vtp</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">vtp</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()):</span>
+            <span class="n">hold_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vtp</span><span class="o">.</span><span class="n">GetPoint</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+            <span class="n">hold_mx</span> <span class="o">=</span> <span class="n">points_distance</span><span class="p">(</span><span class="n">ref_p</span><span class="p">,</span> <span class="n">hold_p</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">hold_mx</span> <span class="o">&gt;</span> <span class="n">mx</span><span class="p">:</span>
+                <span class="n">mx</span> <span class="o">=</span> <span class="n">hold_mx</span>
+        <span class="k">return</span> <span class="n">mx</span></div>
+
+
+
+<div class="viewcode-block" id="poly_point_min_dst">
+<a class="viewcode-back" href="../../polnet.html#polnet.poly.poly_point_min_dst">[docs]</a>
+<span class="k">def</span> <span class="nf">poly_point_min_dst</span><span class="p">(</span><span class="n">poly</span><span class="p">,</span> <span class="n">point</span><span class="p">,</span> <span class="n">chull</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the minimum distance from a point to a poly</span>
+
+<span class="sd">    :param poly: input poly</span>
+<span class="sd">    :param point: input point</span>
+<span class="sd">    :param chull: computation mode, if True (default False) the convex hull surface is firstly extracted to avoid poly holes,</span>
+<span class="sd">                &#39;otherwise the minimum distance is directly computed</span>
+<span class="sd">    :return: the minimum distance found</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">poly</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">max</span>
+        <span class="k">if</span> <span class="n">chull</span><span class="p">:</span>
+            <span class="n">poly</span> <span class="o">=</span> <span class="n">convex_hull_surface</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span>
+        <span class="n">ref_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">poly</span><span class="o">.</span><span class="n">GetNumberOfPoints</span><span class="p">()):</span>
+            <span class="n">hold_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">poly</span><span class="o">.</span><span class="n">GetPoint</span><span class="p">(</span><span class="n">j</span><span class="p">))</span>
+            <span class="n">hold_mn</span> <span class="o">=</span> <span class="n">points_distance</span><span class="p">(</span><span class="n">ref_p</span><span class="p">,</span> <span class="n">hold_p</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">hold_mn</span> <span class="o">&lt;</span> <span class="n">mn</span><span class="p">:</span>
+                <span class="n">mn</span> <span class="o">=</span> <span class="n">hold_mn</span>
+        <span class="k">return</span> <span class="n">mn</span></div>
+
+
+
+<div class="viewcode-block" id="poly_center_mass">
+<a class="viewcode-back" href="../../polnet.html#polnet.poly.poly_center_mass">[docs]</a>
+<span class="k">def</span> <span class="nf">poly_center_mass</span><span class="p">(</span><span class="n">poly</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the center of mass of polydata</span>
+
+<span class="sd">    :param poly: input poly</span>
+<span class="sd">    :return: center of mass coordinates</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cm_flt</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkCenterOfMass</span><span class="p">()</span>
+    <span class="n">cm_flt</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span>
+    <span class="n">cm_flt</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">cm_flt</span><span class="o">.</span><span class="n">GetCenter</span><span class="p">())</span></div>
+
+
+
+<div class="viewcode-block" id="convex_hull_surface">
+<a class="viewcode-back" href="../../polnet.html#polnet.poly.convex_hull_surface">[docs]</a>
+<span class="k">def</span> <span class="nf">convex_hull_surface</span><span class="p">(</span><span class="n">poly</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract the convex full surface of a polydata</span>
+
+<span class="sd">    :param poly: input polydata</span>
+<span class="sd">    :return: convex hull surface</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">convexHull</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkDelaunay3D</span><span class="p">()</span>
+    <span class="n">convexHull</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span>
+    <span class="n">outerSurface</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkGeometryFilter</span><span class="p">()</span>
+    <span class="n">convexHull</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+    <span class="n">outerSurface</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">convexHull</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">())</span>
+    <span class="n">outerSurface</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">outerSurface</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="poly_decimate">
+<a class="viewcode-back" href="../../polnet.html#polnet.poly.poly_decimate">[docs]</a>
+<span class="k">def</span> <span class="nf">poly_decimate</span><span class="p">(</span><span class="n">poly</span><span class="p">,</span> <span class="n">dec</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decimate a vtkPolyData</span>
+
+<span class="sd">    :param poly: input vtkPolyData</span>
+<span class="sd">    :param dec: Specify the desired reduction in the total number of polygons</span>
+<span class="sd">               (e.g., if TargetReduction is set to 0.9,</span>
+<span class="sd">               this filter will try to reduce the data set to 10% of its original size).</span>
+<span class="sd">    :return: the input poly filtered</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tr_dec</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkDecimatePro</span><span class="p">()</span>
+    <span class="n">tr_dec</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span>
+    <span class="n">tr_dec</span><span class="o">.</span><span class="n">SetTargetReduction</span><span class="p">(</span><span class="n">dec</span><span class="p">)</span>
+    <span class="n">tr_dec</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">tr_dec</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">()</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Antonio Martinez-Sanchez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

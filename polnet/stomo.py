@@ -19,6 +19,7 @@ class MmerFile:
     def __init__(self, in_file):
         """
         Constructor
+
         :param in_file: path to the input file with extension .pns
         """
         self.__mmer_id = None
@@ -59,6 +60,7 @@ class MmerFile:
     def load_mmer_file(self, in_file):
         """
         Load protein parameters from an input file
+
         :param in_file: path to the input file with extension .pns
         """
 
@@ -111,6 +113,7 @@ class MmerMbFile(MmerFile):
     def __init__(self, in_file):
         """
         Constructor
+
         :param in_file: path to the input file with extension .pms
         """
         super().__init__(in_file)
@@ -132,6 +135,7 @@ class MmerMbFile(MmerFile):
     def load_mmer_mb_file(self, in_file):
         """
         Load protein parameters from an input file
+
         :param in_file: path to the input file with extension .pms
         """
 
@@ -206,6 +210,7 @@ class MbFile:
     def load_mb_file(self, in_file):
         """
         Load protein parameters from an input file
+
         :param in_file: path to the input file with extension .mbs
         """
 
@@ -314,6 +319,7 @@ class HelixFile:
     def load_hx_file(self, in_file):
         """
         Load protein parameters from an input file
+
         :param in_file: path to the input file with extension .hns
         """
 
@@ -383,6 +389,7 @@ class MTFile(HelixFile):
     def load_mt_file(self, in_file):
         """
         Load protein parameters from an input file
+
         :param in_file: path to the input file with extension .mbs
         """
 
@@ -427,6 +434,7 @@ class ActinFile(HelixFile):
     def load_ac_file(self, in_file):
         """
         Load protein parameters from an input file
+
         :param in_file: path to the input file with extension .mbs
         """
 
@@ -500,6 +508,7 @@ class SynthTomo:
     def add_network(self, net, m_type, lbl, code=None):
         """
         Add all motifs within the input network to the synthetic tomogram
+
         :param net: a network object instance
         :param m_type: string with the type of monomers contained in the network
         :param lbl: integer label
@@ -522,6 +531,7 @@ class SynthTomo:
         """
         Membrane surface point coordinates are added to the tomogram motif list
         In rotations the normal vector to each point is stored as: X->Q0, Y->Q1 , Z->Q2 and 0->Q3
+
         :param set_mbs: a membrane set object instance
         :param m_type: string with the type of motif contained in the network
         :param lbl: integer label
@@ -556,6 +566,7 @@ class SetTomos:
     def add_tomos(self, tomo):
         """
         Add a SynthTomo to the list
+
         :param tomo: input SyntTomo
         """
         assert isinstance(tomo, SynthTomo)
@@ -564,6 +575,7 @@ class SetTomos:
     def save_csv(self, out_file):
         """
         Saves the motifs list contained in the set of tomograms
+
         :param out_file: output file path in .csv format
         """
         assert isinstance(out_file, str) and out_file.endswith('.csv')
