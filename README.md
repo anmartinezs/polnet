@@ -40,11 +40,18 @@ the requirements by:
 
 You can check all requirements in the **requirements.txt** file (JAX is optional).
 
-The installation has been tested in Ubuntu 22.04 and Windows 11.
+The installation has been tested in Ubuntu 22.04 and Windows 10 and 11.
 
 ## Usage
 
-To generate a synthetic dataset run with **Jupyter** next notebook: **gui/gen_dataset.ipynb**
+First open **Jupyter** by running:
+
+```console
+jupyter notebook
+```
+If you are not familiar with jupyter notebooks, first get started with https://docs.jupyter.org/en/latest/running.html 
+
+To generate a synthetic dataset run on **Jupyter** next notebook: **gui/gen_dataset.ipynb**
 
 To create you own structural models next Jupyter notebooks are available:
     
@@ -89,7 +96,7 @@ the size of the input data avoid to upload them to the repository.
 
 ### Code documentation
 
-The API documentation for polnet Python package is available in [docs/apidoc/index.html](docs/apidoc/index.html) 
+The API documentation for polnet Python package is available in [docs/apidoc/index.html](http://htmlpreview.github.io/?https://raw.githubusercontent.com/anmartinezs/polnet/main/docs/apidoc/index.html) 
 
 
 ## Main publication (Citation)
