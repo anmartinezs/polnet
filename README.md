@@ -62,7 +62,9 @@ To create you own structural models next Jupyter notebooks are available:
    - Only for membrane bound macromolecules: **gui/align_membrane_proteins.ipynb**
    - Models: **gui/create_macromolecule_models.ipynb**
 
-**Important note**: all Jupyter notebooks are thoroughly self-documented in order to guide the user in the process. In addition, they contain graphic objects and default setting to facilitate the process.  
+Exemplary videos for using the GUI are avilable at [Zenodo](https://zenodo.org/records/10735525).
+
+**Important note**: all Jupyter notebooks are thoroughly self-documented in order to guide the user in the process. In addition, they contain graphic objects and default setting to facilitate the process.
 
 ## For developers
 

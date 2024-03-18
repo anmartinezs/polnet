@@ -21,11 +21,12 @@ import pandas
 from polnet import lio
 
 ROOT_DIR = '/home/martinez/workspace/data'
-in_csv = ROOT_DIR + '/../pycharm_proj/polnet/data/data_generated/actin_low/tomos_motif_list.csv'
+in_csv = ROOT_DIR + '/../pycharm_proj/polnet/data/data_generated/all_v4/tomos_motif_list.csv'
 out_dir = ROOT_DIR + '/nn-unet/raw'
-dataset_id = '004'
-dataset_suffix = 'sinth10_low_actin'
-fg_labels = {'membrane': (1, 2, 3), 'microtuble': (4,), 'actin': (5,), 'ribosome': (6, 11) }
+dataset_id = '008'
+dataset_suffix = 'sinth10_all_v8'
+fg_labels = {'membrane': (1, 2, 3), 'microtuble': (4,), 'actin': (5,), 'ribo': (6,11,12),
+             'mb_prot': tuple(range(27,36))}
 
 # Parsing tomograms filenames from the CSV file
 df = pandas.read_csv(in_csv, delimiter='\t')

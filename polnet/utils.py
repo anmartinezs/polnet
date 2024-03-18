@@ -11,6 +11,7 @@ import stat
 import vtk
 import math
 import numpy as np
+import skimage
 
 from vtkmodules.util import numpy_support
 
@@ -655,3 +656,22 @@ def tomo_crop_non_zeros(tomo):
     x_min, y_min, z_min = coords.min(axis=0)
     x_max, y_max, z_max = coords.max(axis=0)
     return tomo[x_min:x_max + 1, y_min:y_max + 1, z_min:z_max + 1]
+
+
+def connectivity_analysis(tomo, th, connectivity=None):
+    """
+    Connectivy analysis in a tomogram. Remove connected regions smaller than a threshold.
+
+    :param tomo: input tomogram (fg > 0)
+    :param th: threshold for the minimum number of voxel in a connected region
+    :param connectivity: see skimage.measure.label info
+    :return: a tomogram where voxel values contain regions sizes
+    """
+    tomo_mb, num_lbls = skimage.measure.label(tomo > 0, connectivity=connectivity, return_num=True)
+    tomo_sz = np.zeros(shape=tomo_mb.shape, dtype=np.int32)
+    for lbl in range(1, num_lbls + 1):
+        ids = tomo_mb == lbl
+        feat_sz = ids.sum()
+        if feat_sz >= th:
+            tomo_sz[ids] = feat_sz
+    return tomo_sz

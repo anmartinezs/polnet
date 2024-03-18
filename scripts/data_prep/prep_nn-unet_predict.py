@@ -20,10 +20,10 @@ import numpy as np
 from polnet import lio
 
 ROOT_DIR = '/home/martinez/workspace/data' # '/home/martinez/workspace/data'
-in_dir = ROOT_DIR + '/exp_tomos/empiar_10989/data_cropped/tomos' # '/exp_tomos'
+in_dir = ROOT_DIR + '/exp_tomos/empiar_10988' # '/exp_tomos'
 out_dir = ROOT_DIR + '/nn-unet/in_predict'
-task_id = '002'
-task_suffix = 'empiar10989'
+task_id = '006'
+task_suffix = 'empiar_10988'
 v_size_model = 10 # A/voxel
 v_size_decimal = 3 # number of decimal to cut the voxel size precision
 norm = True # If true intensity values are normalized wrt mean and variance
@@ -55,7 +55,7 @@ for file_path in glob.iglob(in_dir + '/*.*'):
         t_mean, t_std = tomo.mean(), tomo.std()
         tomo = (tomo - t_mean) / t_std
     if v_size_tomo != v_size_model:
-        print('\t-Scaling input to tomogram to fit the model voxel size of', v_size_model, 'A ...')
+        print('\t-Scaling input to tomogram from', v_size_tomo, 'A to fit the model voxel size of', v_size_model, 'A ...')
         tomo = sp.ndimage.zoom(tomo, v_size_tomo / v_size_model)
     nrrd.write(imgs_ts_dir + '/tomo_' + str(tomo_id).zfill(3) + '_0000.nrrd', tomo)
     tomo_id += 1

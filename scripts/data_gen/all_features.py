@@ -42,9 +42,9 @@ from polnet.membrane import SetMembranes
 
 # Common tomogram settings
 ROOT_PATH = os.path.realpath(os.getcwd() + '/../../data')
-NTOMOS = 10 # 12
-VOI_SHAPE = (1000, 1000, 250) # (400, 400, 236) # vx or a path to a mask (1-foreground, 0-background) tomogram
-VOI_OFFS =  ((4,996), (4,996), (4,246)) # ((4,396), (4,396), (4,232)) # ((4,1852), (4,1852), (32,432)) # ((4,1852), (4,1852), (4,232)) # vx
+NTOMOS = 10 # 10 # 12
+VOI_SHAPE = (1000, 1000, 250) # (400, 400, 236) # (400, 400, 236) # vx or a path to a mask (1-foreground, 0-background) tomogram
+VOI_OFFS =  ((4,996), (4,996), (4,246)) # ((4,396), (4,396), (4,232)) # ((4,396), (4,396), (4,232)) # ((4,1852), (4,1852), (32,432)) # ((4,1852), (4,1852), (4,232)) # vx
 VOI_VSIZE = 10 # 2.2 # A/vx
 MMER_TRIES = 20
 PMER_TRIES = 100
@@ -73,14 +73,14 @@ if PROP_LIST is not None:
 SURF_DEC = 0.9 # Target reduction factor for surface decimation (default None)
 
 # Reconstruction tomograms
-TILT_ANGS = range(-60, 61, 3) # np.arange(-60, 60, 3) # at MPI-B IMOD only works for ranges
+TILT_ANGS = np.arange(-60, 60, 3) # range(-90, 91, 3) # at MPI-B IMOD only works for ranges
 DETECTOR_SNR = [1.0, 2.0] # 0.2 # [.15, .25] # 0.2
 MALIGN_MN = 1
 MALIGN_MX = 1.5
 MALIGN_SG = 0.2
 
 # OUTPUT FILES
-OUT_DIR = os.path.realpath(ROOT_PATH + '/data_generated/all_v2') # '/out_all_tomos_9-10' # '/only_actin' # '/out_rotations'
+OUT_DIR = os.path.realpath(ROOT_PATH + '/data_generated/all_v4') # '/out_all_tomos_9-10' # '/only_actin' # '/out_rotations'
 os.makedirs(OUT_DIR, exist_ok=True)
 
 TEM_DIR = OUT_DIR + '/tem'
