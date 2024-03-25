@@ -618,7 +618,7 @@ def widgets_change_order(lists):
         if len(list) > 1:
             dropdown_widget = widgets.Dropdown(options=list, value=list[0], layout={'width': '550px'})
         else:
-             dropdown_widget = widgets.Dropdown(options=["Select paths..."], layout={'width': '550px'})
+             dropdown_widget = widgets.Dropdown(options=list, layout={'width': '550px'})
         up_button = widgets.Button(description="↑ Up selected file")
         down_button = widgets.Button(description="↓ Down selected file")
         widgets_list.append((up_button, down_button,dropdown_widget))
