@@ -463,22 +463,23 @@ def widgets_add_app_files():
     
     select_file_button_membrane = widgets.Button(description="Select membrane files")
     select_file_button_membrane.layout.width = '200px'
-    dropdown_membrane = widgets.Dropdown(value=None, layout={'width': custom_width})
+    dropdown_membrane = widgets.Dropdown(options=['Select paths...'], layout={'width': custom_width})
     hbox_membrane = widgets.HBox([select_file_button_membrane, dropdown_membrane])
 
     select_file_button_helix = widgets.Button(description="Select filament files")
     select_file_button_helix.layout.width = '200px'
-    dropdown_helix = widgets.Dropdown(value=None, layout={'width': custom_width})
+    dropdown_helix = widgets.Dropdown(options=['Select paths...'], layout={'width': custom_width})
     hbox_helix = widgets.HBox([select_file_button_helix, dropdown_helix])
 
     select_file_button_proteins = widgets.Button(description="Select proteins files")
     select_file_button_proteins.layout.width = '200px'
-    dropdown_proteins = widgets.Dropdown(value=None, layout={'width': custom_width})
+    dropdown_proteins = widgets.Dropdown(options=['Select paths...'], layout={'width': custom_width})
     hbox_proteins = widgets.HBox([select_file_button_proteins, dropdown_proteins])
 
     select_file_button_mproteins = widgets.Button(description="Select membrane protein files")
     select_file_button_mproteins.layout.width = '200px'
-    dropdown_mproteins = widgets.Dropdown( value=None, layout={'width': custom_width})
+    dropdown_mproteins = widgets.Dropdown(options=['Select paths...'], layout={'width': custom_width})
+    #dropdown_mproteins = widgets.Dropdown( value=None, layout={'width': custom_width})
     hbox_mproteins = widgets.HBox([select_file_button_mproteins, dropdown_mproteins])
 
 
@@ -576,10 +577,12 @@ def widgets_exec_app():
     widget_paso.layout.width = '60px'
 
     hbox_tilt_angs= widgets.HBox([widget_min, widget_max, widget_paso])
+  
 
     voi_off_widget_1 = widgets.BoundedIntText(value=4, description='VOI_OFF (Empty halo, voxels):')
+    voi_off_label = widgets.Label('this is the Start and End in voxels for the effective volume')
     voi_off_widget_1.style.description_width = 'initial'
-    voi_off_widget_1.layout.width = '170px'
+    voi_off_widget_1.layout.width = '250px'
     voi_off_widget_2 = widgets.BoundedIntText(value=396, max = 100000, min = 1)
     voi_off_widget_2.layout.width = '70px'
     voi_off_widget_3 = widgets.BoundedIntText(value=4, max = 100000, min = 1 )
@@ -593,7 +596,7 @@ def widgets_exec_app():
 
     exec_button = widgets.Button(description="Exec")
 
-    hbox_voi_off= widgets.HBox([voi_off_widget_1,voi_off_widget_2,voi_off_widget_3,voi_off_widget_4,voi_off_widget_5,voi_off_widget_6])
+    hbox_voi_off= widgets.HBox([voi_off_widget_1,voi_off_widget_2,voi_off_widget_3,voi_off_widget_4,voi_off_widget_5,voi_off_widget_6, voi_off_label])
     
     display(widget_out_dir, ntomos_widget, hbox_voi_shape, hbox_voi_off, voi_size_widget,  mmer_tries_widget, pmer_tries_widget,
              surf_dec_widget, malign_mn_widget, malign_mx_widget, malign_sg_widget,
@@ -615,7 +618,7 @@ def widgets_change_order(lists):
         if len(list) > 1:
             dropdown_widget = widgets.Dropdown(options=list, value=list[0], layout={'width': '550px'})
         else:
-             dropdown_widget = widgets.Dropdown(options=list, layout={'width': '550px'})
+             dropdown_widget = widgets.Dropdown(options=["Select paths..."], layout={'width': '550px'})
         up_button = widgets.Button(description="↑ Up selected file")
         down_button = widgets.Button(description="↓ Down selected file")
         widgets_list.append((up_button, down_button,dropdown_widget))
