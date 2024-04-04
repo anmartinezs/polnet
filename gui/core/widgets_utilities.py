@@ -219,11 +219,11 @@ def widgets_membrane_params():
     mb_occ_widget.style.description_width = 'initial'
     mb_occ_widget.layout.width = '350px'
     
-    mb_thick_rg_widget = widgets.FloatRangeSlider(value=[25, 35], min=0 ,max=100, step=0.001, readout_format='.3f', description='MB_THICK_RG:')
+    mb_thick_rg_widget = widgets.FloatRangeSlider(value=[25, 45], min=20 ,max=50, step=1, readout_format='.3f', description='MB_THICK_RG:')
     mb_thick_rg_widget.style.description_width = 'initial'
     mb_thick_rg_widget.layout.width = '350px'
     
-    mb_layer_s_rg_widget = widgets.FloatRangeSlider(value=[0.5, 2], min=0 ,max=100,step=0.001, readout_format='.3f', description='MB_LAYER_S_RG:')
+    mb_layer_s_rg_widget = widgets.FloatRangeSlider(value=[0.5, 2], min=0.1 ,max=3,step=0.1, readout_format='.3f', description='MB_LAYER_S_RG:')
     mb_layer_s_rg_widget.style.description_width = 'initial'
     mb_layer_s_rg_widget.layout.width = '350px'
     

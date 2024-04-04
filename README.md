@@ -14,6 +14,8 @@ Python package for generating synthetic datasets of the cellular context for Cry
 
 - **IMOD** must be installed on the system since PolNet calls to some of its standalone commands: https://bio3d.colorado.edu/imod/doc/guide.html
 - Miniconda or Anaconda with Python 3.
+- Git.
+- IMOD can be used for MRC files visualization. Paraview can be used for VTK (.vtp) files visualization. Pandas is recommended for managing the CSV files.
 
 ### Installation procedure
 Here is how to get it installed:
