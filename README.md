@@ -105,7 +105,7 @@ The API documentation for polnet Python package is available in [docs/apidoc/ind
 
 ## Main publication (Citation)
 
-[1] Martinez-Sanchez A.*, Jasnin M., Phelippeau H. and Lamm L. "Simulating the cellular context in synthetic datasets for cryo-electron tomography" *bioRxiv*
+[1] Martinez-Sanchez A.*, and Lamm L., Jasnin M. and Phelippeau H. (2024) "Simulating the cellular context in synthetic datasets for cryo-electron tomography" *IEEE Transactions on Medical Imaging* [10.1109/TMI.2024.3398401](https://doi.org/10.1109/TMI.2024.3398401)
 
 
 

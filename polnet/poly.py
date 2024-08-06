@@ -4,13 +4,13 @@ Functionality of processing PolyData
 
 __author__ = 'Antonio Martinez-Sanchez'
 
-import math
-
 from polnet.affine import *
 from polnet.utils import *
 import vtk
 import numpy as np
 from scipy import stats
+from vtkmodules.util import numpy_support
+
 
 # CONSTANTS
 
@@ -455,3 +455,47 @@ def poly_decimate(poly, dec):
     tr_dec.SetTargetReduction(dec)
     tr_dec.Update()
     return tr_dec.GetOutput()
+
+
+def image_to_vti(img: np.ndarray) -> vtk.vtkImageData:
+    """
+    Converts an image as a 2D or 3D NumPy ndarray into a VTK image
+    :param img: input image as a 2D or 3D NumPy ndarray
+    :return: an VTK image (vtkImageData) object
+    """
+    assert isinstance(img, np.ndarray)
+    n_D = len(img.shape)
+    assert n_D == 2 or n_D == 3
+    data_type = vtk.VTK_FLOAT
+    shape = img.shape
+
+    flat_data_array = img.flatten()
+    vtk_data = numpy_support.numpy_to_vtk(num_array=flat_data_array, deep=True, array_type=data_type)
+
+    img = vtk.vtkImageData()
+    img.GetPointData().SetScalars(vtk_data)
+    if n_D == 2:
+        img.SetDimensions(shape[0], shape[1], 1)
+    else:
+        img.SetDimensions(shape[0], shape[1], shape[2])
+
+    return img
+
+
+def save_vti(img: vtk.vtkImageData, fname: str):
+    """
+    Stores a VTK image
+    :param img: the input image as a VTK image
+    :param fname: file name and path ended with .vtk or .vti
+    :return:
+    """
+    assert isinstance(img, vtk.vtkImageData)
+    assert isinstance(fname, str)
+    assert fname.endswith('.vtk') or fname.endswith('.vti')
+
+    writer = vtk.vtkXMLImageDataWriter()
+    writer.SetFileName(fname)
+    writer.SetInputData(img)
+    if writer.Write() != 1:
+        print('ERROR: unknown error writting the .vti file!!!')
+

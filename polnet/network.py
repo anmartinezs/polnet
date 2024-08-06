@@ -248,7 +248,7 @@ class NetSAWLC(Network):
     """
 
     def __init__(self, voi, v_size, l_length, m_surf, max_p_length, gen_pol_lengths, occ, over_tolerance=0,
-                 poly=None, svol=None, tries_mmer=20, tries_pmer=100):
+                 poly=None, svol=None, tries_mmer=20, tries_pmer=100, rots=None, rot_id=0):
         """
         Construction
 
@@ -266,6 +266,9 @@ class NetSAWLC(Network):
         :param off_svol: offset coordinates in voxels for shifting sub-volume monomer center coordinates (default None)
         :param tries_mmer: number of tries to place a monomer before starting a new polymer
         :param tries_pmer: number of tries to place a polymer
+        :param rots: allow to externally control the rotations of the macromolecules, if not None (default), the
+                     rotations (quaternions) are taken sequentially from the input array of rotations.
+        :param rot_id: starting index for rots rotations array.
         """
 
         # Initialize abstract varibles
@@ -282,6 +285,11 @@ class NetSAWLC(Network):
             assert isinstance(poly, vtk.vtkPolyData)
         assert tries_mmer >= 1
         assert tries_pmer >= 1
+        self.__rots, self.__rot_id = None, 0
+        if rots is not None:
+            assert len(rots) > 0 and len(rots[0]) == 4
+            self.__rots = rots
+            self.__rot_id = int(rot_id)
 
         # Variables assignment
         self.__l_length, self.__m_surf = l_length, m_surf
@@ -304,6 +312,8 @@ class NetSAWLC(Network):
 
         c_try = 0
         self._Network__pmer_fails = 0
+        if self.__rots is not None:
+            rot_id = self.__rot_id
 
         # Network loop
         while (c_try <= self.__tries_pmer) and (self._Network__pl_occ < self.__occ):
@@ -317,23 +327,34 @@ class NetSAWLC(Network):
                                  self._Network__voi.shape[1] * self._Network__v_size * random.random(),
                                  self._Network__voi.shape[2] * self._Network__v_size * random.random()))
             max_length = self.__gen_pol_lengths.gen_length(0, self.__max_p_length)
+            if self.__rots is not None:
+                hold_rot = self.__rots[rot_id]
             if self.__poly is None:
-                hold_polymer = SAWLC(self.__l_length, self.__m_surf, p0)
+                hold_polymer = SAWLC(self.__l_length, self.__m_surf, p0, rot = hold_rot)
             else:
-                hold_polymer = SAWLCPoly(self.__poly, self.__l_length, self.__m_surf, p0)
+                hold_polymer = SAWLCPoly(self.__poly, self.__l_length, self.__m_surf, p0, rot = hold_rot)
             if hold_polymer.get_monomer(-1).overlap_voi(self._Network__voi, self._Network__v_size,
                                                         over_tolerance=self.__over_tolerance):
                 self._Network__pmer_fails += 1
                 continue
             self.add_monomer_to_voi(hold_polymer.get_monomer(-1), self._Network__svol)
+            if self.__rots is not None:
+                if rot_id >= len(self.__rots) - 1:
+                    rot_id = 0
+                else:
+                    rot_id += 1
 
             # Polymer loop
             cont_pol = 1
             not_finished = True
             while (hold_polymer.get_total_len() < max_length) and not_finished:
+                hold_rot = None
+                if self.__rots is not None:
+                    hold_rot = self.__rots[rot_id]
                 monomer_data = hold_polymer.gen_new_monomer(self.__over_tolerance, self._Network__voi,
                                                             self._Network__v_size,
-                                                            fix_dst=self.__gen_pol_lengths.gen_length(self.__l_length, 2*self.__l_length))
+                                                            fix_dst=self.__gen_pol_lengths.gen_length(self.__l_length, 2*self.__l_length),
+                                                            rot = hold_rot)
 
                 cont_pol += 1
 
@@ -349,6 +370,11 @@ class NetSAWLC(Network):
                         hold_polymer.add_monomer(monomer_data[0], monomer_data[1], monomer_data[2], monomer_data[3])
                         self.add_monomer_to_voi(hold_polymer.get_monomer(-1), self._Network__svol)
                         hold_occ = self._Network__pl_occ + 100. * (hold_polymer.get_vol() / self._Network__vol)
+                        if self.__rots is not None:
+                            if rot_id >= len(self.__rots) - 1:
+                                rot_id = 0
+                            else:
+                                rot_id += 1
                         if hold_occ >= self.__occ:
                             not_finished = False
                     else:

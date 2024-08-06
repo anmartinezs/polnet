@@ -554,6 +554,17 @@ class SynthTomo:
             q0, q1, q2 = normals.GetTuple(i)
             self.__motifs.append(list((m_type, lbl, code, i, [x, y, z], [q0, q1, q2, 0])))
 
+    def add_offset(self, offset):
+        """
+        Add an offset to the coordinates of the particles in the motif list
+        :param offset: an iterable with 3 elements
+        :return: None
+        """
+        for i in range(len(self.__motifs)):
+            self.__motifs[i][5][0] = offset[0]
+            self.__motifs[i][5][1] = offset[1]
+            self.__motifs[i][5][2] = offset[2]
+
 
 class SetTomos:
     """

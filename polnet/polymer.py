@@ -580,7 +580,7 @@ class SAWLC(Polymer):
     Class for fibers following model Self-Avoiding Worm-Like Chain (SAWLC)
     """
 
-    def __init__(self, l_length, m_surf, p0=(0, 0, 0), id0=0, code0=''):
+    def __init__(self, l_length, m_surf, p0=(0, 0, 0), id0=0, code0='', rot=None):
         """
         Constructor
 
@@ -589,31 +589,37 @@ class SAWLC(Polymer):
         :param p0: starting point
         :param id0: id for the initial monomer
         :param code0: code string for the initial monomer (default '')
+        :param rot: None by default, otherwise allow to externally determine the rotation
         """
         super(SAWLC, self).__init__(m_surf)
         assert l_length > 0
         self.__l = l_length
-        self.set_reference(p0, id0=id0, code0=code0)
+        self.set_reference(p0, id0=id0, code0=code0, rot=rot)
 
-    def set_reference(self, p0=(0., 0., 0), id0=0, code0=''):
+    def set_reference(self, p0=(0., 0., 0), id0=0, code0='', rot=None):
         """
         Initializes the chain with the specified point input point, if points were introduced before they are forgotten
 
         :param p0: starting point
         :param id0: id for the initial monomer
         :param code0: code string for the initial monomer (default '')
+        :param rot: None by default, otherwise allow to extenerally determine the rotation
         :return:
         """
         assert hasattr(p0, '__len__') and (len(p0) == 3)
         self._Polymer__p = np.asarray(p0)
         hold_monomer = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
-        hold_q = gen_rand_unit_quaternion()
+        if rot is None:
+            hold_q = gen_rand_unit_quaternion()
+        else:
+            assert hasattr(rot, '__len__') and (len(rot) == 4)
+            hold_q = rot
         # hold_q = np.asarray((1, 0., 0., 1.), dtype=np.float32)
         hold_monomer.rotate_q(hold_q)
         hold_monomer.translate(p0)
         self.add_monomer(p0, np.asarray((0., 0., 0.)), hold_q, hold_monomer, id=id0, code=code0)
 
-    def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1, fix_dst=None, ext_surf=None):
+    def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1, fix_dst=None, ext_surf=None, rot=None):
         """
         Generates a new monomer for the polymer according to the specified random model
 
@@ -622,6 +628,7 @@ class SAWLC(Polymer):
         :param v_size: VOI voxel size, it must be greater than 0 (default 1)
         :param fix_dst: allows to set the distance for the new monomer externally (default None)
         :param ext_surf: allows to set the new mmer surface externally (default None)
+        :param rot: None by default, otherwise allow to externally determine the rotation
         :return: a 4-tuple with monomer center point, associated tangent vector, rotated quaternion and monomer,
                  return None in case the generation has failed
         """
@@ -635,7 +642,10 @@ class SAWLC(Polymer):
         r = self._Polymer__r[-1] + t
 
         # Rotation
-        q = gen_rand_unit_quaternion()
+        if rot is None:
+            q = gen_rand_unit_quaternion()
+        else:
+            q = rot
         # q = np.asarray((1, 0, 0, 1), dtype=np.float32)
 
         # Monomer
@@ -661,7 +671,7 @@ class SAWLCPoly(Polymer):
     Class for fibers following model Self-Avoiding Worm-Like Chain (SAWLC) on a PolyData
     """
 
-    def __init__(self, poly, l_length, m_surf, p0=(0, 0, 0), id0=0, code=''):
+    def __init__(self, poly, l_length, m_surf, p0=(0, 0, 0), id0=0, code='', rot=None):
         """
         Constructor
 
@@ -671,21 +681,23 @@ class SAWLCPoly(Polymer):
         :param p0: starting point
         :param id0: id for the initial monomer (default 0)
         :param code0: code string for the initial monomer (default '')
+        :param rot: None by default, otherwise allow to externally determine the rotation
         """
         super(SAWLCPoly, self).__init__(m_surf)
         assert isinstance(poly, vtk.vtkPolyData)
         assert l_length > 0
         self.__l = l_length
         self.__poly = poly
-        self.set_reference(p0, id0=id0, code0=code)
+        self.set_reference(p0, id0=id0, code0=code, rot=rot)
 
-    def set_reference(self, p0=(0., 0., 0), id0=0, code0=''):
+    def set_reference(self, p0=(0., 0., 0), id0=0, code0='', rot=None):
         """
         Initializes the chain with the specified point input point, if points were introduced before they are forgotten
 
         :param p0: starting point
         :param id0: id for the initial monomer (default 0)
         :param code0: code string for the initial monomer (default '')
+        :param rot: None by default, otherwise allow to externally determine the rotation
         :return:
         """
         assert hasattr(p0, '__len__') and (len(p0) == 3)
@@ -693,11 +705,16 @@ class SAWLCPoly(Polymer):
         hold_monomer = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
         hold_q = gen_rand_quaternion_on_vector(hold_n)
         # hold_q = np.asarray((1, 0., 0., 1.), dtype=np.float32)
+        if rot is None:
+            hold_q = gen_rand_unit_quaternion()
+        else:
+            assert hasattr(rot, '__len__') and (len(rot) == 4)
+            hold_q = rot
         hold_monomer.rotate_q(hold_q)
         hold_monomer.translate(self._Polymer__p)
         self.add_monomer(self._Polymer__p, np.asarray((0., 0., 0.)), hold_q, hold_monomer, id=id0, code=code0)
 
-    def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1, fix_dst=None):
+    def gen_new_monomer(self, over_tolerance=0, voi=None, v_size=1, fix_dst=None, ext_surf=None, rot=None):
         """
         Generates a new monomer for the polymer according to the specified random model
 
@@ -705,6 +722,8 @@ class SAWLCPoly(Polymer):
         :param voi: VOI to define forbidden regions (default None, not applied)
         :param v_size: VOI voxel size, it must be greater than 0 (default 1)
         :param fix_dst: allows to set the distance for the new monomer externally (default None)
+        :param ext_surf: allows to set the new mmer surface externally (default None)
+        :param rot: None by default, otherwise allow to extenerally determine the rotation
         :return: a 4-tuple with monomer center point, associated tangent vector, rotated quaternion and monomer,
                  return None in case the generation has failed
         """
@@ -721,13 +740,18 @@ class SAWLCPoly(Polymer):
         t = r - self._Polymer__r[-1]
 
         # Rotation
-        hold_n = find_point_on_poly(r, self.__poly)[1]
-        q = gen_rand_quaternion_on_vector(hold_n)
-        # q = np.asarray((1, 0, 0, 1), dtype=np.float32)
+        if rot is None:
+            hold_n = find_point_on_poly(r, self.__poly)[1]
+            q = gen_rand_quaternion_on_vector(hold_n)
+            # q = np.asarray((1, 0, 0, 1), dtype=np.float32)
+        else:
+            q = rot
 
         # Monomer
-        # hold_m = self._Polymer__m[-1].get_copy()
-        hold_m = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
+        if ext_surf is None:
+            hold_m = Monomer(self._Polymer__m_surf, self._Polymer__m_diam)
+        else:
+            hold_m = Monomer(ext_surf, self._Polymer__m_diam)
         hold_m.rotate_q(q)
         hold_m.translate(r)
 

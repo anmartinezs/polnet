@@ -20,10 +20,10 @@ import numpy as np
 from polnet import lio
 
 ROOT_DIR = '/home/martinez/workspace/data' # '/home/martinez/workspace/data'
-in_dir = ROOT_DIR + '/exp_tomos/empiar_10988' # '/exp_tomos'
+in_dir = ROOT_DIR + '/exp_tomos/atpase/tomos' # '/exp_tomos'
 out_dir = ROOT_DIR + '/nn-unet/in_predict'
-task_id = '006'
-task_suffix = 'empiar_10988'
+task_id = '007'
+task_suffix = 'atpase'
 v_size_model = 10 # A/voxel
 v_size_decimal = 3 # number of decimal to cut the voxel size precision
 norm = True # If true intensity values are normalized wrt mean and variance
