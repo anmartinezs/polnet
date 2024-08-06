@@ -68,6 +68,12 @@ Exemplary videos for using the GUI are avilable at [Zenodo](https://zenodo.org/r
 
 **Important note**: all Jupyter notebooks are thoroughly self-documented in order to guide the user in the process. In addition, they contain graphic objects and default setting to facilitate the process.
 
+## Documentation
+
+Folder **docs** contains the file **default_settings.pdf**, it describes the defaults settings for the hardcoded script to generate synthetic tomogram **scripts/data_gen/all_features.py**.
+
+In addition, table in **docs/molecules_table.md** contains more detailed descriptions of the PDB models used to create macromolecular models provided in **data** folder.
+
 ## For developers
 
 ### Package description
