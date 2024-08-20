@@ -1,20 +1,16 @@
-# .gitignore
+# Folders
+bin
+include
+lib
+lib64
+share
+etc
+data_generated
+polnet.egg-info
+polnet/__pycache__
+gui/core/__pycache__
 
-__pycache__
-.vs
-venv
-.venv
-*venv*
-
-
-*.bin
-*.hdf5
-*.h5
-*.png
-*.sh
-*.pth
-*.csv
-
-*.swp
-
-VOCdevkit/
+# Files
+.gitignore
+pyvenv.cfg
+polnet/_version.py
