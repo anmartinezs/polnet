@@ -55,7 +55,7 @@ MEMBRANES_LIST = ['in_mbs/sphere.mbs', 'in_mbs/ellipse.mbs', 'in_mbs/toroid.mbs'
 HELIX_LIST = ['in_helix/mt.hns', 'in_helix/actin.hns']
 
 PROTEINS_LIST = ['in_10A/4v4r_10A.pns', 'in_10A/3j9i_10A.pns', 'in_10A/4v4r_50S_10A.pns', 'in_10A/4v4r_30S_10A.pns',
-                 'in_10A/4ug0_10A.pns', 'in_10A/6utj_10A.pns', 'in_10A/5mrc_10A.pns', 'in_10A/4v7r_10A.pns',
+                 'in_10A/6utj_10A.pns', 'in_10A/5mrc_10A.pns', 'in_10A/4v7r_10A.pns',
                  'in_10A/2uv8_10A.pns', 'in_10A/4v94_10A.pns', 'in_10A/4cr2_10A.pns', 'in_10A/3qm1_10A.pns',
                  'in_10A/3h84_10A.pns', 'in_10A/3gl1_10A.pns', 'in_10A/3d2f_10A.pns', 'in_10A/3cf3_10A.pns',
                  'in_10A/2cg9_10A.pns', 'in_10A/1u6g_10A.pns', 'in_10A/1s3x_10A.pns', 'in_10A/1qvr_10A.pns',
