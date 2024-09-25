@@ -42,9 +42,9 @@ from polnet.membrane import SetMembranes
 
 # Common tomogram settings
 ROOT_PATH = os.path.realpath(os.getcwd() + '/../../data')
-NTOMOS = 40 # 12
-VOI_SHAPE = (500, 500, 300) # (1000, 1000, 400) # (1000, 1000, 250) # (400, 400, 236) # vx or a path to a mask (1-foreground, 0-background) tomogram
-VOI_OFFS =  ((4,496), (4,496), (50,250)) # ((4,996), (4,996), (4,246)) # ((4,396), (4,396), (4,232)) # ((4,1852), (4,1852), (32,432)) # ((4,1852), (4,1852), (4,232)) # vx
+NTOMOS = 10 # 12
+VOI_SHAPE = (1000, 1000, 250) # (1000, 1000, 400) # (400, 400, 236) # vx or a path to a mask (1-foreground, 0-background) tomogram
+VOI_OFFS =  ((4,996), (4,996), (4,246)) # ((4,396), (4,396), (4,232)) # ((4,1852), (4,1852), (32,432)) # ((4,1852), (4,1852), (4,232)) # vx
 VOI_VSIZE = 10 # 2.2 # A/vx
 MMER_TRIES = 20
 PMER_TRIES = 100
@@ -75,7 +75,7 @@ SURF_DEC = 0.9 # Target reduction factor for surface decimation (default None)
 
 # Reconstruction tomograms
 TILT_ANGS = np.arange(-60, 60, 3) # range(-90, 91, 3) # at MPI-B IMOD only works for ranges
-DETECTOR_SNR = [2.0, 3.0] # [1.0, 2.0] # 0.2 # [.15, .25] # 0.2
+DETECTOR_SNR = [1.0, 2.0] # 0.2 # [.15, .25]
 MALIGN_MN = 1
 MALIGN_MX = 1.5
 MALIGN_SG = 0.2

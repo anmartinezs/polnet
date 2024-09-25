@@ -327,6 +327,7 @@ class NetSAWLC(Network):
                                  self._Network__voi.shape[1] * self._Network__v_size * random.random(),
                                  self._Network__voi.shape[2] * self._Network__v_size * random.random()))
             max_length = self.__gen_pol_lengths.gen_length(0, self.__max_p_length)
+            hold_rot = None
             if self.__rots is not None:
                 hold_rot = self.__rots[rot_id]
             if self.__poly is None:

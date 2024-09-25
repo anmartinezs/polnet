@@ -5,6 +5,8 @@ This script generates subvolumes sampling uniformly the whole space of rotation 
 import random
 import shutil
 
+import numpy as np
+
 from polnet import lio, affine, tem
 
 ROOT_DIR = r'C:\Users\amart\workspace\data'
@@ -20,14 +22,20 @@ TEM_DIR = ROOT_DIR + r'\tda\tem'
 TOMOS_DIR = ROOT_DIR + r'\tda\snr_1-2_tilt_60\3j9i'
 
 templ = lio.load_mrc(IN_TEMPL)
-rots = affine.uniform_sampling_so3(N_ROTS)
+if N_ROTS <= 0:
+    rots = np.asarray([[.0, .0, .0, .0]])
+else:
+    rots = affine.uniform_sampling_so3(N_ROTS)
 
 for i, rot in enumerate(rots):
 
     print('\t-Processing particle ' + str(i) + '/' + str(N_ROTS))
 
     # Rotations
-    templ_r = affine.tomo_rotate(templ, rot)
+    if N_ROTS <= 0:
+        templ_r = templ
+    else:
+        templ_r = affine.tomo_rotate(templ, rot)
 
     # TEM
     temic = tem.TEM(TEM_DIR)
