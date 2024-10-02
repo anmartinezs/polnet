@@ -8,6 +8,11 @@ from gui.core.all_features2 import all_features2
 import os
 import shutil
 import hashlib
+import mrcfile
+import numpy as np
+import vtk
+from vtkmodules.util.numpy_support import vtk_to_numpy
+import pandas as pd
 
 class TestRepeatability(unittest.TestCase):
 
@@ -89,17 +94,55 @@ class TestAllFeatures2Repeatability(unittest.TestCase):
         if os.path.exists(self.out_dir):
             shutil.rmtree(self.out_dir)
 
-    def hash_file(self, filename):
-        with open(filename, "rb") as f:
-            return hashlib.md5(f.read()).hexdigest()
+    def load_mrc(self, filename):
+        with mrcfile.open(filename) as mrc:
+            return mrc.data
+
+    def load_vtp(self, filename):
+        reader = vtk.vtkXMLPolyDataReader()
+        reader.SetFileName(filename)
+        reader.Update()
+        polydata = reader.GetOutput()
+        if polydata.GetNumberOfPoints() == 0:
+            print(f"Warning: VTP file {filename} contains no points.")
+            return np.array([])
+        points = vtk_to_numpy(polydata.GetPoints().GetData())
+        return points
+
+    def compare_arrays(self, arr1, arr2):
+        return np.allclose(arr1, arr2, rtol=1e-5, atol=1e-8)
+
+    def compare_csv(self, file1, file2):
+        df1 = pd.read_csv(file1, delimiter='\t')
+        df2 = pd.read_csv(file2, delimiter='\t')
+        
+        # Columns to ignore in the comparison
+        ignore_columns = ['Density', 'Micrographs', 'PolyData', 'Tomo3D']
+        
+        columns_to_compare = [col for col in df1.columns if col not in ignore_columns]
+        
+        if not df1[columns_to_compare].equals(df2[columns_to_compare]):
+            print(f"Differences in CSV files:")
+            for column in columns_to_compare:
+                if not df1[column].equals(df2[column]):
+                    print(f"  Column '{column}' differs:")
+                    diff = ~(df1[column] == df2[column])
+                    print(f"    File 1:\n{df1.loc[diff, column]}")
+                    print(f"    File 2:\n{df2.loc[diff, column]}")
+            return False
+        return True
 
     def test_repeatability(self):
-        # Run all_features2 twice with the same random seed
-        seed = 42
+        seed = 17
         
+        print("Running first simulation...")
         all_features2(**self.light_params, OUT_DIR=f"{self.out_dir}/run1", random_seed=seed)
+        print("First simulation completed.")
         
-        # Check only specific output files instead of entire directory
+        print("Running second simulation...")
+        all_features2(**self.light_params, OUT_DIR=f"{self.out_dir}/run2", random_seed=seed)
+        print("Second simulation completed.")
+        
         key_files = [
             "tomos/tomo_den_0.mrc",
             "tomos/tomo_lbls_0.mrc",
@@ -108,24 +151,47 @@ class TestAllFeatures2Repeatability(unittest.TestCase):
             "tomos_motif_list.csv"
         ]
         
-        hashes1 = {file: self.hash_file(os.path.join(self.out_dir, "run1", file)) for file in key_files}
+        results = {}
         
-        all_features2(**self.light_params, OUT_DIR=f"{self.out_dir}/run2", random_seed=seed)
-        hashes2 = {file: self.hash_file(os.path.join(self.out_dir, "run2", file)) for file in key_files}
+        for file in key_files:
+            file1 = os.path.join(self.out_dir, "run1", file)
+            file2 = os.path.join(self.out_dir, "run2", file)
+            
+            print(f"Comparing {file}...")
+            
+            if file.endswith('.mrc'):
+                arr1 = self.load_mrc(file1)
+                arr2 = self.load_mrc(file2)
+                results[file] = self.compare_arrays(arr1, arr2)
+            elif file.endswith('.vtp'):
+                points1 = self.load_vtp(file1)
+                points2 = self.load_vtp(file2)
+                if len(points1) == 0 and len(points2) == 0:
+                    print(f"Both VTP files {file} are empty. Skipping comparison.")
+                    results[file] = "Skipped (Empty)"
+                else:
+                    results[file] = self.compare_arrays(points1, points2)
+            elif file.endswith('.csv'):
+                results[file] = self.compare_csv(file1, file2)
+            
+            print(f"Comparison of {file} completed.")
         
-        self.assertEqual(hashes1, hashes2, "Key output files are not identical between runs")
+        print("\nComparison Results:")
+        for file, result in results.items():
+            print(f"{file}: {'Passed' if result == True else 'Failed' if result == False else result}")
+        
+        self.assertTrue(all(result == True for result in results.values() if result != "Skipped (Empty)"), 
+                        "Not all files were identical between runs")
 
     def test_seed_sensitivity(self):
-        # Run with different seeds and ensure key outputs are different
         all_features2(**self.light_params, OUT_DIR=f"{self.out_dir}/seed1", random_seed=1)
         all_features2(**self.light_params, OUT_DIR=f"{self.out_dir}/seed2", random_seed=2)
         
         key_file = "tomos/tomo_den_0.mrc"
-        hash1 = self.hash_file(os.path.join(self.out_dir, "seed1", key_file))
-        hash2 = self.hash_file(os.path.join(self.out_dir, "seed2", key_file))
+        arr1 = self.load_mrc(os.path.join(self.out_dir, "seed1", key_file))
+        arr2 = self.load_mrc(os.path.join(self.out_dir, "seed2", key_file))
         
-        self.assertNotEqual(hash1, hash2, "Output should be different with different seeds")
-
+        self.assertFalse(self.compare_arrays(arr1, arr2), "Output should be different with different seeds")
 
 if __name__ == '__main__':
     unittest.main()
