@@ -22,8 +22,6 @@ def all_features2(NTOMOS, VOI_SHAPE, OUT_DIR, VOI_OFFS, VOI_VSIZE, MMER_TRIES, P
     # Setup random seeds
     random.seed(random_seed)
     np.random.seed(random_seed)
-    import torch
-    torch.manual_seed(random_seed)
     os.environ['PYTHONHASHSEED'] = str(random_seed)
 
     # Common tomogram settings
