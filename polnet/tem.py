@@ -136,13 +136,14 @@ class TEM:
         # Load micrographs
         mics = lio.load_mrc(self.__micgraphs_file)
 
+        rng = np.random.default_rng()
         # Adding readout noise with Gaussian distribution to every micrograph
         for i in range(mics.shape[2]):
             mic = mics[:, :, i]
             mask = mic > 0
             mn = mic[mask].mean()
             sg_fg = mn / snr
-            mics[:, :, i] = mic + np.random.normal(mn, sg_fg, mic.shape)
+            mics[:, :, i] = mic + rng.normal(mn, sg_fg, mic.shape)
 
         # Update micrographs file
         lio.write_mrc(mics, self.__micgraphs_file)
@@ -244,12 +245,14 @@ class TEM:
 
         assert mx >= mn
 
+        rng = np.random.default_rng()
+
         # Micrographs loop
         mics = lio.load_mrc(self.__micgraphs_file)
         angs = np.abs(np.radians(self.__load_tangs_file()))
         n_angs = len(angs)
-        shifts = mn + np.sin(angs)/np.sin(angs.max()) + np.random.normal(0, n_sigma, n_angs)
-        split_fs = np.random.uniform(0, 1, n_angs)
+        shifts = mn + np.sin(angs)/np.sin(angs.max()) + rng.normal(0, n_sigma, n_angs)
+        split_fs = rng.uniform(0, 1, n_angs)
         for i, shift, split_f in zip(range(n_angs), shifts, split_fs):
             shift_x = shift / math.sqrt(split_f + 1)
             shift_y = split_f * shift_x

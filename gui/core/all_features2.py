@@ -2,6 +2,8 @@ import sys
 import csv
 import time
 import random
+import numpy as np
+from collections import OrderedDict
 
 from polnet.utils import *
 from polnet import lio
@@ -15,7 +17,12 @@ from polnet.membrane import SetMembranes
 
 def all_features2(NTOMOS, VOI_SHAPE, OUT_DIR, VOI_OFFS, VOI_VSIZE, MMER_TRIES, PMER_TRIES,
                   MEMBRANES_LIST, HELIX_LIST, PROTEINS_LIST, MB_PROTEINS_LIST, SURF_DEC,
-                  TILT_ANGS, DETECTOR_SNR, MALIGN_MN, MALIGN_MX, MALIGN_SG):
+                  TILT_ANGS, DETECTOR_SNR, MALIGN_MN, MALIGN_MX, MALIGN_SG, random_seed=171717):
+
+    # Setup random seeds
+    random.seed(random_seed)
+    np.random.seed(random_seed)
+    os.environ['PYTHONHASHSEED'] = str(random_seed)
 
     # Common tomogram settings
     ROOT_PATH = os.path.realpath(os.getcwd() + '/../data')
@@ -53,16 +60,20 @@ def all_features2(NTOMOS, VOI_SHAPE, OUT_DIR, VOI_OFFS, VOI_VSIZE, MMER_TRIES, P
         writer_csv = csv.DictWriter(file_csv, fieldnames=header_lbl_tab, delimiter='\t')
         writer_csv.writeheader()
         for i in range(len(MEMBRANES_LIST)):
-            writer_csv.writerow({header_lbl_tab[0]: MEMBRANES_LIST[i], header_lbl_tab[1]: unit_lbl})
+            ordered_row = OrderedDict([(header_lbl_tab[0], MEMBRANES_LIST[i]), (header_lbl_tab[1], unit_lbl)])
+            writer_csv.writerow(ordered_row)
             unit_lbl += 1
         for i in range(len(HELIX_LIST)):
-            writer_csv.writerow({header_lbl_tab[0]: HELIX_LIST[i], header_lbl_tab[1]: unit_lbl})
+            ordered_row = OrderedDict([(header_lbl_tab[0], HELIX_LIST[i]), (header_lbl_tab[1], unit_lbl)])
+            writer_csv.writerow(ordered_row)
             unit_lbl += 1
         for i in range(len(PROTEINS_LIST)):
-            writer_csv.writerow({header_lbl_tab[0]: PROTEINS_LIST[i], header_lbl_tab[1]: unit_lbl})
+            ordered_row = OrderedDict([(header_lbl_tab[0], PROTEINS_LIST[i]), (header_lbl_tab[1], unit_lbl)])
+            writer_csv.writerow(ordered_row)
             unit_lbl += 1
         for i in range(len(MB_PROTEINS_LIST)):
-            writer_csv.writerow({header_lbl_tab[0]: MB_PROTEINS_LIST[i], header_lbl_tab[1]: unit_lbl})
+            ordered_row = OrderedDict([(header_lbl_tab[0], MB_PROTEINS_LIST[i]), (header_lbl_tab[1], unit_lbl)])
+            writer_csv.writerow(ordered_row)
             unit_lbl += 1
     
     # Loop for tomograms
