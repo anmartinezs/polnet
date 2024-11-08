@@ -2,7 +2,7 @@
 Functionality of processing PolyData
 """
 
-__author__ = 'Antonio Martinez-Sanchez'
+__author__ = "Antonio Martinez-Sanchez"
 
 from polnet.affine import *
 from polnet.utils import *
@@ -14,7 +14,7 @@ from vtkmodules.util import numpy_support
 
 # CONSTANTS
 
-GTRUTH_VTP_LBLS = 'gt_labels'
+GTRUTH_VTP_LBLS = "gt_labels"
 
 
 # FUNCTIONS
@@ -29,14 +29,16 @@ def find_point_on_poly(point, poly):
     :param poly: poly data where the closest output point has to be found
     :return: output point
     """
-    assert hasattr(point, '__len__') and (len(point) == 3)
+    assert hasattr(point, "__len__") and (len(point) == 3)
 
     point_tree = vtk.vtkKdTreePointLocator()
     point_tree.SetDataSet(poly)
     point_tree.BuildLocator()
     cpoint_id = point_tree.FindClosestPoint(point)
     normals = poly.GetPointData().GetNormals()
-    return np.asarray(poly.GetPoint(cpoint_id)), np.asarray(normals.GetTuple(cpoint_id))
+    return np.asarray(poly.GetPoint(cpoint_id)), np.asarray(
+        normals.GetTuple(cpoint_id)
+    )
 
 
 def gen_rand_quaternion_on_vector(vect):
@@ -47,11 +49,11 @@ def gen_rand_quaternion_on_vector(vect):
     :return: a quaternion which represents the rotation from Z-axis unit vector to be aligned to reference vector, plus
              a random rotation around the axis defined by the reference vector.
     """
-    assert hasattr(vect, '__len__') and (len(vect) == 3)
+    assert hasattr(vect, "__len__") and (len(vect) == 3)
 
-    rnd_ang = 360. * np.random.random() - 180.
+    rnd_ang = 360.0 * np.random.random() - 180.0
     q1 = angle_axis_to_quat(rnd_ang, vect[0], vect[1], vect[2])
-    M = vect_to_zmat(np.asarray(vect), mode='passive')
+    M = vect_to_zmat(np.asarray(vect), mode="passive")
     q = rot_to_quat(M)
     return quat_mult(q, q1)
 
@@ -67,7 +69,7 @@ def gen_uni_s2_sample_on_poly(center, rad, thick, poly):
     :param thick: hollow sphere thickness
     :return: the random coordinate generated or None if no intersection
     """
-    assert hasattr(center, '__len__') and (len(center) == 3)
+    assert hasattr(center, "__len__") and (len(center) == 3)
     assert (rad > 0) and (thick > 0)
     assert isinstance(poly, vtk.vtkPolyData)
 
@@ -76,12 +78,12 @@ def gen_uni_s2_sample_on_poly(center, rad, thick, poly):
     kdtree.SetDataSet(poly)
     kdtree.BuildLocator()
     pids = vtk.vtkIdList()
-    kdtree.FindPointsWithinRadius(rad + .5*thick, center, pids)
+    kdtree.FindPointsWithinRadius(rad + 0.5 * thick, center, pids)
 
     # save_vtp(vtp_inter, './out/hold_3.vtp')
 
     # Get a points randomly un util a point is found in the intersection
-    min_dst, n_pts = rad - 0.5*thick, pids.GetNumberOfIds()
+    min_dst, n_pts = rad - 0.5 * thick, pids.GetNumberOfIds()
     for i in np.random.randint(0, n_pts, n_pts):
         pt = poly.GetPoint(pids.GetId(i))
         hold = center - pt
@@ -104,7 +106,7 @@ def gen_uni_s2_sample_on_poly_inter(center, rad, poly, sph_res=360):
                     default is 360 (1 degree resolution)
     :return: the random coordinate generated or None if no intersection
     """
-    assert hasattr(center, '__len__') and (len(center) == 3)
+    assert hasattr(center, "__len__") and (len(center) == 3)
     assert rad > 0
     assert isinstance(poly, vtk.vtkPolyData)
 
@@ -136,7 +138,7 @@ def gen_uni_s2_sample_on_poly_inter(center, rad, poly, sph_res=360):
     if n_pts == 0:
         return None
     else:
-        rnd_id = np.random.randint(0, vtp_inter.GetNumberOfPoints()-1, 1)
+        rnd_id = np.random.randint(0, vtp_inter.GetNumberOfPoints() - 1, 1)
         return vtp_inter.GetPoint(rnd_id)
 
 
@@ -181,7 +183,9 @@ def poly_surface_area(poly):
     return mass.GetSurfaceArea()
 
 
-def add_sfield_to_poly(poly, sfield, name, dtype='float', interp='NN', mode='points'):
+def add_sfield_to_poly(
+    poly, sfield, name, dtype="float", interp="NN", mode="points"
+):
     """
     Add the values of a scalar field to a vtkPolyData object as point property
 
@@ -195,18 +199,18 @@ def add_sfield_to_poly(poly, sfield, name, dtype='float', interp='NN', mode='poi
     """
     assert isinstance(sfield, np.ndarray)
     assert isinstance(name, str)
-    assert (dtype == 'float') or (dtype == 'int')
-    assert (interp == 'NN') or (interp == 'trilin')
-    if interp == 'trilin':
+    assert (dtype == "float") or (dtype == "int")
+    assert (interp == "NN") or (interp == "trilin")
+    if interp == "trilin":
         interp_func = trilin_interp
     else:
         interp_func = nn_iterp
-    assert (mode == 'points') or (mode == 'cells')
+    assert (mode == "points") or (mode == "cells")
 
-    if mode == 'points':
+    if mode == "points":
         # Creating and adding the new property as a new array for PointData
         n_points = poly.GetNumberOfPoints()
-        if dtype == 'int':
+        if dtype == "int":
             arr = vtk.vtkIntArray()
         else:
             arr = vtk.vtkFloatArray()
@@ -219,7 +223,7 @@ def add_sfield_to_poly(poly, sfield, name, dtype='float', interp='NN', mode='poi
         poly.GetPointData().AddArray(arr)
     else:
         # Creating and adding the new property as a new array for CellData
-        if dtype == 'int':
+        if dtype == "int":
             arr = vtk.vtkIntArray()
         else:
             arr = vtk.vtkFloatArray()
@@ -232,7 +236,7 @@ def add_sfield_to_poly(poly, sfield, name, dtype='float', interp='NN', mode='poi
             poly.GetCell(i, cell)
             pts = cell.GetPoints()
             n_pts = pts.GetNumberOfPoints()
-            if dtype == 'int':
+            if dtype == "int":
                 values = np.zeros(shape=n_pts, dtype=int)
             else:
                 values = np.zeros(shape=n_pts, dtype=float)
@@ -261,7 +265,15 @@ def poly_mask(poly: vtk.vtkPolyData, mask: np.ndarray) -> vtk.vtkPolyData:
         for j in range(pts.GetNumberOfPoints()):
             x, y, z = pts.GetPoint(j)
             x, y, z = int(round(x)), int(round(y)), int(round(z))
-            if x < 0 or x >= m_x or y < 0 or y >= m_y or z < 0 or z >= m_z or not mask[x, y, z]:
+            if (
+                x < 0
+                or x >= m_x
+                or y < 0
+                or y >= m_y
+                or z < 0
+                or z >= m_z
+                or not mask[x, y, z]
+            ):
                 del_cell_ids.InsertNextValue(i)
                 break
     rm_filter = vtk.vtkRemovePolyData()
@@ -279,7 +291,9 @@ def merge_polys(poly_1, poly_2):
     :param poly_2: input poly_data 2
     :return: an poly_data that merges the two inputs
     """
-    assert isinstance(poly_1, vtk.vtkPolyData) and isinstance(poly_2, vtk.vtkPolyData)
+    assert isinstance(poly_1, vtk.vtkPolyData) and isinstance(
+        poly_2, vtk.vtkPolyData
+    )
     app_flt = vtk.vtkAppendPolyData()
     app_flt.AddInputData(poly_1)
     app_flt.AddInputData(poly_2)
@@ -287,7 +301,7 @@ def merge_polys(poly_1, poly_2):
     return app_flt.GetOutput()
 
 
-def add_label_to_poly(poly, lbl, p_name, mode='cell'):
+def add_label_to_poly(poly, lbl, p_name, mode="cell"):
     """
     Add a label to all cells in a poly_data
 
@@ -296,11 +310,11 @@ def add_label_to_poly(poly, lbl, p_name, mode='cell'):
     :param p_name: property name used for labels, if not exist in poly_dota is created
     :param mode: selected wheter the label is added to cells ('cell'), points ('point') or both ('both')
     """
-    assert (mode == 'cell') or (mode == 'point') or (mode == 'both')
+    assert (mode == "cell") or (mode == "point") or (mode == "both")
     assert isinstance(poly, vtk.vtkPolyData)
     lbl, p_name = int(lbl), str(p_name)
 
-    if mode == 'cell' or mode == 'both':
+    if mode == "cell" or mode == "both":
         arr = vtk.vtkIntArray()
         n_cells = poly.GetNumberOfCells()
         arr.SetName(p_name)
@@ -309,7 +323,7 @@ def add_label_to_poly(poly, lbl, p_name, mode='cell'):
         for i in range(n_cells):
             arr.SetValue(i, lbl)
         poly.GetCellData().AddArray(arr)
-    elif mode == 'cell' or mode == 'both':
+    elif mode == "cell" or mode == "both":
         arr = vtk.vtkIntArray()
         n_points = poly.GetNumberOfPoints()
         arr.SetName(p_name)
@@ -328,7 +342,11 @@ def points_to_poly_spheres(points, rad):
     :param rad: sphere radius
     :return: an output poly_data
     """
-    assert hasattr(points, '__len__') and (len(points) > 0) and (len(points[0]) == 3)
+    assert (
+        hasattr(points, "__len__")
+        and (len(points) > 0)
+        and (len(points[0]) == 3)
+    )
     rad = float(rad)
     app_flt = vtk.vtkAppendPolyData()
 
@@ -363,6 +381,7 @@ def poly_max_distance(vtp):
                 if hold_mx > mx:
                     mx = hold_mx
         return mx
+
 
 def poly_diam(vtp):
     """
@@ -470,7 +489,9 @@ def image_to_vti(img: np.ndarray) -> vtk.vtkImageData:
     shape = img.shape
 
     flat_data_array = img.flatten()
-    vtk_data = numpy_support.numpy_to_vtk(num_array=flat_data_array, deep=True, array_type=data_type)
+    vtk_data = numpy_support.numpy_to_vtk(
+        num_array=flat_data_array, deep=True, array_type=data_type
+    )
 
     img = vtk.vtkImageData()
     img.GetPointData().SetScalars(vtk_data)
@@ -491,11 +512,10 @@ def save_vti(img: vtk.vtkImageData, fname: str):
     """
     assert isinstance(img, vtk.vtkImageData)
     assert isinstance(fname, str)
-    assert fname.endswith('.vtk') or fname.endswith('.vti')
+    assert fname.endswith(".vtk") or fname.endswith(".vti")
 
     writer = vtk.vtkXMLImageDataWriter()
     writer.SetFileName(fname)
     writer.SetInputData(img)
     if writer.Write() != 1:
-        print('ERROR: unknown error writting the .vti file!!!')
-
+        print("ERROR: unknown error writting the .vti file!!!")

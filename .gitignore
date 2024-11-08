@@ -1,20 +1,23 @@
-# .gitignore
+#Caches
+*__pycache__*
+*pytest_cache*
 
-__pycache__
-.vs
-venv
-.venv
+# Distribution / packaging
+*.egg-info/
+*.egg
+
+# Virtual environments
 *venv*
+bin
+include
+lib
+lib64
+share
+etc
 
+# Data
+data_generated
 
-*.bin
-*.hdf5
-*.h5
-*.png
-*.sh
-*.pth
-*.csv
-
-*.swp
-
-VOCdevkit/
+# Files
+pyvenv.cfg
+polnet/_version.py

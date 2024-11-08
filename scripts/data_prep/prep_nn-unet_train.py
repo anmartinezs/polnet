@@ -26,8 +26,8 @@ out_dir = ROOT_DIR + '/nn-unet/raw'
 dataset_id = '009'
 dataset_suffix = 'sinth10_all_v9'
 fg_labels = {'membrane': (1, 2, 3), 'microtuble': (4,), 'actin': (5,), 'ribo': (6, 11, 12),
-             'cprots': tuple(np.arange(7, 11).tolist() + np.arange(13, 26).tolist()), 'vatp': (26,),
-             'mb_prot': tuple(range(27, 35))}
+             'cprots': tuple(np.arange(7, 11).tolist() + np.arange(13, 26).tolist()),
+             'mb_prot': tuple(range(26, 35))}
 
 # Parsing tomograms filenames from the CSV file
 df = pandas.read_csv(in_csv, delimiter='\t')

@@ -3,16 +3,23 @@ Classes for modeling networks polymers.
 A networks is a combination of a polymer in a volume
 """
 
-__author__ = 'Antonio Martinez-Sanchez'
+__author__ = "Antonio Martinez-Sanchez"
 
 import scipy as sp
 
 from polnet.poly import *
 from polnet.polymer import SAWLC, SAWLCPoly, HelixFiber
-from polnet.lrandom import SGen, SGenUniform, SGenFixed, SGenProp, PGenHelixFiber, PGenHelixFiberB
+from polnet.lrandom import (
+    SGen,
+    SGenUniform,
+    SGenFixed,
+    SGenProp,
+    PGenHelixFiber,
+    PGenHelixFiberB,
+)
 from abc import ABC, abstractmethod
 
-NET_TYPE_STR = 'net_type'
+NET_TYPE_STR = "net_type"
 
 
 class Network(ABC):
@@ -30,14 +37,16 @@ class Network(ABC):
         :param mb_area: total membrane area within the same VOI as the network (deftault None)
         """
         self.set_voi(voi)
-        self.__vol = float((self.__voi > 0).sum()) * v_size * v_size * v_size # withou the float cast is my raise overflow warning in Windows
+        self.__vol = (
+            float((self.__voi > 0).sum()) * v_size * v_size * v_size
+        )  # withou the float cast is my raise overflow warning in Windows
         self.__v_size = v_size
         self.__pl_occ = 0
         self.__pl = list()
         self.__pl_nmmers = list()
         self.__svol = svol
         if self.__svol is not None:
-            if not hasattr(svol, '__len__'):
+            if not hasattr(svol, "__len__"):
                 assert isinstance(self.__svol, np.ndarray)
         self.__min_nmmer = 1
         self.__poly_area = 0
@@ -76,7 +85,7 @@ class Network(ABC):
     def get_polymer_occupancy(self):
         return self.__pl_occ
 
-    def add_polymer(self, polymer, occ_mode='volume'):
+    def add_polymer(self, polymer, occ_mode="volume"):
         """
         Add a new polymer to the network
 
@@ -84,13 +93,15 @@ class Network(ABC):
         :param occ_mode: occupancy mode, valid: 'volume' (default), 'area' for membrane-bound polymer
         :return:
         """
-        assert (occ_mode == 'volume') or (occ_mode == 'area')
+        assert (occ_mode == "volume") or (occ_mode == "area")
         self.__pl.append(polymer)
         self.__pl_nmmers.append(polymer.get_num_mmers())
-        if occ_mode == 'volume':
-            self.__pl_occ += 100. * (polymer.get_vol() / self.__vol)
+        if occ_mode == "volume":
+            self.__pl_occ += 100.0 * (polymer.get_vol() / self.__vol)
         else:
-            self.__pl_occ += 100. * (polymer.get_area() / self._Network__poly_area)
+            self.__pl_occ += 100.0 * (
+                polymer.get_area() / self._Network__poly_area
+            )
         # print('Occ: ', self.__pl_occ)
 
     @abstractmethod
@@ -98,7 +109,7 @@ class Network(ABC):
         """
         Builds an instance of the network
 
-        :return: None        """
+        :return: None"""
         raise NotImplemented
 
     def get_voi(self):
@@ -118,7 +129,9 @@ class Network(ABC):
         """
         hold_gtruth = self.gen_vtp_points_tomo()
         if thick >= 1:
-            hold_gtruth = sp.ndimage.morphology.binary_dilation(hold_gtruth, iterations=int(thick))
+            hold_gtruth = sp.ndimage.morphology.binary_dilation(
+                hold_gtruth, iterations=int(thick)
+            )
         return hold_gtruth
 
     def set_voi(self, voi):
@@ -180,11 +193,20 @@ class Network(ABC):
         for i in range(hold_vtp_skel.GetNumberOfPoints()):
             x, y, z = hold_vtp_skel.GetPoint(i)
             x, y, z = int(round(x)), int(round(y)), int(round(z))
-            if (x >= 0) and (y >= 0) and (z >= 0) and  (x < nx) and (y < ny) and (z < nz):
+            if (
+                (x >= 0)
+                and (y >= 0)
+                and (z >= 0)
+                and (x < nx)
+                and (y < ny)
+                and (z < nz)
+            ):
                 hold_tomo[x, y, z] = True
         return hold_tomo
 
-    def insert_density_svol(self, m_svol, tomo, v_size=1, merge='max', off_svol=None):
+    def insert_density_svol(
+        self, m_svol, tomo, v_size=1, merge="max", off_svol=None
+    ):
         """
         Insert a polymer network as set of subvolumes into a tomogram
 
@@ -194,16 +216,23 @@ class Network(ABC):
         :param merge: merging mode, valid: 'min' (default), 'max', 'sum' and 'insert'
         :param off_svol: offset coordinates for sub-volume monomer center coordinates
         """
-        if not hasattr(m_svol, '__len__'):
+        if not hasattr(m_svol, "__len__"):
             assert isinstance(m_svol, np.ndarray) and (len(m_svol.shape) == 3)
         assert isinstance(tomo, np.ndarray) and (len(tomo.shape) == 3)
-        assert (merge == 'max') or (merge == 'min') or (merge == 'sum') or (merge == 'insert')
+        assert (
+            (merge == "max")
+            or (merge == "min")
+            or (merge == "sum")
+            or (merge == "insert")
+        )
         assert v_size > 0
         if off_svol is not None:
             assert isinstance(off_svol, np.ndarray) and (len(off_svol) == 3)
 
         for pl in self.__pl:
-            pl.insert_density_svol(m_svol, tomo, v_size, merge=merge, off_svol=off_svol)
+            pl.insert_density_svol(
+                m_svol, tomo, v_size, merge=merge, off_svol=off_svol
+            )
 
     def add_monomer_to_voi(self, mmer, mmer_svol=None):
         """
@@ -213,17 +242,23 @@ class Network(ABC):
         :param mmer_voi: subvolume (binary numpy ndarray) with monomer VOI
         """
         assert isinstance(mmer_svol, np.ndarray) and (mmer_svol.dtype == bool)
-        v_size_i = 1. / self.__v_size
-        tot_v = np.asarray((0., 0., 0.))
+        v_size_i = 1.0 / self.__v_size
+        tot_v = np.asarray((0.0, 0.0, 0.0))
         hold_svol = mmer_svol > 0
         for trans in mmer.get_trans_list():
-            if trans[0] == 't':
-                tot_v += (trans[1] * v_size_i)
-            elif trans[0] == 'r':
-                hold_svol = tomo_rotate(hold_svol, trans[1], order=0, mode='constant', cval=hold_svol.max(),
-                                        prefilter=False)
+            if trans[0] == "t":
+                tot_v += trans[1] * v_size_i
+            elif trans[0] == "r":
+                hold_svol = tomo_rotate(
+                    hold_svol,
+                    trans[1],
+                    order=0,
+                    mode="constant",
+                    cval=hold_svol.max(),
+                    prefilter=False,
+                )
                 # hold_svol = tomo_rotate(hold_svol, trans[1], mode='constant', cval=hold_svol.min())
-        insert_svol_tomo(hold_svol, self.__voi, tot_v, merge='min')
+        insert_svol_tomo(hold_svol, self.__voi, tot_v, merge="min")
 
     def count_proteins(self):
         """
@@ -247,8 +282,23 @@ class NetSAWLC(Network):
     Class for generating a network of SAWLC polymers
     """
 
-    def __init__(self, voi, v_size, l_length, m_surf, max_p_length, gen_pol_lengths, occ, over_tolerance=0,
-                 poly=None, svol=None, tries_mmer=20, tries_pmer=100, rots=None, rot_id=0):
+    def __init__(
+        self,
+        voi,
+        v_size,
+        l_length,
+        m_surf,
+        max_p_length,
+        gen_pol_lengths,
+        occ,
+        over_tolerance=0,
+        poly=None,
+        svol=None,
+        tries_mmer=20,
+        tries_pmer=100,
+        rots=None,
+        rot_id=0,
+    ):
         """
         Construction
 
@@ -316,29 +366,60 @@ class NetSAWLC(Network):
             rot_id = self.__rot_id
 
         # Network loop
-        while (c_try <= self.__tries_pmer) and (self._Network__pl_occ < self.__occ):
+        while (c_try <= self.__tries_pmer) and (
+            self._Network__pl_occ < self.__occ
+        ):
 
             # Polymer initialization
             c_try += 1
             if self.__poly:
-                p0 = np.asarray(self.__poly.GetPoint(random.randint(0, self.__poly.GetNumberOfPoints())))
+                p0 = np.asarray(
+                    self.__poly.GetPoint(
+                        random.randint(0, self.__poly.GetNumberOfPoints())
+                    )
+                )
             else:
-                p0 = np.asarray((self._Network__voi.shape[0] * self._Network__v_size * random.random(),
-                                 self._Network__voi.shape[1] * self._Network__v_size * random.random(),
-                                 self._Network__voi.shape[2] * self._Network__v_size * random.random()))
-            max_length = self.__gen_pol_lengths.gen_length(0, self.__max_p_length)
+                p0 = np.asarray(
+                    (
+                        self._Network__voi.shape[0]
+                        * self._Network__v_size
+                        * random.random(),
+                        self._Network__voi.shape[1]
+                        * self._Network__v_size
+                        * random.random(),
+                        self._Network__voi.shape[2]
+                        * self._Network__v_size
+                        * random.random(),
+                    )
+                )
+            max_length = self.__gen_pol_lengths.gen_length(
+                0, self.__max_p_length
+            )
             hold_rot = None
             if self.__rots is not None:
                 hold_rot = self.__rots[rot_id]
             if self.__poly is None:
-                hold_polymer = SAWLC(self.__l_length, self.__m_surf, p0, rot = hold_rot)
+                hold_polymer = SAWLC(
+                    self.__l_length, self.__m_surf, p0, rot=hold_rot
+                )
             else:
-                hold_polymer = SAWLCPoly(self.__poly, self.__l_length, self.__m_surf, p0, rot = hold_rot)
-            if hold_polymer.get_monomer(-1).overlap_voi(self._Network__voi, self._Network__v_size,
-                                                        over_tolerance=self.__over_tolerance):
+                hold_polymer = SAWLCPoly(
+                    self.__poly,
+                    self.__l_length,
+                    self.__m_surf,
+                    p0,
+                    rot=hold_rot,
+                )
+            if hold_polymer.get_monomer(-1).overlap_voi(
+                self._Network__voi,
+                self._Network__v_size,
+                over_tolerance=self.__over_tolerance,
+            ):
                 self._Network__pmer_fails += 1
                 continue
-            self.add_monomer_to_voi(hold_polymer.get_monomer(-1), self._Network__svol)
+            self.add_monomer_to_voi(
+                hold_polymer.get_monomer(-1), self._Network__svol
+            )
             if self.__rots is not None:
                 if rot_id >= len(self.__rots) - 1:
                     rot_id = 0
@@ -352,10 +433,15 @@ class NetSAWLC(Network):
                 hold_rot = None
                 if self.__rots is not None:
                     hold_rot = self.__rots[rot_id]
-                monomer_data = hold_polymer.gen_new_monomer(self.__over_tolerance, self._Network__voi,
-                                                            self._Network__v_size,
-                                                            fix_dst=self.__gen_pol_lengths.gen_length(self.__l_length, 2*self.__l_length),
-                                                            rot = hold_rot)
+                monomer_data = hold_polymer.gen_new_monomer(
+                    self.__over_tolerance,
+                    self._Network__voi,
+                    self._Network__v_size,
+                    fix_dst=self.__gen_pol_lengths.gen_length(
+                        self.__l_length, 2 * self.__l_length
+                    ),
+                    rot=hold_rot,
+                )
 
                 cont_pol += 1
 
@@ -365,12 +451,23 @@ class NetSAWLC(Network):
                     else:
                         c_try += 1
                 else:
-                    new_len = points_distance(monomer_data[0], hold_polymer.get_tail_point())
+                    new_len = points_distance(
+                        monomer_data[0], hold_polymer.get_tail_point()
+                    )
                     if hold_polymer.get_total_len() + new_len < max_length:
                         # ) and (monomer_data[3].overlap_voi(self._Network__voi, self._Network__v_size)):
-                        hold_polymer.add_monomer(monomer_data[0], monomer_data[1], monomer_data[2], monomer_data[3])
-                        self.add_monomer_to_voi(hold_polymer.get_monomer(-1), self._Network__svol)
-                        hold_occ = self._Network__pl_occ + 100. * (hold_polymer.get_vol() / self._Network__vol)
+                        hold_polymer.add_monomer(
+                            monomer_data[0],
+                            monomer_data[1],
+                            monomer_data[2],
+                            monomer_data[3],
+                        )
+                        self.add_monomer_to_voi(
+                            hold_polymer.get_monomer(-1), self._Network__svol
+                        )
+                        hold_occ = self._Network__pl_occ + 100.0 * (
+                            hold_polymer.get_vol() / self._Network__vol
+                        )
                         if self.__rots is not None:
                             if rot_id >= len(self.__rots) - 1:
                                 rot_id = 0
@@ -383,10 +480,10 @@ class NetSAWLC(Network):
 
             # Updating polymer
             if self.__poly is None:
-                self.add_polymer(hold_polymer, occ_mode='volume')
+                self.add_polymer(hold_polymer, occ_mode="volume")
                 c_try = 0
             else:
-                self.add_polymer(hold_polymer, occ_mode='area')
+                self.add_polymer(hold_polymer, occ_mode="area")
                 c_try = 0
             # print('build_network: new polymer added with ' + str(hold_polymer.get_num_monomers()) +
             #       ', length ' + str(hold_polymer.get_total_len()) + ' and occupancy ' +
@@ -400,8 +497,24 @@ class NetSAWLCInter(Network):
     Class for generating a network of SAWLC polymers with intercalated monomers
     """
 
-    def __init__(self, voi, v_size, l_lengths, m_surfs, max_p_length, gen_pol_lengths, gen_seq_mmers,
-                 occ, over_tolerance=0, poly=None, svols=None, codes=None, compaq=False, tries_mmer=100, rots_mmer=10):
+    def __init__(
+        self,
+        voi,
+        v_size,
+        l_lengths,
+        m_surfs,
+        max_p_length,
+        gen_pol_lengths,
+        gen_seq_mmers,
+        occ,
+        over_tolerance=0,
+        poly=None,
+        svols=None,
+        codes=None,
+        compaq=False,
+        tries_mmer=100,
+        rots_mmer=10,
+    ):
         """
         Construction
 
@@ -428,10 +541,10 @@ class NetSAWLCInter(Network):
         super(NetSAWLCInter, self).__init__(voi, v_size, svol=svols)
 
         # Input parsing
-        assert hasattr(l_lengths, '__len__')
-        assert hasattr(m_surfs, '__len__')
+        assert hasattr(l_lengths, "__len__")
+        assert hasattr(m_surfs, "__len__")
         if codes is not None:
-            assert hasattr(codes, '__len__') and (len(codes) == len(svols))
+            assert hasattr(codes, "__len__") and (len(codes) == len(svols))
         assert max_p_length >= 0
         assert isinstance(gen_pol_lengths, PGenHelixFiber)
         assert issubclass(type(gen_seq_mmers), SGen)
@@ -447,7 +560,10 @@ class NetSAWLCInter(Network):
         for i in range(len(self.__m_surfs)):
             self.__centers[i, :] = poly_center_mass(self.__m_surfs[i])
         self.__max_p_length = max_p_length
-        self.__gen_pol_lengths, self.__gen_seq_mmers = gen_pol_lengths, gen_seq_mmers
+        self.__gen_pol_lengths, self.__gen_seq_mmers = (
+            gen_pol_lengths,
+            gen_seq_mmers,
+        )
         self.__occ, self.__over_tolerance = occ, over_tolerance
         self.__poly = poly
         self.__codes = codes
@@ -466,29 +582,59 @@ class NetSAWLCInter(Network):
         # Computes the maximum number of tries
         mmer_id = None
         c_try = 0
-        n_tries = math.ceil(self._Network__vol) # math.ceil(self._Network__vol / poly_volume(self.__m_surfs[prev_id]))
+        n_tries = math.ceil(
+            self._Network__vol
+        )  # math.ceil(self._Network__vol / poly_volume(self.__m_surfs[prev_id]))
 
         # Network loop
         while (c_try <= n_tries) and (self._Network__pl_occ < self.__occ):
 
             # Polymer initialization
             c_try += 1
-            p0 = np.asarray((self._Network__voi.shape[0] * self._Network__v_size * random.random(),
-                             self._Network__voi.shape[1] * self._Network__v_size * random.random(),
-                             self._Network__voi.shape[2] * self._Network__v_size * random.random()))
-            max_length = self.__gen_pol_lengths.gen_length(0, self.__max_p_length)
+            p0 = np.asarray(
+                (
+                    self._Network__voi.shape[0]
+                    * self._Network__v_size
+                    * random.random(),
+                    self._Network__voi.shape[1]
+                    * self._Network__v_size
+                    * random.random(),
+                    self._Network__voi.shape[2]
+                    * self._Network__v_size
+                    * random.random(),
+                )
+            )
+            max_length = self.__gen_pol_lengths.gen_length(
+                0, self.__max_p_length
+            )
             if mmer_id is None:
-                mmer_id = self.__gen_seq_mmers.gen_next_mmer_id(len(self.__m_surfs))
+                mmer_id = self.__gen_seq_mmers.gen_next_mmer_id(
+                    len(self.__m_surfs)
+                )
             if self.__poly is None:
-                hold_polymer = SAWLC(self.__l_lengths[mmer_id], self.__m_surfs[mmer_id], p0, id0=mmer_id,
-                                     code0=self.__codes[mmer_id])
+                hold_polymer = SAWLC(
+                    self.__l_lengths[mmer_id],
+                    self.__m_surfs[mmer_id],
+                    p0,
+                    id0=mmer_id,
+                    code0=self.__codes[mmer_id],
+                )
             else:
-                hold_polymer = SAWLCPoly(self.__poly, self.__l_lengths[mmer_id], self.__m_surfs[mmer_id], p0,
-                                         id0=mmer_id, code0=self.__codes[mmer_id])
-            if hold_polymer.get_monomer(-1).overlap_voi(self._Network__voi, self._Network__v_size,
-                                                        self.__over_tolerance):
+                hold_polymer = SAWLCPoly(
+                    self.__poly,
+                    self.__l_lengths[mmer_id],
+                    self.__m_surfs[mmer_id],
+                    p0,
+                    id0=mmer_id,
+                    code0=self.__codes[mmer_id],
+                )
+            if hold_polymer.get_monomer(-1).overlap_voi(
+                self._Network__voi, self._Network__v_size, self.__over_tolerance
+            ):
                 continue
-            self.add_monomer_to_voi(hold_polymer.get_monomer(-1), self._Network__svol[mmer_id])
+            self.add_monomer_to_voi(
+                hold_polymer.get_monomer(-1), self._Network__svol[mmer_id]
+            )
             prev_id = mmer_id
             mmer_id = None
 
@@ -498,17 +644,34 @@ class NetSAWLCInter(Network):
             while (hold_polymer.get_total_len() < max_length) and not_finished:
 
                 if mmer_id is None:
-                    mmer_id = self.__gen_seq_mmers.gen_next_mmer_id(len(self.__m_surfs))
+                    mmer_id = self.__gen_seq_mmers.gen_next_mmer_id(
+                        len(self.__m_surfs)
+                    )
 
                 if self.__compaq is None:
-                    monomer_data = hold_polymer.gen_new_monomer(self.__over_tolerance, self._Network__voi,
-                                                                self._Network__v_size, id=mmer_id)
+                    monomer_data = hold_polymer.gen_new_monomer(
+                        self.__over_tolerance,
+                        self._Network__voi,
+                        self._Network__v_size,
+                        id=mmer_id,
+                    )
                 else:
-                    hold_off = poly_point_min_dst(self.__m_surfs[mmer_id], self.__centers[mmer_id]) + \
-                               poly_point_min_dst(self.__m_surfs[prev_id], self.__centers[prev_id]) + hold_compaq
-                    monomer_data = hold_polymer.gen_new_monomer(self.__over_tolerance, self._Network__voi,
-                                                                self._Network__v_size, hold_off,
-                                                                ext_surf=self.__m_surfs[mmer_id])
+                    hold_off = (
+                        poly_point_min_dst(
+                            self.__m_surfs[mmer_id], self.__centers[mmer_id]
+                        )
+                        + poly_point_min_dst(
+                            self.__m_surfs[prev_id], self.__centers[prev_id]
+                        )
+                        + hold_compaq
+                    )
+                    monomer_data = hold_polymer.gen_new_monomer(
+                        self.__over_tolerance,
+                        self._Network__voi,
+                        self._Network__v_size,
+                        hold_off,
+                        ext_surf=self.__m_surfs[mmer_id],
+                    )
                 cont_pol += 1
 
                 if monomer_data is None:
@@ -519,16 +682,29 @@ class NetSAWLCInter(Network):
                         if cont_pol % self.__rots_mmer == 0:
                             hold_compaq = cont_pol * self.__compaq
                 else:
-                    new_len = points_distance(monomer_data[0], hold_polymer.get_tail_point())
+                    new_len = points_distance(
+                        monomer_data[0], hold_polymer.get_tail_point()
+                    )
                     if hold_polymer.get_total_len() + new_len < max_length:
                         # ) and (monomer_data[3].overlap_voi(self._Network__voi, self._Network__v_size)):
-                        hold_polymer.add_monomer(monomer_data[0], monomer_data[1], monomer_data[2], monomer_data[3],
-                                                 id=mmer_id, code=self.__codes[mmer_id])
-                        self.add_monomer_to_voi(hold_polymer.get_monomer(-1), self._Network__svol[mmer_id])
+                        hold_polymer.add_monomer(
+                            monomer_data[0],
+                            monomer_data[1],
+                            monomer_data[2],
+                            monomer_data[3],
+                            id=mmer_id,
+                            code=self.__codes[mmer_id],
+                        )
+                        self.add_monomer_to_voi(
+                            hold_polymer.get_monomer(-1),
+                            self._Network__svol[mmer_id],
+                        )
                         prev_id = mmer_id
                         mmer_id = None
                         cont_pol, hold_compaq = 0, 0
-                        hold_occ = self._Network__pl_occ + 100. * (hold_polymer.get_vol() / self._Network__vol)
+                        hold_occ = self._Network__pl_occ + 100.0 * (
+                            hold_polymer.get_vol() / self._Network__vol
+                        )
                         if hold_occ >= self.__occ:
                             not_finished = False
                     else:
@@ -545,8 +721,21 @@ class NetHelixFiber(Network):
     Class for generating a network of isolated helix fibers, unconnected and randomly distributed
     """
 
-    def __init__(self, voi, v_size, l_length, m_surf, gen_hfib_params, occ, min_p_len, hp_len, mz_len, mz_len_f,
-                 over_tolerance=0, unit_diam=None):
+    def __init__(
+        self,
+        voi,
+        v_size,
+        l_length,
+        m_surf,
+        gen_hfib_params,
+        occ,
+        min_p_len,
+        hp_len,
+        mz_len,
+        mz_len_f,
+        over_tolerance=0,
+        unit_diam=None,
+    ):
         """
         Construction
 
@@ -574,7 +763,12 @@ class NetHelixFiber(Network):
         assert isinstance(gen_hfib_params, PGenHelixFiber)
         assert (occ >= 0) and (occ <= 100)
         assert (over_tolerance >= 0) and (over_tolerance <= 100)
-        assert (min_p_len > 0) and (hp_len > 0) and (mz_len > 0) and (mz_len_f >= 0)
+        assert (
+            (min_p_len > 0)
+            and (hp_len > 0)
+            and (mz_len > 0)
+            and (mz_len_f >= 0)
+        )
 
         # Variables assignment
         self.__l_length, self.__m_surf = l_length, m_surf
@@ -595,26 +789,64 @@ class NetHelixFiber(Network):
         while self._Network__pl_occ < self.__occ:
 
             # Polymer initialization
-            p0 = np.asarray((self._Network__voi.shape[0] * self._Network__v_size * random.random(),
-                             self._Network__voi.shape[1] * self._Network__v_size * random.random(),
-                             self._Network__voi.shape[2] * self._Network__v_size * random.random()))
-            max_length = math.sqrt(self._Network__voi.shape[0]**2 + self._Network__voi.shape[1]**2
-                                  + self._Network__voi.shape[2]**2) * self._Network__v_size
-            p_len = self.__gen_hfib_params.gen_persistence_length(self.__min_p_len)
+            p0 = np.asarray(
+                (
+                    self._Network__voi.shape[0]
+                    * self._Network__v_size
+                    * random.random(),
+                    self._Network__voi.shape[1]
+                    * self._Network__v_size
+                    * random.random(),
+                    self._Network__voi.shape[2]
+                    * self._Network__v_size
+                    * random.random(),
+                )
+            )
+            max_length = (
+                math.sqrt(
+                    self._Network__voi.shape[0] ** 2
+                    + self._Network__voi.shape[1] ** 2
+                    + self._Network__voi.shape[2] ** 2
+                )
+                * self._Network__v_size
+            )
+            p_len = self.__gen_hfib_params.gen_persistence_length(
+                self.__min_p_len
+            )
             z_len_f = self.__gen_hfib_params.gen_zf_length(self.__mz_len_f)
-            hold_polymer = HelixFiber(self.__l_length, self.__m_surf, p_len, self.__hp_len, self.__mz_len, z_len_f, p0)
+            hold_polymer = HelixFiber(
+                self.__l_length,
+                self.__m_surf,
+                p_len,
+                self.__hp_len,
+                self.__mz_len,
+                z_len_f,
+                p0,
+            )
 
             # Polymer loop
             not_finished = True
             while (hold_polymer.get_total_len() < max_length) and not_finished:
-                monomer_data = hold_polymer.gen_new_monomer(self.__over_tolerance, self._Network__voi,
-                                                            self._Network__v_size, net=self, max_dist=self.__unit_diam)
+                monomer_data = hold_polymer.gen_new_monomer(
+                    self.__over_tolerance,
+                    self._Network__voi,
+                    self._Network__v_size,
+                    net=self,
+                    max_dist=self.__unit_diam,
+                )
                 if monomer_data is None:
                     not_finished = False
                 else:
-                    new_len = points_distance(monomer_data[0], hold_polymer.get_tail_point())
+                    new_len = points_distance(
+                        monomer_data[0], hold_polymer.get_tail_point()
+                    )
                     if hold_polymer.get_total_len() + new_len < max_length:
-                        hold_polymer.add_monomer(monomer_data[0], monomer_data[1], monomer_data[2], monomer_data[3])
+                        hold_polymer.add_monomer(
+                            monomer_data[0],
+                            monomer_data[1],
+                            monomer_data[2],
+                            monomer_data[3],
+                        )
                     else:
                         not_finished = False
 
@@ -630,8 +862,22 @@ class NetHelixFiberB(Network):
     Class for generating a network of brancked helix fibers randomly distributed
     """
 
-    def __init__(self, voi, v_size, l_length, m_surf, gen_hfib_params, occ, min_p_len, hp_len, mz_len, mz_len_f,
-                 b_prop, max_p_branch=0, over_tolerance=0):
+    def __init__(
+        self,
+        voi,
+        v_size,
+        l_length,
+        m_surf,
+        gen_hfib_params,
+        occ,
+        min_p_len,
+        hp_len,
+        mz_len,
+        mz_len_f,
+        b_prop,
+        max_p_branch=0,
+        over_tolerance=0,
+    ):
         """
         Construction
 
@@ -660,7 +906,12 @@ class NetHelixFiberB(Network):
         assert isinstance(gen_hfib_params, PGenHelixFiberB)
         assert (occ >= 0) and (occ <= 100)
         assert (over_tolerance >= 0) and (over_tolerance <= 100)
-        assert (min_p_len > 0) and (hp_len > 0) and (mz_len > 0) and (mz_len_f >= 0)
+        assert (
+            (min_p_len > 0)
+            and (hp_len > 0)
+            and (mz_len > 0)
+            and (mz_len_f >= 0)
+        )
         assert (max_p_branch >= 0) and (b_prop >= 0)
 
         # Variables assignment
@@ -669,7 +920,11 @@ class NetHelixFiberB(Network):
         self.__occ, self.__over_tolerance = occ, over_tolerance
         self.__min_p_len, self.__hp_len = min_p_len, hp_len
         self.__mz_len, self.__mz_len_f = mz_len, mz_len_f
-        self.__max_p_branch, self.__p_branches, self.__b_prop = max_p_branch, list(), b_prop
+        self.__max_p_branch, self.__p_branches, self.__b_prop = (
+            max_p_branch,
+            list(),
+            b_prop,
+        )
 
     def build_network(self):
         """
@@ -682,33 +937,70 @@ class NetHelixFiberB(Network):
         while self._Network__pl_occ < self.__occ:
 
             # Polymer initialization
-            max_length = math.sqrt(self._Network__voi.shape[0]**2 + self._Network__voi.shape[1]**2
-                                  + self._Network__voi.shape[2]**2) * self._Network__v_size
-            p_len = self.__gen_hfib_params.gen_persistence_length(self.__min_p_len)
+            max_length = (
+                math.sqrt(
+                    self._Network__voi.shape[0] ** 2
+                    + self._Network__voi.shape[1] ** 2
+                    + self._Network__voi.shape[2] ** 2
+                )
+                * self._Network__v_size
+            )
+            p_len = self.__gen_hfib_params.gen_persistence_length(
+                self.__min_p_len
+            )
             z_len_f = self.__gen_hfib_params.gen_zf_length(self.__mz_len_f)
             branch = None
-            if (self.__max_p_branch > 0) and self.__gen_hfib_params.gen_branch(self.__b_prop):
+            if (self.__max_p_branch > 0) and self.__gen_hfib_params.gen_branch(
+                self.__b_prop
+            ):
                 branch = self.__gen_random_branch()
             if branch is None:
-                p0 = np.asarray((self._Network__voi.shape[0] * self._Network__v_size * random.random(),
-                                 self._Network__voi.shape[1] * self._Network__v_size * random.random(),
-                                 self._Network__voi.shape[2] * self._Network__v_size * random.random()))
+                p0 = np.asarray(
+                    (
+                        self._Network__voi.shape[0]
+                        * self._Network__v_size
+                        * random.random(),
+                        self._Network__voi.shape[1]
+                        * self._Network__v_size
+                        * random.random(),
+                        self._Network__voi.shape[2]
+                        * self._Network__v_size
+                        * random.random(),
+                    )
+                )
             else:
                 p0 = branch.get_point()
-            hold_polymer = HelixFiber(self.__l_length, self.__m_surf, p_len, self.__hp_len,
-                                      self.__mz_len, z_len_f, p0)
+            hold_polymer = HelixFiber(
+                self.__l_length,
+                self.__m_surf,
+                p_len,
+                self.__hp_len,
+                self.__mz_len,
+                z_len_f,
+                p0,
+            )
 
             # Polymer loop
             not_finished = True
             while (hold_polymer.get_total_len() < max_length) and not_finished:
-                monomer_data = hold_polymer.gen_new_monomer(self.__over_tolerance, self._Network__voi,
-                                                            self._Network__v_size)
+                monomer_data = hold_polymer.gen_new_monomer(
+                    self.__over_tolerance,
+                    self._Network__voi,
+                    self._Network__v_size,
+                )
                 if monomer_data is None:
                     not_finished = False
                 else:
-                    new_len = points_distance(monomer_data[0], hold_polymer.get_tail_point())
+                    new_len = points_distance(
+                        monomer_data[0], hold_polymer.get_tail_point()
+                    )
                     if hold_polymer.get_total_len() + new_len < max_length:
-                        hold_polymer.add_monomer(monomer_data[0], monomer_data[1], monomer_data[2], monomer_data[3])
+                        hold_polymer.add_monomer(
+                            monomer_data[0],
+                            monomer_data[1],
+                            monomer_data[2],
+                            monomer_data[3],
+                        )
                     else:
                         not_finished = False
 
@@ -744,7 +1036,11 @@ class NetHelixFiberB(Network):
         """
 
         # Initialization
-        app_flt_l, app_flt_v, app_flt = vtk.vtkAppendPolyData(), vtk.vtkAppendPolyData(), vtk.vtkAppendPolyData()
+        app_flt_l, app_flt_v, app_flt = (
+            vtk.vtkAppendPolyData(),
+            vtk.vtkAppendPolyData(),
+            vtk.vtkAppendPolyData(),
+        )
 
         # Polymers loop
         p_type_l = vtk.vtkIntArray()
@@ -788,7 +1084,11 @@ class NetHelixFiberB(Network):
         """
 
         # Initialization
-        app_flt_l, app_flt_v, app_flt = vtk.vtkAppendPolyData(), vtk.vtkAppendPolyData(), vtk.vtkAppendPolyData()
+        app_flt_l, app_flt_v, app_flt = (
+            vtk.vtkAppendPolyData(),
+            vtk.vtkAppendPolyData(),
+            vtk.vtkAppendPolyData(),
+        )
 
         # Branches loop
         for i, branch in enumerate(self.get_branch_list()):
@@ -813,17 +1113,27 @@ class NetHelixFiberB(Network):
         # Loop for polymers
         count, branch = 0, None
         while (count < len(self._Network__pl)) and (branch is None):
-            hold_pid = random.choices(range(0, len(self._Network__pl)), weights=self._Network__pl_nmmers)[0]
+            hold_pid = random.choices(
+                range(0, len(self._Network__pl)),
+                weights=self._Network__pl_nmmers,
+            )[0]
             if len(self.__p_branches[hold_pid]) < self.__max_p_branch:
                 hold_pol = self._Network__pl[hold_pid]
                 hold_mid = random.randint(0, len(hold_pol._Polymer__m) - 1)
                 hold_m = hold_pol._Polymer__m[hold_mid]
                 found = True
                 for branch in self.__p_branches[hold_pid]:
-                    if points_distance(hold_m.get_center_mass(), branch.get_point()) <= 2 * hold_m.get_diameter():
+                    if (
+                        points_distance(
+                            hold_m.get_center_mass(), branch.get_point()
+                        )
+                        <= 2 * hold_m.get_diameter()
+                    ):
                         found = False
                 if found:
-                    branch = Branch(hold_m.get_center_mass(), hold_pid, hold_mid)
+                    branch = Branch(
+                        hold_m.get_center_mass(), hold_pid, hold_mid
+                    )
             count += 1
 
         return branch
@@ -855,12 +1165,16 @@ class Branch:
         :param t_pmer_id: targeting polymer ID, (default None) it may be unknown at construction time, the targeting
                           monomer ID is 0.
         """
-        assert hasattr(point, '__len__') and (len(point) == 3)
+        assert hasattr(point, "__len__") and (len(point) == 3)
         assert (s_pmer_id >= 0) and (s_mmer_id >= 0)
         if t_pmer_id is not None:
             assert t_pmer_id >= 0
         self.__point = np.asarray(point, dtype=float)
-        self.__s_pmer_id, self.__s_mmer_id, self.__t_pmer_id = s_pmer_id, s_mmer_id, t_pmer_id
+        self.__s_pmer_id, self.__s_mmer_id, self.__t_pmer_id = (
+            s_pmer_id,
+            s_mmer_id,
+            t_pmer_id,
+        )
 
     def set_t_pmer(self, t_pmer_id):
         """
@@ -905,5 +1219,3 @@ class Branch:
             return point_to_poly(self.get_point())
         else:
             return poly_translate(shape_vtp, self.get_point())
-
-

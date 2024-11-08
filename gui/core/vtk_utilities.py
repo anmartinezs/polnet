@@ -9,11 +9,11 @@ from .tk_utilities import *
 
 
 keys = {
-    'j': "Interactor style: Joystick Actor (j)",
-    't': "Interactor style: Joystick Camera (t)",
-    'a': "Interactor style: Trackball Actor (a)",
-    'c': "Interactor style: Trackball Camera (c)",
-    's': "Position saved (s)"
+    "j": "Interactor style: Joystick Actor (j)",
+    "t": "Interactor style: Joystick Camera (t)",
+    "a": "Interactor style: Trackball Actor (a)",
+    "c": "Interactor style: Trackball Camera (c)",
+    "s": "Position saved (s)",
 }
 
 
@@ -25,22 +25,24 @@ def create_poly_mrc(path):
     """
     # tomo_vti = vtk.vtkMRCReader()
     # tomo_vti.SetFileName(path)
-    tomo_np = lio.load_mrc(path, mmap=False,no_saxes=False)
+    tomo_np = lio.load_mrc(path, mmap=False, no_saxes=False)
     # Normalization
     # print('MRC loaded')
     tomo_np = utils.lin_map(tomo_np, lb=0, ub=1)
     tomo_vti = lio.numpy_to_vti(tomo_np)
     del tomo_np
     # print('VTKimage generated')
-    
+
     iso = vtk.vtkContourFilter()
     iso.SetInputData(tomo_vti)
-    iso.SetValue(0, 0.1)  # Ajusta el valor inicial del isovalor (puedes cambiarlo)
-    
+    iso.SetValue(
+        0, 0.1
+    )  # Ajusta el valor inicial del isovalor (puedes cambiarlo)
+
     iso_mapper = vtk.vtkPolyDataMapper()
     iso_mapper.SetInputConnection(iso.GetOutputPort())
     iso_mapper.ScalarVisibilityOff()
-    
+
     iso_actor = vtk.vtkActor()
     iso_actor.SetMapper(iso_mapper)
 
@@ -49,15 +51,15 @@ def create_poly_mrc(path):
     return tomo_vti, iso, iso_mapper, iso_actor
 
 
-def create_window(x,y):
-    """ 
+def create_window(x, y):
+    """
     Create a vtk window
     :param x: the width of the window
     :param y: the heigth of the window
     return: tuple with the render, render window and interactor
     """
     ren = vtk.vtkRenderer()
-    ren.SetBackground(0,0,0)
+    ren.SetBackground(0, 0, 0)
 
     ren_win = vtk.vtkRenderWindow()
     ren_win.AddRenderer(ren)
@@ -83,7 +85,7 @@ def visualize_pdb(path, x, y):
     :param y: the heigth of the window
     """
     colors = vtk.vtkNamedColors()
-    ren, ren_win, iren = create_window(x,y)
+    ren, ren_win, iren = create_window(x, y)
 
     pdb = vtk.vtkPDBReader()
     pdb.SetFileName(path)
@@ -156,7 +158,7 @@ def visualize_pdb(path, x, y):
     iren.Initialize()
     ren_win.Render()
     iren.Start()
-    
+
 
 def create_slider(iren):
     """
@@ -190,7 +192,7 @@ def select_isosurface(path, x, y):
     :param y: the heigth of the window
     :return: isosurface selected value
     """
-    ren, ren_win, iren = create_window(x,y)
+    ren, ren_win, iren = create_window(x, y)
 
     tomo_vti, iso, iso_mapper, iso_actor = create_poly_mrc(path)
 
@@ -210,7 +212,7 @@ def select_isosurface(path, x, y):
     iren.Initialize()
 
     slider_rep, slider_widget = create_slider(iren)
-    
+
     def update_iso_surface(obj, event):
         value = slider_widget.GetRepresentation().GetValue()
         iso.SetValue(0, value)
@@ -224,7 +226,7 @@ def select_isosurface(path, x, y):
     ren_win.SetWindowName(base_name.upper())
     iren.Start()
 
-    return  slider_widget.GetRepresentation().GetValue()
+    return slider_widget.GetRepresentation().GetValue()
 
 
 def protein_to_axis(membrane_path, axis_path, x, y, v_size, outpath):
@@ -235,62 +237,62 @@ def protein_to_axis(membrane_path, axis_path, x, y, v_size, outpath):
     :param x: the width of the window
     :param y: the height of the window
     :param v_size: voxel size
-    :param outpath: path to save 
+    :param outpath: path to save
     """
-    
+
     ren, ren_win, iren = create_window(x, y)
 
     tomo_vti, iso, iso_mapper, iso_actor = create_poly_mrc(membrane_path)
     iso_actor.GetProperty().SetColor(1.0, 1.0, 0.7)  # Color amarillo
-   
+
     tomo_vti2, iso2, iso_mapper2, iso_actor2 = create_poly_mrc(axis_path)
     iso_actor2.GetProperty().SetColor(0.6, 0.6, 0.6)  # Color gris claro
     iso_actor2.PickableOff()
 
-    
     actor_matrix_initial = iso_actor.GetMatrix()
     transform_initial = vtk.vtkTransform()
     transform_initial.SetMatrix(actor_matrix_initial)
-    
+
     transform_filter_initial = vtk.vtkTransformFilter()
-    #transform_filter_initial.SetInputConnection(tomo_vti.GetOutputPort())
+    # transform_filter_initial.SetInputConnection(tomo_vti.GetOutputPort())
     transform_filter_initial.SetInputData(tomo_vti)
     transform_filter_initial.SetTransform(transform_initial)
     transform_filter_initial.Update()
     print("Initial Rotation: ", transform_initial.GetOrientation())
-    
+
     # Calculo centro de masas
     center_mass_o = vtk.vtkCenterOfMass()
     center_mass_o.SetInputConnection(iso.GetOutputPort())
     center_mass_o.Update()
     c_o = center_mass_o.GetCenter()
     print("Center of mass vtkCenterOfMass:", c_o)
-    
+
     ren.AddActor(iso_actor)
     ren.AddActor(iso_actor2)
 
     # Create axis bounding box
     outline_filter_axis = vtk.vtkOutlineFilter()
-    outline_filter_axis.SetInputConnection(iso_actor2.GetMapper().GetInputConnection(0, 0))  # Use the same mapper as membrane
-    
+    outline_filter_axis.SetInputConnection(
+        iso_actor2.GetMapper().GetInputConnection(0, 0)
+    )  # Use the same mapper as membrane
+
     outline_mapper_axis = vtk.vtkPolyDataMapper()
     outline_mapper_axis.SetInputConnection(outline_filter_axis.GetOutputPort())
-    
+
     # Crea un actor para el bounding box del eje
     outline_actor_axis = vtk.vtkActor()
     outline_actor_axis.SetMapper(outline_mapper_axis)
-    outline_actor_axis.GetProperty().SetColor(0.5, 0.5, 0.5)  
+    outline_actor_axis.GetProperty().SetColor(0.5, 0.5, 0.5)
     outline_actor_axis.PickableOff()  # disable mouse selected
     ren.AddActor(outline_actor_axis)
 
-    
     def update(obj, event):
         iren.Render()
         key = obj.GetKeySym().lower()
         text = keys.get(key, "No function for this key")
         text_actor.SetInput(text)
         if text.lower() == "position saved (s)":
-            
+
             actor_matrix = iso_actor.GetMatrix()
             transform = vtk.vtkTransform()
             transform.SetMatrix(actor_matrix)
@@ -298,20 +300,20 @@ def protein_to_axis(membrane_path, axis_path, x, y, v_size, outpath):
             # Calculate center of mass
             transform_filter = vtk.vtkTransformFilter()
             transform_filter.SetInputData(tomo_vti)
-            #transform_filter.SetInputConnection(tomo_vti.GetOutputPort())
+            # transform_filter.SetInputConnection(tomo_vti.GetOutputPort())
             transform_filter.SetTransform(transform)
             transform_filter.Update()
-            
+
             center_mass_o.SetInputConnection(transform_filter.GetOutputPort())
             center_mass_o.Update()
-            
+
             c_m = center_mass_o.GetCenter()
             angles = transform.GetOrientation()
 
             print("Center of mass o ", c_o)
-            print("Center of mass m " , c_m)
+            print("Center of mass m ", c_m)
             print("Rotation ", angles)
-        
+
             rotation_transform = vtk.vtkTransform()
             rotation_transform.RotateZ(angles[2])
             rotation_transform.RotateX(angles[0])
@@ -326,32 +328,41 @@ def protein_to_axis(membrane_path, axis_path, x, y, v_size, outpath):
             resliced.Update()
 
             image_data = resliced.GetOutput()
-            image_array = vtk_to_numpy(image_data.GetPointData().GetScalars()).reshape(image_data.GetDimensions(), order='F')
+            image_array = vtk_to_numpy(
+                image_data.GetPointData().GetScalars()
+            ).reshape(image_data.GetDimensions(), order="F")
 
-            #eje_array = np.zeros(shape=tomo_vti2.GetOutput().GetDimensions(), dtype=np.float32)
-            eje_array = np.zeros(shape=tomo_vti2.GetDimensions(), dtype=np.float32)
-            p = insert_maxis(image_array, eje_array, np.asarray(c_m), outpath, os.path.splitext(os.path.split(membrane_path)[1])[0])
+            # eje_array = np.zeros(shape=tomo_vti2.GetOutput().GetDimensions(), dtype=np.float32)
+            eje_array = np.zeros(
+                shape=tomo_vti2.GetDimensions(), dtype=np.float32
+            )
+            p = insert_maxis(
+                image_array,
+                eje_array,
+                np.asarray(c_m),
+                outpath,
+                os.path.splitext(os.path.split(membrane_path)[1])[0],
+            )
             window_align_to_axis(p)
- 
-    
+
     iren.AddObserver("KeyPressEvent", update)
-    
+
     text_actor = vtk.vtkTextActor()
-    text_actor.SetInput('Interactor style: joystick actor')
+    text_actor.SetInput("Interactor style: joystick actor")
     text_actor.SetPosition(0.0, 0.1)
-    
+
     text_representation = vtk.vtkTextRepresentation()
     text_representation.GetPositionCoordinate().SetValue(0.01, 0.92)
     text_representation.GetPosition2Coordinate().SetValue(0.35, 0.08)
-    
+
     text_widget = vtk.vtkTextWidget()
     text_widget.SetRepresentation(text_representation)
     text_widget.SetInteractor(iren)
     text_widget.SetTextActor(text_actor)
     text_widget.SelectableOff()
-    
+
     text_widget.On()
-    
+
     ren_win.SetWindowName("Align membrane protein")
     ren_win.Render()
     iren.Start()
@@ -363,12 +374,12 @@ def visualize_helix(data, x, y, path):
     :param data: VTK PolyData object
     :param x: the width of the window
     :param y: the height of the window
-    :param path: path to take the name for the window 
+    :param path: path to take the name for the window
     """
     ren, ren_win, iren = create_window(x, y)
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputData(data)
-    
+
     scalar_range = data.GetScalarRange()
     mapper.SetScalarRange(scalar_range)
 
@@ -384,7 +395,9 @@ def visualize_helix(data, x, y, path):
 
     outline_actor = vtk.vtkActor()
     outline_actor.SetMapper(outline_mapper)
-    outline_actor.GetProperty().SetColor(0.5, 0.5, 0.5)  #   # Color del bounding box 1.0, 1.0, 0.7
+    outline_actor.GetProperty().SetColor(
+        0.5, 0.5, 0.5
+    )  #   # Color del bounding box 1.0, 1.0, 0.7
 
     ren.AddActor(outline_actor)
 
@@ -393,7 +406,3 @@ def visualize_helix(data, x, y, path):
     iren.Initialize()
     ren_win.Render()
     iren.Start()
-
-
-
-

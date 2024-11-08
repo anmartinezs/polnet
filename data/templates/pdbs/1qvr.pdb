@@ -1,1074 +1,1074 @@
-HEADER    CHAPERONE                               28-AUG-03   1QVR              
-TITLE     CRYSTAL STRUCTURE ANALYSIS OF CLPB                                    
-COMPND    MOL_ID: 1;                                                            
-COMPND   2 MOLECULE: CLPB PROTEIN;                                              
-COMPND   3 CHAIN: A, B, C;                                                      
-COMPND   4 ENGINEERED: YES                                                      
-SOURCE    MOL_ID: 1;                                                            
-SOURCE   2 ORGANISM_SCIENTIFIC: THERMUS THERMOPHILUS;                           
-SOURCE   3 ORGANISM_TAXID: 274;                                                 
-SOURCE   4 GENE: CLPB;                                                          
-SOURCE   5 EXPRESSION_SYSTEM: ESCHERICHIA COLI;                                 
-SOURCE   6 EXPRESSION_SYSTEM_TAXID: 562                                         
-KEYWDS    COILED COIL, AAA ATPASE, CHAPERONE                                    
-EXPDTA    X-RAY DIFFRACTION                                                     
-AUTHOR    S.LEE,M.E.SOWA,Y.WATANABE,P.B.SIGLER,W.CHIU,M.YOSHIDA,                
-AUTHOR   2 F.T.F.TSAI                                                           
-REVDAT   2   24-FEB-09 1QVR    1       VERSN                                    
-REVDAT   1   21-OCT-03 1QVR    0                                                
-JRNL        AUTH   S.LEE,M.E.SOWA,Y.WATANABE,P.B.SIGLER,W.CHIU,                 
-JRNL        AUTH 2 M.YOSHIDA,F.T.F.TSAI                                         
-JRNL        TITL   THE STRUCTURE OF CLPB: A MOLECULAR CHAPERONE THAT            
-JRNL        TITL 2 RESCUES PROTEINS FROM AN AGGREGATED STATE                    
-JRNL        REF    CELL(CAMBRIDGE,MASS.)         V. 115   229 2003              
-JRNL        REFN                   ISSN 0092-8674                               
-JRNL        PMID   14567920                                                     
-JRNL        DOI    10.1016/S0092-8674(03)00807-9                                
-REMARK   1                                                                      
-REMARK   2                                                                      
-REMARK   2 RESOLUTION.    3.00 ANGSTROMS.                                       
-REMARK   3                                                                      
-REMARK   3 REFINEMENT.                                                          
-REMARK   3   PROGRAM     : CNS 1.1                                              
-REMARK   3   AUTHORS     : BRUNGER,ADAMS,CLORE,DELANO,GROS,GROSSE-              
-REMARK   3               : KUNSTLEVE,JIANG,KUSZEWSKI,NILGES, PANNU,             
-REMARK   3               : READ,RICE,SIMONSON,WARREN                            
-REMARK   3                                                                      
-REMARK   3  REFINEMENT TARGET : ENGH & HUBER                                    
-REMARK   3                                                                      
-REMARK   3  DATA USED IN REFINEMENT.                                            
-REMARK   3   RESOLUTION RANGE HIGH (ANGSTROMS) : 3.00                           
-REMARK   3   RESOLUTION RANGE LOW  (ANGSTROMS) : 48.04                          
-REMARK   3   DATA CUTOFF            (SIGMA(F)) : 0.000                          
-REMARK   3   DATA CUTOFF HIGH         (ABS(F)) : NULL                           
-REMARK   3   DATA CUTOFF LOW          (ABS(F)) : NULL                           
-REMARK   3   COMPLETENESS (WORKING+TEST)   (%) : 83.4                           
-REMARK   3   NUMBER OF REFLECTIONS             : 102421                         
-REMARK   3                                                                      
-REMARK   3  FIT TO DATA USED IN REFINEMENT.                                     
-REMARK   3   CROSS-VALIDATION METHOD          : THROUGHOUT                      
-REMARK   3   FREE R VALUE TEST SET SELECTION  : RANDOM                          
-REMARK   3   R VALUE            (WORKING SET) : 0.263                           
-REMARK   3   FREE R VALUE                     : 0.307                           
-REMARK   3   FREE R VALUE TEST SET SIZE   (%) : 4.700                           
-REMARK   3   FREE R VALUE TEST SET COUNT      : 4803                            
-REMARK   3   ESTIMATED ERROR OF FREE R VALUE  : 0.004                           
-REMARK   3                                                                      
-REMARK   3  FIT IN THE HIGHEST RESOLUTION BIN.                                  
-REMARK   3   TOTAL NUMBER OF BINS USED           : 6                            
-REMARK   3   BIN RESOLUTION RANGE HIGH       (A) : 3.00                         
-REMARK   3   BIN RESOLUTION RANGE LOW        (A) : 3.19                         
-REMARK   3   BIN COMPLETENESS (WORKING+TEST) (%) : 33.40                        
-REMARK   3   REFLECTIONS IN BIN    (WORKING SET) : 6585                         
-REMARK   3   BIN R VALUE           (WORKING SET) : 0.4570                       
-REMARK   3   BIN FREE R VALUE                    : 0.4840                       
-REMARK   3   BIN FREE R VALUE TEST SET SIZE  (%) : 3.60                         
-REMARK   3   BIN FREE R VALUE TEST SET COUNT     : 246                          
-REMARK   3   ESTIMATED ERROR OF BIN FREE R VALUE : 0.031                        
-REMARK   3                                                                      
-REMARK   3  NUMBER OF NON-HYDROGEN ATOMS USED IN REFINEMENT.                    
-REMARK   3   PROTEIN ATOMS            : 19287                                   
-REMARK   3   NUCLEIC ACID ATOMS       : 0                                       
-REMARK   3   HETEROGEN ATOMS          : 209                                     
-REMARK   3   SOLVENT ATOMS            : 0                                       
-REMARK   3                                                                      
-REMARK   3  B VALUES.                                                           
-REMARK   3   FROM WILSON PLOT           (A**2) : 110.40                         
-REMARK   3   MEAN B VALUE      (OVERALL, A**2) : 99.10                          
-REMARK   3   OVERALL ANISOTROPIC B VALUE.                                       
-REMARK   3    B11 (A**2) : -4.28000                                             
-REMARK   3    B22 (A**2) : -0.24000                                             
-REMARK   3    B33 (A**2) : 4.53000                                              
-REMARK   3    B12 (A**2) : 0.00000                                              
-REMARK   3    B13 (A**2) : 0.00000                                              
-REMARK   3    B23 (A**2) : 0.00000                                              
-REMARK   3                                                                      
-REMARK   3  ESTIMATED COORDINATE ERROR.                                         
-REMARK   3   ESD FROM LUZZATI PLOT        (A) : 0.51                            
-REMARK   3   ESD FROM SIGMAA              (A) : 0.75                            
-REMARK   3   LOW RESOLUTION CUTOFF        (A) : NULL                            
-REMARK   3                                                                      
-REMARK   3  CROSS-VALIDATED ESTIMATED COORDINATE ERROR.                         
-REMARK   3   ESD FROM C-V LUZZATI PLOT    (A) : 0.60                            
-REMARK   3   ESD FROM C-V SIGMAA          (A) : 0.81                            
-REMARK   3                                                                      
-REMARK   3  RMS DEVIATIONS FROM IDEAL VALUES.                                   
-REMARK   3   BOND LENGTHS                 (A) : 0.005                           
-REMARK   3   BOND ANGLES            (DEGREES) : 1.10                            
-REMARK   3   DIHEDRAL ANGLES        (DEGREES) : 19.20                           
-REMARK   3   IMPROPER ANGLES        (DEGREES) : 0.86                            
-REMARK   3                                                                      
-REMARK   3  ISOTROPIC THERMAL MODEL : RESTRAINED                                
-REMARK   3                                                                      
-REMARK   3  ISOTROPIC THERMAL FACTOR RESTRAINTS.    RMS    SIGMA                
-REMARK   3   MAIN-CHAIN BOND              (A**2) : 4.660 ; 1.500                
-REMARK   3   MAIN-CHAIN ANGLE             (A**2) : 7.470 ; 2.000                
-REMARK   3   SIDE-CHAIN BOND              (A**2) : 7.360 ; 2.000                
-REMARK   3   SIDE-CHAIN ANGLE             (A**2) : 10.990; 2.500                
-REMARK   3                                                                      
-REMARK   3  BULK SOLVENT MODELING.                                              
-REMARK   3   METHOD USED : FLAT MODEL                                           
-REMARK   3   KSOL        : 0.30                                                 
-REMARK   3   BSOL        : 29.28                                                
-REMARK   3                                                                      
-REMARK   3  NCS MODEL : NULL                                                    
-REMARK   3                                                                      
-REMARK   3  NCS RESTRAINTS.                         RMS   SIGMA/WEIGHT          
-REMARK   3   GROUP  1  POSITIONAL            (A) : NULL  ; NULL                 
-REMARK   3   GROUP  1  B-FACTOR           (A**2) : NULL  ; NULL                 
-REMARK   3                                                                      
-REMARK   3  PARAMETER FILE  1  : PROTEIN_REP.PARAM                              
-REMARK   3  PARAMETER FILE  2  : ADP_ANP_XPLOR_PAR2.TXT                         
-REMARK   3  PARAMETER FILE  3  : ION.PARAM                                      
-REMARK   3  PARAMETER FILE  4  : NULL                                           
-REMARK   3  TOPOLOGY FILE  1   : PROTEIN.TOP                                    
-REMARK   3  TOPOLOGY FILE  2   : NULL                                           
-REMARK   3  TOPOLOGY FILE  3   : NULL                                           
-REMARK   3  TOPOLOGY FILE  4   : NULL                                           
-REMARK   3                                                                      
-REMARK   3  OTHER REFINEMENT REMARKS: NULL                                      
-REMARK   4                                                                      
-REMARK   4 1QVR COMPLIES WITH FORMAT V. 3.15, 01-DEC-08                         
-REMARK 100                                                                      
-REMARK 100 THIS ENTRY HAS BEEN PROCESSED BY RCSB ON 09-SEP-03.                  
-REMARK 100 THE RCSB ID CODE IS RCSB020127.                                      
-REMARK 200                                                                      
-REMARK 200 EXPERIMENTAL DETAILS                                                 
-REMARK 200  EXPERIMENT TYPE                : X-RAY DIFFRACTION                  
-REMARK 200  DATE OF DATA COLLECTION        : 16-MAR-01; 12-NOV-02; 18-NOV-      
-REMARK 200                                   00                                 
-REMARK 200  TEMPERATURE           (KELVIN) : 100; 100; 100                      
-REMARK 200  PH                             : 4.1                                
-REMARK 200  NUMBER OF CRYSTALS USED        : 1                                  
-REMARK 200                                                                      
-REMARK 200  SYNCHROTRON              (Y/N) : Y; Y; Y                            
-REMARK 200  RADIATION SOURCE               : APS; NSLS; CHESS                   
-REMARK 200  BEAMLINE                       : 19-ID; X25; A1                     
-REMARK 200  X-RAY GENERATOR MODEL          : NULL; NULL; NULL                   
-REMARK 200  MONOCHROMATIC OR LAUE    (M/L) : M; M; M                            
-REMARK 200  WAVELENGTH OR RANGE        (A) : 0.9793, 0.9795, 1.0197;            
-REMARK 200                                   1.072; 1.1                         
-REMARK 200  MONOCHROMATOR                  : SI 220; SI 111; SI 111             
-REMARK 200  OPTICS                         : NULL; NULL; NULL                   
-REMARK 200                                                                      
-REMARK 200  DETECTOR TYPE                  : CCD; CCD; CCD                      
-REMARK 200  DETECTOR MANUFACTURER          : SBC-2; BRANDEIS - B4; ADSC         
-REMARK 200                                   QUANTUM 4                          
-REMARK 200  INTENSITY-INTEGRATION SOFTWARE : HKL-2000                           
-REMARK 200  DATA SCALING SOFTWARE          : SCALEPACK                          
-REMARK 200                                                                      
-REMARK 200  NUMBER OF UNIQUE REFLECTIONS   : 107224                             
-REMARK 200  RESOLUTION RANGE HIGH      (A) : 3.000                              
-REMARK 200  RESOLUTION RANGE LOW       (A) : 48.040                             
-REMARK 200  REJECTION CRITERIA  (SIGMA(I)) : -3.000                             
-REMARK 200                                                                      
-REMARK 200 OVERALL.                                                             
-REMARK 200  COMPLETENESS FOR RANGE     (%) : 91.4                               
-REMARK 200  DATA REDUNDANCY                : 2.400                              
-REMARK 200  R MERGE                    (I) : NULL                               
-REMARK 200  R SYM                      (I) : 0.05300                            
-REMARK 200  <I/SIGMA(I)> FOR THE DATA SET  : 19.1000                            
-REMARK 200                                                                      
-REMARK 200 IN THE HIGHEST RESOLUTION SHELL.                                     
-REMARK 200  HIGHEST RESOLUTION SHELL, RANGE HIGH (A) : 3.00                     
-REMARK 200  HIGHEST RESOLUTION SHELL, RANGE LOW  (A) : 3.11                     
-REMARK 200  COMPLETENESS FOR SHELL     (%) : 37.1                               
-REMARK 200  DATA REDUNDANCY IN SHELL       : 1.80                               
-REMARK 200  R MERGE FOR SHELL          (I) : NULL                               
-REMARK 200  R SYM FOR SHELL            (I) : 0.38100                            
-REMARK 200  <I/SIGMA(I)> FOR SHELL         : NULL                               
-REMARK 200                                                                      
-REMARK 200 DIFFRACTION PROTOCOL: MAD; SINGLE WAVELENGTH; SINGLE WAVELENGTH      
-REMARK 200 METHOD USED TO DETERMINE THE STRUCTURE: MAD                          
-REMARK 200 SOFTWARE USED: CNS                                                   
-REMARK 200 STARTING MODEL: NULL                                                 
-REMARK 200                                                                      
-REMARK 200 REMARK: NULL                                                         
-REMARK 280                                                                      
-REMARK 280 CRYSTAL                                                              
-REMARK 280 SOLVENT CONTENT, VS   (%): 55.05                                     
-REMARK 280 MATTHEWS COEFFICIENT, VM (ANGSTROMS**3/DA): 2.74                     
-REMARK 280                                                                      
-REMARK 280 CRYSTALLIZATION CONDITIONS: PEG 4000, SODIUM ACETATE, POTASSIUM      
-REMARK 280  CHLORIDE, GLYCEROL, PH 4.1, VAPOR DIFFUSION, HANGING DROP,          
-REMARK 280  TEMPERATURE 291K                                                    
-REMARK 290                                                                      
-REMARK 290 CRYSTALLOGRAPHIC SYMMETRY                                            
-REMARK 290 SYMMETRY OPERATORS FOR SPACE GROUP: P 21 21 21                       
-REMARK 290                                                                      
-REMARK 290      SYMOP   SYMMETRY                                                
-REMARK 290     NNNMMM   OPERATOR                                                
-REMARK 290       1555   X,Y,Z                                                   
-REMARK 290       2555   -X+1/2,-Y,Z+1/2                                         
-REMARK 290       3555   -X,Y+1/2,-Z+1/2                                         
-REMARK 290       4555   X+1/2,-Y+1/2,-Z                                         
-REMARK 290                                                                      
-REMARK 290     WHERE NNN -> OPERATOR NUMBER                                     
-REMARK 290           MMM -> TRANSLATION VECTOR                                  
-REMARK 290                                                                      
-REMARK 290 CRYSTALLOGRAPHIC SYMMETRY TRANSFORMATIONS                            
-REMARK 290 THE FOLLOWING TRANSFORMATIONS OPERATE ON THE ATOM/HETATM             
-REMARK 290 RECORDS IN THIS ENTRY TO PRODUCE CRYSTALLOGRAPHICALLY                
-REMARK 290 RELATED MOLECULES.                                                   
-REMARK 290   SMTRY1   1  1.000000  0.000000  0.000000        0.00000            
-REMARK 290   SMTRY2   1  0.000000  1.000000  0.000000        0.00000            
-REMARK 290   SMTRY3   1  0.000000  0.000000  1.000000        0.00000            
-REMARK 290   SMTRY1   2 -1.000000  0.000000  0.000000       53.87350            
-REMARK 290   SMTRY2   2  0.000000 -1.000000  0.000000        0.00000            
-REMARK 290   SMTRY3   2  0.000000  0.000000  1.000000      106.10750            
-REMARK 290   SMTRY1   3 -1.000000  0.000000  0.000000        0.00000            
-REMARK 290   SMTRY2   3  0.000000  1.000000  0.000000       69.24100            
-REMARK 290   SMTRY3   3  0.000000  0.000000 -1.000000      106.10750            
-REMARK 290   SMTRY1   4  1.000000  0.000000  0.000000       53.87350            
-REMARK 290   SMTRY2   4  0.000000 -1.000000  0.000000       69.24100            
-REMARK 290   SMTRY3   4  0.000000  0.000000 -1.000000        0.00000            
-REMARK 290                                                                      
-REMARK 290 REMARK: NULL                                                         
-REMARK 300                                                                      
-REMARK 300 BIOMOLECULE: 1                                                       
-REMARK 300 SEE REMARK 350 FOR THE AUTHOR PROVIDED AND/OR PROGRAM                
-REMARK 300 GENERATED ASSEMBLY INFORMATION FOR THE STRUCTURE IN                  
-REMARK 300 THIS ENTRY.  THE REMARK MAY ALSO  PROVIDE INFORMATION ON             
-REMARK 300 BURIED SURFACE AREA.                                                 
-REMARK 350                                                                      
-REMARK 350 COORDINATES FOR A COMPLETE MULTIMER  REPRESENTING THE KNOWN          
-REMARK 350 BIOLOGICALLY SIGNIFICANT OLIGOMERIZATION STATE  OF THE               
-REMARK 350 MOLECULE CAN BE GENERATED BY APPLYING BIOMT  TRANSFORMATIONS         
-REMARK 350 GIVEN BELOW.  BOTH NON-CRYSTALLOGRAPHIC  AND                         
-REMARK 350 CRYSTALLOGRAPHIC OPERATIONS ARE GIVEN.                               
-REMARK 350                                                                      
-REMARK 350 BIOMOLECULE: 1                                                       
-REMARK 350 SOFTWARE USED: UCSF CHIMERA 1.10.2_b40686.                           
-REMARK 350 APPLY THE FOLLOWING TO CHAINS: A, B, C                               
-REMARK 350   BIOMT1   1 -0.875827 -0.481601  0.031429      244.87024            
-REMARK 350   BIOMT2   1 -0.481601  0.867872 -0.121894        8.34288            
-REMARK 350   BIOMT3   1  0.031429 -0.121894 -0.992045       14.60818            
-REMARK 350   BIOMT1   2  1.000000  0.000000 -0.000000        0.00000            
-REMARK 350   BIOMT2   2 -0.000000  1.000000 -0.000000        0.00000            
-REMARK 350   BIOMT3   2  0.000000  0.000000  1.000000        0.00000            
-REMARK 465                                                                      
-REMARK 465 MISSING RESIDUES                                                     
-REMARK 465 THE FOLLOWING RESIDUES WERE NOT LOCATED IN THE                       
-REMARK 465 EXPERIMENT. (M=MODEL NUMBER; RES=RESIDUE NAME; C=CHAIN               
-REMARK 465 IDENTIFIER; SSSEQ=SEQUENCE NUMBER; I=INSERTION CODE.)                
-REMARK 465                                                                      
-REMARK 465   M RES C SSSEQI                                                     
-REMARK 465     MET A     1                                                      
-REMARK 465     ASN A     2                                                      
-REMARK 465     LEU A     3                                                      
-REMARK 465     GLY A   235                                                      
-REMARK 465     SER A   236                                                      
-REMARK 465     LEU A   237                                                      
-REMARK 465     LEU A   238                                                      
-REMARK 465     ALA A   239                                                      
-REMARK 465     GLY A   240                                                      
-REMARK 465     ALA A   241                                                      
-REMARK 465     LYS A   242                                                      
-REMARK 465     TYR A   243                                                      
-REMARK 465     ARG A   244                                                      
-REMARK 465     GLY A   245                                                      
-REMARK 465     LEU A   272                                                      
-REMARK 465     HIS A   273                                                      
-REMARK 465     THR A   274                                                      
-REMARK 465     VAL A   275                                                      
-REMARK 465     VAL A   276                                                      
-REMARK 465     GLY A   277                                                      
-REMARK 465     ALA A   278                                                      
-REMARK 465     GLY A   279                                                      
-REMARK 465     LYS A   280                                                      
-REMARK 465     ALA A   281                                                      
-REMARK 465     GLU A   282                                                      
-REMARK 465     GLY A   283                                                      
-REMARK 465     ALA A   284                                                      
-REMARK 465     VAL A   285                                                      
-REMARK 465     ASP A   286                                                      
-REMARK 465     ALA A   287                                                      
-REMARK 465     GLY A   288                                                      
-REMARK 465     ASN A   289                                                      
-REMARK 465     MET A   290                                                      
-REMARK 465     ILE A   637                                                      
-REMARK 465     GLY A   638                                                      
-REMARK 465     ALA A   639                                                      
-REMARK 465     PRO A   640                                                      
-REMARK 465     PRO A   641                                                      
-REMARK 465     GLY A   642                                                      
-REMARK 465     TYR A   643                                                      
-REMARK 465     VAL A   644                                                      
-REMARK 465     GLY A   645                                                      
-REMARK 465     TYR A   646                                                      
-REMARK 465     GLU A   647                                                      
-REMARK 465     GLU A   648                                                      
-REMARK 465     GLY A   649                                                      
-REMARK 465     GLY A   650                                                      
-REMARK 465     ARG A   851                                                      
-REMARK 465     VAL A   852                                                      
-REMARK 465     GLU A   853                                                      
-REMARK 465     ALA A   854                                                      
-REMARK 465     MET B     1                                                      
-REMARK 465     ASN B     2                                                      
-REMARK 465     LEU B     3                                                      
-REMARK 465     GLY B   235                                                      
-REMARK 465     SER B   236                                                      
-REMARK 465     LEU B   237                                                      
-REMARK 465     LEU B   238                                                      
-REMARK 465     ALA B   239                                                      
-REMARK 465     GLY B   240                                                      
-REMARK 465     ALA B   241                                                      
-REMARK 465     LYS B   242                                                      
-REMARK 465     TYR B   243                                                      
-REMARK 465     ARG B   244                                                      
-REMARK 465     GLY B   245                                                      
-REMARK 465     LEU B   272                                                      
-REMARK 465     HIS B   273                                                      
-REMARK 465     THR B   274                                                      
-REMARK 465     VAL B   275                                                      
-REMARK 465     VAL B   276                                                      
-REMARK 465     GLY B   277                                                      
-REMARK 465     ALA B   278                                                      
-REMARK 465     GLY B   279                                                      
-REMARK 465     LYS B   280                                                      
-REMARK 465     ALA B   281                                                      
-REMARK 465     GLU B   282                                                      
-REMARK 465     GLY B   283                                                      
-REMARK 465     ALA B   284                                                      
-REMARK 465     VAL B   285                                                      
-REMARK 465     ASP B   286                                                      
-REMARK 465     ALA B   287                                                      
-REMARK 465     GLY B   288                                                      
-REMARK 465     ASN B   289                                                      
-REMARK 465     MET B   290                                                      
-REMARK 465     ILE B   637                                                      
-REMARK 465     GLY B   638                                                      
-REMARK 465     ALA B   639                                                      
-REMARK 465     PRO B   640                                                      
-REMARK 465     PRO B   641                                                      
-REMARK 465     GLY B   642                                                      
-REMARK 465     TYR B   643                                                      
-REMARK 465     VAL B   644                                                      
-REMARK 465     GLY B   645                                                      
-REMARK 465     TYR B   646                                                      
-REMARK 465     GLU B   647                                                      
-REMARK 465     GLU B   648                                                      
-REMARK 465     GLY B   649                                                      
-REMARK 465     GLY B   650                                                      
-REMARK 465     ARG B   851                                                      
-REMARK 465     VAL B   852                                                      
-REMARK 465     GLU B   853                                                      
-REMARK 465     ALA B   854                                                      
-REMARK 465     MET C     1                                                      
-REMARK 465     ASN C     2                                                      
-REMARK 465     LEU C     3                                                      
-REMARK 465     GLY C   235                                                      
-REMARK 465     SER C   236                                                      
-REMARK 465     LEU C   237                                                      
-REMARK 465     LEU C   238                                                      
-REMARK 465     ALA C   239                                                      
-REMARK 465     GLY C   240                                                      
-REMARK 465     ALA C   241                                                      
-REMARK 465     LYS C   242                                                      
-REMARK 465     TYR C   243                                                      
-REMARK 465     ARG C   244                                                      
-REMARK 465     GLY C   245                                                      
-REMARK 465     LEU C   272                                                      
-REMARK 465     HIS C   273                                                      
-REMARK 465     THR C   274                                                      
-REMARK 465     VAL C   275                                                      
-REMARK 465     VAL C   276                                                      
-REMARK 465     GLY C   277                                                      
-REMARK 465     ALA C   278                                                      
-REMARK 465     GLY C   279                                                      
-REMARK 465     LYS C   280                                                      
-REMARK 465     ALA C   281                                                      
-REMARK 465     GLU C   282                                                      
-REMARK 465     GLY C   283                                                      
-REMARK 465     ALA C   284                                                      
-REMARK 465     VAL C   285                                                      
-REMARK 465     ASP C   286                                                      
-REMARK 465     ALA C   287                                                      
-REMARK 465     GLY C   288                                                      
-REMARK 465     ASN C   289                                                      
-REMARK 465     MET C   290                                                      
-REMARK 465     ILE C   637                                                      
-REMARK 465     GLY C   638                                                      
-REMARK 465     ALA C   639                                                      
-REMARK 465     PRO C   640                                                      
-REMARK 465     PRO C   641                                                      
-REMARK 465     GLY C   642                                                      
-REMARK 465     TYR C   643                                                      
-REMARK 465     VAL C   644                                                      
-REMARK 465     GLY C   645                                                      
-REMARK 465     TYR C   646                                                      
-REMARK 465     GLU C   647                                                      
-REMARK 465     GLU C   648                                                      
-REMARK 465     GLY C   649                                                      
-REMARK 465     GLY C   650                                                      
-REMARK 465     ARG C   851                                                      
-REMARK 465     VAL C   852                                                      
-REMARK 465     GLU C   853                                                      
-REMARK 465     ALA C   854                                                      
-REMARK 500                                                                      
-REMARK 500 GEOMETRY AND STEREOCHEMISTRY                                         
-REMARK 500 SUBTOPIC: COVALENT BOND ANGLES                                       
-REMARK 500                                                                      
-REMARK 500 THE STEREOCHEMICAL PARAMETERS OF THE FOLLOWING RESIDUES              
-REMARK 500 HAVE VALUES WHICH DEVIATE FROM EXPECTED VALUES BY MORE               
-REMARK 500 THAN 6*RMSD (M=MODEL NUMBER; RES=RESIDUE NAME; C=CHAIN               
-REMARK 500 IDENTIFIER; SSEQ=SEQUENCE NUMBER; I=INSERTION CODE).                 
-REMARK 500                                                                      
-REMARK 500 STANDARD TABLE:                                                      
-REMARK 500 FORMAT: (10X,I3,1X,A3,1X,A1,I4,A1,3(1X,A4,2X),12X,F5.1)              
-REMARK 500                                                                      
-REMARK 500 EXPECTED VALUES PROTEIN: ENGH AND HUBER, 1999                        
-REMARK 500 EXPECTED VALUES NUCLEIC ACID: CLOWNEY ET AL 1996                     
-REMARK 500                                                                      
-REMARK 500  M RES CSSEQI ATM1   ATM2   ATM3                                     
-REMARK 500    ARG B 658   NE  -  CZ  -  NH2 ANGL. DEV. =  -3.0 DEGREES          
-REMARK 500    ARG B 659   NE  -  CZ  -  NH1 ANGL. DEV. =   3.5 DEGREES          
-REMARK 500    ARG B 659   NE  -  CZ  -  NH2 ANGL. DEV. =  -3.4 DEGREES          
-REMARK 500                                                                      
-REMARK 500 REMARK: NULL                                                         
-REMARK 500                                                                      
-REMARK 500 GEOMETRY AND STEREOCHEMISTRY                                         
-REMARK 500 SUBTOPIC: TORSION ANGLES                                             
-REMARK 500                                                                      
-REMARK 500 TORSION ANGLES OUTSIDE THE EXPECTED RAMACHANDRAN REGIONS:            
-REMARK 500 (M=MODEL NUMBER; RES=RESIDUE NAME; C=CHAIN IDENTIFIER;               
-REMARK 500 SSEQ=SEQUENCE NUMBER; I=INSERTION CODE).                             
-REMARK 500                                                                      
-REMARK 500 STANDARD TABLE:                                                      
-REMARK 500 FORMAT:(10X,I3,1X,A3,1X,A1,I4,A1,4X,F7.2,3X,F7.2)                    
-REMARK 500                                                                      
-REMARK 500 EXPECTED VALUES: GJ KLEYWEGT AND TA JONES (1996). PHI/PSI-           
-REMARK 500 CHOLOGY: RAMACHANDRAN REVISITED. STRUCTURE 4, 1395 - 1400            
-REMARK 500                                                                      
-REMARK 500  M RES CSSEQI        PSI       PHI                                   
-REMARK 500    ARG A   5      -38.00    174.74                                   
-REMARK 500    ALA A   9      -73.53    -54.38                                   
-REMARK 500    VAL A  74     -141.82    -86.16                                   
-REMARK 500    ALA A  77        0.90    -67.69                                   
-REMARK 500    LYS A 102       -0.85     89.53                                   
-REMARK 500    PRO A 123      144.28    -18.14                                   
-REMARK 500    LEU A 135       36.57   -165.64                                   
-REMARK 500    ARG A 136       83.54      6.76                                   
-REMARK 500    VAL A 141     -149.78    -61.59                                   
-REMARK 500    HIS A 145      106.34   -175.33                                   
-REMARK 500    GLU A 147       75.75     56.01                                   
-REMARK 500    TYR A 150      -50.05   -130.03                                   
-REMARK 500    PRO A 171      105.91    -57.09                                   
-REMARK 500    PRO A 221     -165.63    -55.78                                   
-REMARK 500    LYS A 227      160.33    -48.78                                   
-REMARK 500    GLN A 262       63.06     68.70                                   
-REMARK 500    GLU A 299       -4.63   -143.19                                   
-REMARK 500    ALA A 305      124.10   -173.46                                   
-REMARK 500    GLU A 315       52.78    -90.99                                   
-REMARK 500    PRO A 318      -30.39    -38.83                                   
-REMARK 500    GLU A 321       34.22    -61.86                                   
-REMARK 500    ARG A 322       27.38    -70.82                                   
-REMARK 500    ARG A 323       86.65     64.96                                   
-REMARK 500    PHE A 324       23.66    -63.04                                   
-REMARK 500    PRO A 332      157.98    -47.85                                   
-REMARK 500    GLU A 374      -99.95    -66.30                                   
-REMARK 500    LEU A 377      -82.98      3.13                                   
-REMARK 500    ASP A 379      -79.65    -57.03                                   
-REMARK 500    GLU A 397       41.77    -71.27                                   
-REMARK 500    ASP A 425       78.20   -118.72                                   
-REMARK 500    ASP A 427       53.49   -105.21                                   
-REMARK 500    SER A 428      -23.89   -166.44                                   
-REMARK 500    LYS A 448      -78.27    -69.01                                   
-REMARK 500    GLU A 481       22.64    -62.37                                   
-REMARK 500    GLN A 483       37.65   -141.02                                   
-REMARK 500    TYR A 484        8.40     36.96                                   
-REMARK 500    LEU A 486        2.72    -56.38                                   
-REMARK 500    ALA A 489      -19.58    -48.15                                   
-REMARK 500    GLU A 496      -84.13    -40.61                                   
-REMARK 500    LYS A 499      -73.70    -53.44                                   
-REMARK 500    LEU A 511       59.40   -102.25                                   
-REMARK 500    ARG A 512     -113.49    -60.49                                   
-REMARK 500    ALA A 514      151.20    -43.40                                   
-REMARK 500    ARG A 518       45.57   -108.27                                   
-REMARK 500    LEU A 519      -93.56   -121.60                                   
-REMARK 500    THR A 534      -91.53   -149.47                                   
-REMARK 500    ILE A 536      101.41     48.66                                   
-REMARK 500    LEU A 541     -112.30    -75.96                                   
-REMARK 500    LEU A 542      -89.81     -4.26                                   
-REMARK 500    GLU A 543      119.39    -28.46                                   
-REMARK 500    ARG A 578     -164.03    -67.70                                   
-REMARK 500    ALA A 579      -18.40     63.78                                   
-REMARK 500    PRO A 596     -171.77    -62.55                                   
-REMARK 500    LYS A 601      -73.72    -35.34                                   
-REMARK 500    ASP A 614       28.52     49.51                                   
-REMARK 500    THR A 615      141.05    176.73                                   
-REMARK 500    THR A 625       -4.94    -57.72                                   
-REMARK 500    GLU A 629     -112.61   -115.03                                   
-REMARK 500    LYS A 630       38.96    -86.51                                   
-REMARK 500    HIS A 631      -71.26    -30.39                                   
-REMARK 500    SER A 634       21.42    -72.43                                   
-REMARK 500    ARG A 635       14.62   -145.90                                   
-REMARK 500    GLU A 668       74.17     29.20                                   
-REMARK 500    PRO A 674      -35.43    -30.76                                   
-REMARK 500    ASP A 686       -2.81     47.45                                   
-REMARK 500    ARG A 695      106.46    -48.80                                   
-REMARK 500    LYS A 721        3.67    -65.99                                   
-REMARK 500    PRO A 724      131.43    -33.30                                   
-REMARK 500    ARG A 781       14.90     52.54                                   
-REMARK 500    GLU A 796      -73.48    -47.62                                   
-REMARK 500    VAL A 839     -153.65    -78.11                                   
-REMARK 500    ALA A 842       17.25     59.44                                   
-REMARK 500    PRO A 849     -105.15     47.98                                   
-REMARK 500    ARG B   5     -137.96   -152.76                                   
-REMARK 500    ALA B   9      -73.90    -43.63                                   
-REMARK 500    VAL B  74     -141.11    -86.21                                   
-REMARK 500    ALA B  77        1.33    -68.62                                   
-REMARK 500    GLU B 100       -5.99    -57.78                                   
-REMARK 500    PRO B 123      142.35    -25.67                                   
-REMARK 500    LEU B 125      -31.78    -37.01                                   
-REMARK 500    GLU B 126      -70.70    -55.47                                   
-REMARK 500    GLU B 134       -7.02    -48.27                                   
-REMARK 500    LEU B 135      -74.97    -86.81                                   
-REMARK 500    ARG B 136      -65.36   -104.05                                   
-REMARK 500    VAL B 141       87.78   -165.43                                   
-REMARK 500    THR B 143      -49.39   -146.17                                   
-REMARK 500    GLU B 147      130.18    161.26                                   
-REMARK 500    SER B 148       91.58    -56.56                                   
-REMARK 500    TYR B 156       23.02   -140.36                                   
-REMARK 500    GLU B 177      -80.87    -51.40                                   
-REMARK 500    GLN B 184      -73.62    -60.22                                   
-REMARK 500    LEU B 187       -5.71   -142.78                                   
-REMARK 500    PRO B 221     -165.45    -55.73                                   
-REMARK 500    LYS B 227      160.94    -48.28                                   
-REMARK 500    GLN B 262       63.56     68.45                                   
-REMARK 500    ALA B 296       31.89    -69.17                                   
-REMARK 500    ARG B 297       -3.90   -154.92                                   
-REMARK 500    ALA B 305      123.87   -176.45                                   
-REMARK 500    LEU B 308      -70.87    -61.64                                   
-REMARK 500    LEU B 320      -66.79    -99.39                                   
-REMARK 500    GLU B 321       -2.73    -54.42                                   
-REMARK 500    GLU B 374      -98.17    -66.49                                   
-REMARK 500    LEU B 377      -80.46     -0.11                                   
-REMARK 500    ASP B 379      -78.45    -56.06                                   
-REMARK 500    LYS B 380      -37.74    -39.15                                   
-REMARK 500    ALA B 388      -71.32    -57.14                                   
-REMARK 500    ARG B 391      -74.31    -43.33                                   
-REMARK 500    PRO B 400     -176.96    -51.89                                   
-REMARK 500    LYS B 422     -136.54    -78.23                                   
-REMARK 500    GLU B 423      110.56    -24.86                                   
-REMARK 500    LYS B 424     -116.99    -19.37                                   
-REMARK 500    PRO B 426        1.92    -50.38                                   
-REMARK 500    GLU B 481       31.37    -68.37                                   
-REMARK 500    ARG B 482      -45.07   -133.99                                   
-REMARK 500    ASP B 485       72.99    -64.72                                   
-REMARK 500    ASN B 487      -82.86    -46.40                                   
-REMARK 500    ALA B 489      -31.58    -39.25                                   
-REMARK 500    GLU B 496      -72.71    -64.94                                   
-REMARK 500    PHE B 516       20.42   -142.38                                   
-REMARK 500    THR B 534     -102.54   -145.81                                   
-REMARK 500    ILE B 536      103.48     50.78                                   
-REMARK 500    LEU B 541     -112.10    -78.53                                   
-REMARK 500    LEU B 542      -91.31     -0.08                                   
-REMARK 500    ARG B 578     -166.24    -66.65                                   
-REMARK 500    ALA B 579      -18.63     67.91                                   
-REMARK 500    PRO B 596     -171.98    -59.75                                   
-REMARK 500    LYS B 601      -76.70    -29.74                                   
-REMARK 500    THR B 615      140.27   -178.59                                   
-REMARK 500    THR B 625       -3.53    -55.85                                   
-REMARK 500    GLU B 629     -114.01   -115.15                                   
-REMARK 500    LYS B 630       38.20    -84.97                                   
-REMARK 500    HIS B 631      -70.72    -29.32                                   
-REMARK 500    SER B 634       21.02    -72.63                                   
-REMARK 500    ARG B 635       17.53   -145.42                                   
-REMARK 500    GLU B 668       75.57     30.14                                   
-REMARK 500    PRO B 674      -36.65    -29.42                                   
-REMARK 500    ASP B 686       -1.27     45.92                                   
-REMARK 500    ARG B 695      106.16    -49.12                                   
-REMARK 500    LYS B 721        3.74    -66.45                                   
-REMARK 500    PRO B 724      135.34    -36.28                                   
-REMARK 500    GLN B 737       -8.79    -59.03                                   
-REMARK 500    ARG B 781        8.02     56.67                                   
-REMARK 500    GLU B 796      -73.48    -51.90                                   
-REMARK 500    ALA C   9      -72.91    -71.78                                   
-REMARK 500    VAL C  74     -141.86    -86.16                                   
-REMARK 500    ALA C  77        0.84    -67.55                                   
-REMARK 500    LYS C 102       62.03     69.58                                   
-REMARK 500    PRO C 120      106.60    -49.40                                   
-REMARK 500    PRO C 123     -123.72    -51.44                                   
-REMARK 500    LEU C 125      -38.33   -146.64                                   
-REMARK 500    ARG C 136     -142.09     43.48                                   
-REMARK 500    VAL C 141      -88.96    -84.23                                   
-REMARK 500    HIS C 145      129.97      8.87                                   
-REMARK 500    ALA C 146      112.64     72.92                                   
-REMARK 500    PRO C 171      104.48    -57.31                                   
-REMARK 500    ARG C 175       44.25   -140.45                                   
-REMARK 500    PRO C 221     -165.79    -55.75                                   
-REMARK 500    LYS C 227      160.61    -48.60                                   
-REMARK 500    GLN C 262       63.46     68.39                                   
-REMARK 500    ASP C 270      -83.95    -49.70                                   
-REMARK 500    ALA C 294       29.33    -74.28                                   
-REMARK 500    GLU C 299      162.98    177.86                                   
-REMARK 500    LEU C 300       97.43     78.37                                   
-REMARK 500    ALA C 305      124.11   -173.19                                   
-REMARK 500    ALA C 319       -7.18    -59.09                                   
-REMARK 500    GLU C 346      -71.69    -54.20                                   
-REMARK 500    GLU C 349       -7.90    -58.94                                   
-REMARK 500    GLU C 374     -102.35    -65.50                                   
-REMARK 500    LEU C 377      -81.79     -0.72                                   
-REMARK 500    ASP C 379      -78.30    -60.94                                   
-REMARK 500    ALA C 390      -67.87   -104.88                                   
-REMARK 500    ALA C 395       49.69    -74.07                                   
-REMARK 500    GLU C 414        2.83    -65.94                                   
-REMARK 500    LYS C 422      -95.09    -52.17                                   
-REMARK 500    GLU C 423      103.58    -54.94                                   
-REMARK 500    LYS C 424       85.56    -61.52                                   
-REMARK 500    GLU C 430        2.08    -63.72                                   
-REMARK 500    ARG C 431      -77.86   -117.64                                   
-REMARK 500    GLN C 483      -56.43   -173.45                                   
-REMARK 500    ASP C 485       57.68     24.23                                   
-REMARK 500    ARG C 488     -113.91    -58.47                                   
-REMARK 500    ALA C 489      -60.50    -92.19                                   
-REMARK 500    ALA C 490      -32.36    -32.68                                   
-REMARK 500    ALA C 514     -148.93   -126.88                                   
-REMARK 500    ARG C 518      129.09    -31.61                                   
-REMARK 500    LEU C 519      -57.06   -156.44                                   
-REMARK 500    THR C 534      -99.83   -141.07                                   
-REMARK 500    ILE C 536       99.97     51.88                                   
-REMARK 500    LEU C 541     -109.75    -78.27                                   
-REMARK 500    LEU C 542      -86.68     -8.62                                   
-REMARK 500    GLU C 543      115.64    -28.16                                   
-REMARK 500    ARG C 568      -74.95    -45.93                                   
-REMARK 500    ARG C 578     -168.48    -67.06                                   
-REMARK 500    ALA C 579      -15.00     66.83                                   
-REMARK 500    PRO C 596     -175.07    -62.66                                   
-REMARK 500    LYS C 601      -78.21    -35.40                                   
-REMARK 500    ASP C 614       26.72     49.74                                   
-REMARK 500    THR C 615      141.24    177.51                                   
-REMARK 500    MET C 624      -39.49    -39.98                                   
-REMARK 500    THR C 625       -5.17    -56.80                                   
-REMARK 500    GLU C 629     -112.42   -114.77                                   
-REMARK 500    LYS C 630       39.53    -86.47                                   
-REMARK 500    HIS C 631      -71.15    -30.81                                   
-REMARK 500    ARG C 635       18.07   -144.90                                   
-REMARK 500    GLU C 668       75.23     30.82                                   
-REMARK 500    PRO C 674      -39.66    -30.57                                   
-REMARK 500    ASP C 686       -2.16     46.90                                   
-REMARK 500    ARG C 695      106.28    -49.49                                   
-REMARK 500    LYS C 721        5.09    -65.85                                   
-REMARK 500    ARG C 781        8.01     56.04                                   
-REMARK 500    GLU C 796      -73.93    -49.65                                   
-REMARK 500                                                                      
-REMARK 500 REMARK: NULL                                                         
-REMARK 620                                                                      
-REMARK 620 METAL COORDINATION                                                   
-REMARK 620  (M=MODEL NUMBER; RES=RESIDUE NAME; C=CHAIN IDENTIFIER;              
-REMARK 620  SSEQ=SEQUENCE NUMBER; I=INSERTION CODE):                            
-REMARK 620                                                                      
-REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL                         
-REMARK 620                              PT A 856  PT                            
-REMARK 620 N RES CSSEQI ATOM                                                    
-REMARK 620 1 MET A  24   SD                                                     
-REMARK 620 2 LYS A  73   NZ  121.4                                              
-REMARK 620 N                    1                                               
-REMARK 620                                                                      
-REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL                         
-REMARK 620                              PT A 859  PT                            
-REMARK 620 N RES CSSEQI ATOM                                                    
-REMARK 620 1 THR A 625   O                                                      
-REMARK 620 2 THR A 625   OG1  73.0                                              
-REMARK 620 3 MET A 628   SD   78.3 151.1                                        
-REMARK 620 N                    1     2                                         
-REMARK 620                                                                      
-REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL                         
-REMARK 620                              PT A 861  PT                            
-REMARK 620 N RES CSSEQI ATOM                                                    
-REMARK 620 1 GLN B 184   NE2                                                    
-REMARK 620 2 GLN B 184   OE1  40.0                                              
-REMARK 620 3 ARG A 393   NH1  87.8  98.4                                        
-REMARK 620 4 ARG A 393   NH2  67.2  61.6  38.3                                  
-REMARK 620 N                    1     2     3                                   
-REMARK 620                                                                      
-REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL                         
-REMARK 620                              PT A 862  PT                            
-REMARK 620 N RES CSSEQI ATOM                                                    
-REMARK 620 1 MET A 624   SD                                                     
-REMARK 620 2 MET A 624   O    56.4                                              
-REMARK 620 3 TYR A 627   O    90.1  66.6                                        
-REMARK 620 N                    1     2                                         
-REMARK 620                                                                      
-REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL                         
-REMARK 620                              PT B 857  PT                            
-REMARK 620 N RES CSSEQI ATOM                                                    
-REMARK 620 1 ARG C 180   NH1                                                    
-REMARK 620 2 ARG C 180   NH2  41.2                                              
-REMARK 620 3 MET B 394   SD   94.2  59.3                                        
-REMARK 620 N                    1     2                                         
-REMARK 620                                                                      
-REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL                         
-REMARK 620                              PT B 858  PT                            
-REMARK 620 N RES CSSEQI ATOM                                                    
-REMARK 620 1 ARG C 180   NH2                                                    
-REMARK 620 2 MET B 394   SD   74.4                                              
-REMARK 620 N                    1                                               
-REMARK 620                                                                      
-REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL                         
-REMARK 620                              PT B 859  PT                            
-REMARK 620 N RES CSSEQI ATOM                                                    
-REMARK 620 1 MET B 628   SD                                                     
-REMARK 620 2 THR B 625   O    66.4                                              
-REMARK 620 3 THR B 625   OG1 131.6  65.2                                        
-REMARK 620 N                    1     2                                         
-REMARK 620                                                                      
-REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL                         
-REMARK 620                              PT B 861  PT                            
-REMARK 620 N RES CSSEQI ATOM                                                    
-REMARK 620 1 TYR B 627   O                                                      
-REMARK 620 2 TYR B 627   N    58.0                                              
-REMARK 620 3 MET B 624   O    68.6  52.5                                        
-REMARK 620 4 MET B 624   SD   79.7 111.5  63.4                                  
-REMARK 620 N                    1     2     3                                   
-REMARK 620                                                                      
-REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL                         
-REMARK 620                              PT C 856  PT                            
-REMARK 620 N RES CSSEQI ATOM                                                    
-REMARK 620 1 TYR C 627   N                                                      
-REMARK 620 2 TYR C 627   O    59.0                                              
-REMARK 620 3 MET C 624   SD  114.1  78.2                                        
-REMARK 620 4 MET C 624   O    54.1  68.2  65.0                                  
-REMARK 620 N                    1     2     3                                   
-REMARK 620                                                                      
-REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL                         
-REMARK 620                              PT C 857  PT                            
-REMARK 620 N RES CSSEQI ATOM                                                    
-REMARK 620 1 MET C 628   SD                                                     
-REMARK 620 2 THR C 625   O    84.2                                              
-REMARK 620 3 THR C 625   OG1 148.3  64.1                                        
-REMARK 620 N                    1     2                                         
-REMARK 620                                                                      
-REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL                         
-REMARK 620                              PT C 859  PT                            
-REMARK 620 N RES CSSEQI ATOM                                                    
-REMARK 620 1 ARG C 391   NH1                                                    
-REMARK 620 2 ARG C 391   NE   46.2                                              
-REMARK 620 3 MET C 394   SD  128.3 151.5                                        
-REMARK 620 N                    1     2                                         
-REMARK 620                                                                      
-REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL                         
-REMARK 620                              PT C 861  PT                            
-REMARK 620 N RES CSSEQI ATOM                                                    
-REMARK 620 1 MET C 394   SD                                                     
-REMARK 620 2 ARG A 188   NH2  74.4                                              
-REMARK 620 N                    1                                               
-REMARK 800                                                                      
-REMARK 800 SITE                                                                 
-REMARK 800 SITE_IDENTIFIER: AC1                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT B 855                  
-REMARK 800 SITE_IDENTIFIER: AC2                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT B 856                  
-REMARK 800 SITE_IDENTIFIER: AC3                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT C 855                  
-REMARK 800 SITE_IDENTIFIER: AC4                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT A 855                  
-REMARK 800 SITE_IDENTIFIER: AC5                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT B 857                  
-REMARK 800 SITE_IDENTIFIER: AC6                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT C 856                  
-REMARK 800 SITE_IDENTIFIER: AC7                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT A 856                  
-REMARK 800 SITE_IDENTIFIER: AC8                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT B 858                  
-REMARK 800 SITE_IDENTIFIER: AC9                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT B 859                  
-REMARK 800 SITE_IDENTIFIER: BC1                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT C 857                  
-REMARK 800 SITE_IDENTIFIER: BC2                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT A 858                  
-REMARK 800 SITE_IDENTIFIER: BC3                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT A 859                  
-REMARK 800 SITE_IDENTIFIER: BC4                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT A 860                  
-REMARK 800 SITE_IDENTIFIER: BC5                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT C 858                  
-REMARK 800 SITE_IDENTIFIER: BC6                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT C 859                  
-REMARK 800 SITE_IDENTIFIER: BC7                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT B 861                  
-REMARK 800 SITE_IDENTIFIER: BC8                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT C 860                  
-REMARK 800 SITE_IDENTIFIER: BC9                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT A 861                  
-REMARK 800 SITE_IDENTIFIER: CC1                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT A 862                  
-REMARK 800 SITE_IDENTIFIER: CC2                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT C 861                  
-REMARK 800 SITE_IDENTIFIER: CC3                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE ANP A 901                 
-REMARK 800 SITE_IDENTIFIER: CC4                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE ANP A 911                 
-REMARK 800 SITE_IDENTIFIER: CC5                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE ANP B 902                 
-REMARK 800 SITE_IDENTIFIER: CC6                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE ANP B 912                 
-REMARK 800 SITE_IDENTIFIER: CC7                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE ANP C 903                 
-REMARK 800 SITE_IDENTIFIER: CC8                                                 
-REMARK 800 EVIDENCE_CODE: SOFTWARE                                              
-REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE ANP C 913                 
-DBREF  1QVR A    1   854  UNP    Q9RA63   CLPB_THET8       1    854             
-DBREF  1QVR B    1   854  UNP    Q9RA63   CLPB_THET8       1    854             
-DBREF  1QVR C    1   854  UNP    Q9RA63   CLPB_THET8       1    854             
-SEQRES   1 A  854  MET ASN LEU GLU ARG TRP THR GLN ALA ALA ARG GLU ALA          
-SEQRES   2 A  854  LEU ALA GLN ALA GLN VAL LEU ALA GLN ARG MET LYS HIS          
-SEQRES   3 A  854  GLN ALA ILE ASP LEU PRO HIS LEU TRP ALA VAL LEU LEU          
-SEQRES   4 A  854  LYS ASP GLU ARG SER LEU ALA TRP ARG LEU LEU GLU LYS          
-SEQRES   5 A  854  ALA GLY ALA ASP PRO LYS ALA LEU LYS GLU LEU GLN GLU          
-SEQRES   6 A  854  ARG GLU LEU ALA ARG LEU PRO LYS VAL GLU GLY ALA GLU          
-SEQRES   7 A  854  VAL GLY GLN TYR LEU THR SER ARG LEU SER GLY ALA LEU          
-SEQRES   8 A  854  ASN ARG ALA GLU GLY LEU MET GLU GLU LEU LYS ASP ARG          
-SEQRES   9 A  854  TYR VAL ALA VAL ASP THR LEU VAL LEU ALA LEU ALA GLU          
-SEQRES  10 A  854  ALA THR PRO GLY LEU PRO GLY LEU GLU ALA LEU LYS GLY          
-SEQRES  11 A  854  ALA LEU LYS GLU LEU ARG GLY GLY ARG THR VAL GLN THR          
-SEQRES  12 A  854  GLU HIS ALA GLU SER THR TYR ASN ALA LEU GLU GLN TYR          
-SEQRES  13 A  854  GLY ILE ASP LEU THR ARG LEU ALA ALA GLU GLY LYS LEU          
-SEQRES  14 A  854  ASP PRO VAL ILE GLY ARG ASP GLU GLU ILE ARG ARG VAL          
-SEQRES  15 A  854  ILE GLN ILE LEU LEU ARG ARG THR LYS ASN ASN PRO VAL          
-SEQRES  16 A  854  LEU ILE GLY GLU PRO GLY VAL GLY LYS THR ALA ILE VAL          
-SEQRES  17 A  854  GLU GLY LEU ALA GLN ARG ILE VAL LYS GLY ASP VAL PRO          
-SEQRES  18 A  854  GLU GLY LEU LYS GLY LYS ARG ILE VAL SER LEU GLN MET          
-SEQRES  19 A  854  GLY SER LEU LEU ALA GLY ALA LYS TYR ARG GLY GLU PHE          
-SEQRES  20 A  854  GLU GLU ARG LEU LYS ALA VAL ILE GLN GLU VAL VAL GLN          
-SEQRES  21 A  854  SER GLN GLY GLU VAL ILE LEU PHE ILE ASP GLU LEU HIS          
-SEQRES  22 A  854  THR VAL VAL GLY ALA GLY LYS ALA GLU GLY ALA VAL ASP          
-SEQRES  23 A  854  ALA GLY ASN MET LEU LYS PRO ALA LEU ALA ARG GLY GLU          
-SEQRES  24 A  854  LEU ARG LEU ILE GLY ALA THR THR LEU ASP GLU TYR ARG          
-SEQRES  25 A  854  GLU ILE GLU LYS ASP PRO ALA LEU GLU ARG ARG PHE GLN          
-SEQRES  26 A  854  PRO VAL TYR VAL ASP GLU PRO THR VAL GLU GLU THR ILE          
-SEQRES  27 A  854  SER ILE LEU ARG GLY LEU LYS GLU LYS TYR GLU VAL HIS          
-SEQRES  28 A  854  HIS GLY VAL ARG ILE SER ASP SER ALA ILE ILE ALA ALA          
-SEQRES  29 A  854  ALA THR LEU SER HIS ARG TYR ILE THR GLU ARG ARG LEU          
-SEQRES  30 A  854  PRO ASP LYS ALA ILE ASP LEU ILE ASP GLU ALA ALA ALA          
-SEQRES  31 A  854  ARG LEU ARG MET ALA LEU GLU SER ALA PRO GLU GLU ILE          
-SEQRES  32 A  854  ASP ALA LEU GLU ARG LYS LYS LEU GLN LEU GLU ILE GLU          
-SEQRES  33 A  854  ARG GLU ALA LEU LYS LYS GLU LYS ASP PRO ASP SER GLN          
-SEQRES  34 A  854  GLU ARG LEU LYS ALA ILE GLU ALA GLU ILE ALA LYS LEU          
-SEQRES  35 A  854  THR GLU GLU ILE ALA LYS LEU ARG ALA GLU TRP GLU ARG          
-SEQRES  36 A  854  GLU ARG GLU ILE LEU ARG LYS LEU ARG GLU ALA GLN HIS          
-SEQRES  37 A  854  ARG LEU ASP GLU VAL ARG ARG GLU ILE GLU LEU ALA GLU          
-SEQRES  38 A  854  ARG GLN TYR ASP LEU ASN ARG ALA ALA GLU LEU ARG TYR          
-SEQRES  39 A  854  GLY GLU LEU PRO LYS LEU GLU ALA GLU VAL GLU ALA LEU          
-SEQRES  40 A  854  SER GLU LYS LEU ARG GLY ALA ARG PHE VAL ARG LEU GLU          
-SEQRES  41 A  854  VAL THR GLU GLU ASP ILE ALA GLU ILE VAL SER ARG TRP          
-SEQRES  42 A  854  THR GLY ILE PRO VAL SER LYS LEU LEU GLU GLY GLU ARG          
-SEQRES  43 A  854  GLU LYS LEU LEU ARG LEU GLU GLU GLU LEU HIS LYS ARG          
-SEQRES  44 A  854  VAL VAL GLY GLN ASP GLU ALA ILE ARG ALA VAL ALA ASP          
-SEQRES  45 A  854  ALA ILE ARG ARG ALA ARG ALA GLY LEU LYS ASP PRO ASN          
-SEQRES  46 A  854  ARG PRO ILE GLY SER PHE LEU PHE LEU GLY PRO THR GLY          
-SEQRES  47 A  854  VAL GLY LYS THR GLU LEU ALA LYS THR LEU ALA ALA THR          
-SEQRES  48 A  854  LEU PHE ASP THR GLU GLU ALA MET ILE ARG ILE ASP MET          
-SEQRES  49 A  854  THR GLU TYR MET GLU LYS HIS ALA VAL SER ARG LEU ILE          
-SEQRES  50 A  854  GLY ALA PRO PRO GLY TYR VAL GLY TYR GLU GLU GLY GLY          
-SEQRES  51 A  854  GLN LEU THR GLU ALA VAL ARG ARG ARG PRO TYR SER VAL          
-SEQRES  52 A  854  ILE LEU PHE ASP GLU ILE GLU LYS ALA HIS PRO ASP VAL          
-SEQRES  53 A  854  PHE ASN ILE LEU LEU GLN ILE LEU ASP ASP GLY ARG LEU          
-SEQRES  54 A  854  THR ASP SER HIS GLY ARG THR VAL ASP PHE ARG ASN THR          
-SEQRES  55 A  854  VAL ILE ILE LEU THR SER ASN LEU GLY SER PRO LEU ILE          
-SEQRES  56 A  854  LEU GLU GLY LEU GLN LYS GLY TRP PRO TYR GLU ARG ILE          
-SEQRES  57 A  854  ARG ASP GLU VAL PHE LYS VAL LEU GLN GLN HIS PHE ARG          
-SEQRES  58 A  854  PRO GLU PHE LEU ASN ARG LEU ASP GLU ILE VAL VAL PHE          
-SEQRES  59 A  854  ARG PRO LEU THR LYS GLU GLN ILE ARG GLN ILE VAL GLU          
-SEQRES  60 A  854  ILE GLN LEU SER TYR LEU ARG ALA ARG LEU ALA GLU LYS          
-SEQRES  61 A  854  ARG ILE SER LEU GLU LEU THR GLU ALA ALA LYS ASP PHE          
-SEQRES  62 A  854  LEU ALA GLU ARG GLY TYR ASP PRO VAL PHE GLY ALA ARG          
-SEQRES  63 A  854  PRO LEU ARG ARG VAL ILE GLN ARG GLU LEU GLU THR PRO          
-SEQRES  64 A  854  LEU ALA GLN LYS ILE LEU ALA GLY GLU VAL LYS GLU GLY          
-SEQRES  65 A  854  ASP ARG VAL GLN VAL ASP VAL GLY PRO ALA GLY LEU VAL          
-SEQRES  66 A  854  PHE ALA VAL PRO ALA ARG VAL GLU ALA                          
-SEQRES   1 B  854  MET ASN LEU GLU ARG TRP THR GLN ALA ALA ARG GLU ALA          
-SEQRES   2 B  854  LEU ALA GLN ALA GLN VAL LEU ALA GLN ARG MET LYS HIS          
-SEQRES   3 B  854  GLN ALA ILE ASP LEU PRO HIS LEU TRP ALA VAL LEU LEU          
-SEQRES   4 B  854  LYS ASP GLU ARG SER LEU ALA TRP ARG LEU LEU GLU LYS          
-SEQRES   5 B  854  ALA GLY ALA ASP PRO LYS ALA LEU LYS GLU LEU GLN GLU          
-SEQRES   6 B  854  ARG GLU LEU ALA ARG LEU PRO LYS VAL GLU GLY ALA GLU          
-SEQRES   7 B  854  VAL GLY GLN TYR LEU THR SER ARG LEU SER GLY ALA LEU          
-SEQRES   8 B  854  ASN ARG ALA GLU GLY LEU MET GLU GLU LEU LYS ASP ARG          
-SEQRES   9 B  854  TYR VAL ALA VAL ASP THR LEU VAL LEU ALA LEU ALA GLU          
-SEQRES  10 B  854  ALA THR PRO GLY LEU PRO GLY LEU GLU ALA LEU LYS GLY          
-SEQRES  11 B  854  ALA LEU LYS GLU LEU ARG GLY GLY ARG THR VAL GLN THR          
-SEQRES  12 B  854  GLU HIS ALA GLU SER THR TYR ASN ALA LEU GLU GLN TYR          
-SEQRES  13 B  854  GLY ILE ASP LEU THR ARG LEU ALA ALA GLU GLY LYS LEU          
-SEQRES  14 B  854  ASP PRO VAL ILE GLY ARG ASP GLU GLU ILE ARG ARG VAL          
-SEQRES  15 B  854  ILE GLN ILE LEU LEU ARG ARG THR LYS ASN ASN PRO VAL          
-SEQRES  16 B  854  LEU ILE GLY GLU PRO GLY VAL GLY LYS THR ALA ILE VAL          
-SEQRES  17 B  854  GLU GLY LEU ALA GLN ARG ILE VAL LYS GLY ASP VAL PRO          
-SEQRES  18 B  854  GLU GLY LEU LYS GLY LYS ARG ILE VAL SER LEU GLN MET          
-SEQRES  19 B  854  GLY SER LEU LEU ALA GLY ALA LYS TYR ARG GLY GLU PHE          
-SEQRES  20 B  854  GLU GLU ARG LEU LYS ALA VAL ILE GLN GLU VAL VAL GLN          
-SEQRES  21 B  854  SER GLN GLY GLU VAL ILE LEU PHE ILE ASP GLU LEU HIS          
-SEQRES  22 B  854  THR VAL VAL GLY ALA GLY LYS ALA GLU GLY ALA VAL ASP          
-SEQRES  23 B  854  ALA GLY ASN MET LEU LYS PRO ALA LEU ALA ARG GLY GLU          
-SEQRES  24 B  854  LEU ARG LEU ILE GLY ALA THR THR LEU ASP GLU TYR ARG          
-SEQRES  25 B  854  GLU ILE GLU LYS ASP PRO ALA LEU GLU ARG ARG PHE GLN          
-SEQRES  26 B  854  PRO VAL TYR VAL ASP GLU PRO THR VAL GLU GLU THR ILE          
-SEQRES  27 B  854  SER ILE LEU ARG GLY LEU LYS GLU LYS TYR GLU VAL HIS          
-SEQRES  28 B  854  HIS GLY VAL ARG ILE SER ASP SER ALA ILE ILE ALA ALA          
-SEQRES  29 B  854  ALA THR LEU SER HIS ARG TYR ILE THR GLU ARG ARG LEU          
-SEQRES  30 B  854  PRO ASP LYS ALA ILE ASP LEU ILE ASP GLU ALA ALA ALA          
-SEQRES  31 B  854  ARG LEU ARG MET ALA LEU GLU SER ALA PRO GLU GLU ILE          
-SEQRES  32 B  854  ASP ALA LEU GLU ARG LYS LYS LEU GLN LEU GLU ILE GLU          
-SEQRES  33 B  854  ARG GLU ALA LEU LYS LYS GLU LYS ASP PRO ASP SER GLN          
-SEQRES  34 B  854  GLU ARG LEU LYS ALA ILE GLU ALA GLU ILE ALA LYS LEU          
-SEQRES  35 B  854  THR GLU GLU ILE ALA LYS LEU ARG ALA GLU TRP GLU ARG          
-SEQRES  36 B  854  GLU ARG GLU ILE LEU ARG LYS LEU ARG GLU ALA GLN HIS          
-SEQRES  37 B  854  ARG LEU ASP GLU VAL ARG ARG GLU ILE GLU LEU ALA GLU          
-SEQRES  38 B  854  ARG GLN TYR ASP LEU ASN ARG ALA ALA GLU LEU ARG TYR          
-SEQRES  39 B  854  GLY GLU LEU PRO LYS LEU GLU ALA GLU VAL GLU ALA LEU          
-SEQRES  40 B  854  SER GLU LYS LEU ARG GLY ALA ARG PHE VAL ARG LEU GLU          
-SEQRES  41 B  854  VAL THR GLU GLU ASP ILE ALA GLU ILE VAL SER ARG TRP          
-SEQRES  42 B  854  THR GLY ILE PRO VAL SER LYS LEU LEU GLU GLY GLU ARG          
-SEQRES  43 B  854  GLU LYS LEU LEU ARG LEU GLU GLU GLU LEU HIS LYS ARG          
-SEQRES  44 B  854  VAL VAL GLY GLN ASP GLU ALA ILE ARG ALA VAL ALA ASP          
-SEQRES  45 B  854  ALA ILE ARG ARG ALA ARG ALA GLY LEU LYS ASP PRO ASN          
-SEQRES  46 B  854  ARG PRO ILE GLY SER PHE LEU PHE LEU GLY PRO THR GLY          
-SEQRES  47 B  854  VAL GLY LYS THR GLU LEU ALA LYS THR LEU ALA ALA THR          
-SEQRES  48 B  854  LEU PHE ASP THR GLU GLU ALA MET ILE ARG ILE ASP MET          
-SEQRES  49 B  854  THR GLU TYR MET GLU LYS HIS ALA VAL SER ARG LEU ILE          
-SEQRES  50 B  854  GLY ALA PRO PRO GLY TYR VAL GLY TYR GLU GLU GLY GLY          
-SEQRES  51 B  854  GLN LEU THR GLU ALA VAL ARG ARG ARG PRO TYR SER VAL          
-SEQRES  52 B  854  ILE LEU PHE ASP GLU ILE GLU LYS ALA HIS PRO ASP VAL          
-SEQRES  53 B  854  PHE ASN ILE LEU LEU GLN ILE LEU ASP ASP GLY ARG LEU          
-SEQRES  54 B  854  THR ASP SER HIS GLY ARG THR VAL ASP PHE ARG ASN THR          
-SEQRES  55 B  854  VAL ILE ILE LEU THR SER ASN LEU GLY SER PRO LEU ILE          
-SEQRES  56 B  854  LEU GLU GLY LEU GLN LYS GLY TRP PRO TYR GLU ARG ILE          
-SEQRES  57 B  854  ARG ASP GLU VAL PHE LYS VAL LEU GLN GLN HIS PHE ARG          
-SEQRES  58 B  854  PRO GLU PHE LEU ASN ARG LEU ASP GLU ILE VAL VAL PHE          
-SEQRES  59 B  854  ARG PRO LEU THR LYS GLU GLN ILE ARG GLN ILE VAL GLU          
-SEQRES  60 B  854  ILE GLN LEU SER TYR LEU ARG ALA ARG LEU ALA GLU LYS          
-SEQRES  61 B  854  ARG ILE SER LEU GLU LEU THR GLU ALA ALA LYS ASP PHE          
-SEQRES  62 B  854  LEU ALA GLU ARG GLY TYR ASP PRO VAL PHE GLY ALA ARG          
-SEQRES  63 B  854  PRO LEU ARG ARG VAL ILE GLN ARG GLU LEU GLU THR PRO          
-SEQRES  64 B  854  LEU ALA GLN LYS ILE LEU ALA GLY GLU VAL LYS GLU GLY          
-SEQRES  65 B  854  ASP ARG VAL GLN VAL ASP VAL GLY PRO ALA GLY LEU VAL          
-SEQRES  66 B  854  PHE ALA VAL PRO ALA ARG VAL GLU ALA                          
-SEQRES   1 C  854  MET ASN LEU GLU ARG TRP THR GLN ALA ALA ARG GLU ALA          
-SEQRES   2 C  854  LEU ALA GLN ALA GLN VAL LEU ALA GLN ARG MET LYS HIS          
-SEQRES   3 C  854  GLN ALA ILE ASP LEU PRO HIS LEU TRP ALA VAL LEU LEU          
-SEQRES   4 C  854  LYS ASP GLU ARG SER LEU ALA TRP ARG LEU LEU GLU LYS          
-SEQRES   5 C  854  ALA GLY ALA ASP PRO LYS ALA LEU LYS GLU LEU GLN GLU          
-SEQRES   6 C  854  ARG GLU LEU ALA ARG LEU PRO LYS VAL GLU GLY ALA GLU          
-SEQRES   7 C  854  VAL GLY GLN TYR LEU THR SER ARG LEU SER GLY ALA LEU          
-SEQRES   8 C  854  ASN ARG ALA GLU GLY LEU MET GLU GLU LEU LYS ASP ARG          
-SEQRES   9 C  854  TYR VAL ALA VAL ASP THR LEU VAL LEU ALA LEU ALA GLU          
-SEQRES  10 C  854  ALA THR PRO GLY LEU PRO GLY LEU GLU ALA LEU LYS GLY          
-SEQRES  11 C  854  ALA LEU LYS GLU LEU ARG GLY GLY ARG THR VAL GLN THR          
-SEQRES  12 C  854  GLU HIS ALA GLU SER THR TYR ASN ALA LEU GLU GLN TYR          
-SEQRES  13 C  854  GLY ILE ASP LEU THR ARG LEU ALA ALA GLU GLY LYS LEU          
-SEQRES  14 C  854  ASP PRO VAL ILE GLY ARG ASP GLU GLU ILE ARG ARG VAL          
-SEQRES  15 C  854  ILE GLN ILE LEU LEU ARG ARG THR LYS ASN ASN PRO VAL          
-SEQRES  16 C  854  LEU ILE GLY GLU PRO GLY VAL GLY LYS THR ALA ILE VAL          
-SEQRES  17 C  854  GLU GLY LEU ALA GLN ARG ILE VAL LYS GLY ASP VAL PRO          
-SEQRES  18 C  854  GLU GLY LEU LYS GLY LYS ARG ILE VAL SER LEU GLN MET          
-SEQRES  19 C  854  GLY SER LEU LEU ALA GLY ALA LYS TYR ARG GLY GLU PHE          
-SEQRES  20 C  854  GLU GLU ARG LEU LYS ALA VAL ILE GLN GLU VAL VAL GLN          
-SEQRES  21 C  854  SER GLN GLY GLU VAL ILE LEU PHE ILE ASP GLU LEU HIS          
-SEQRES  22 C  854  THR VAL VAL GLY ALA GLY LYS ALA GLU GLY ALA VAL ASP          
-SEQRES  23 C  854  ALA GLY ASN MET LEU LYS PRO ALA LEU ALA ARG GLY GLU          
-SEQRES  24 C  854  LEU ARG LEU ILE GLY ALA THR THR LEU ASP GLU TYR ARG          
-SEQRES  25 C  854  GLU ILE GLU LYS ASP PRO ALA LEU GLU ARG ARG PHE GLN          
-SEQRES  26 C  854  PRO VAL TYR VAL ASP GLU PRO THR VAL GLU GLU THR ILE          
-SEQRES  27 C  854  SER ILE LEU ARG GLY LEU LYS GLU LYS TYR GLU VAL HIS          
-SEQRES  28 C  854  HIS GLY VAL ARG ILE SER ASP SER ALA ILE ILE ALA ALA          
-SEQRES  29 C  854  ALA THR LEU SER HIS ARG TYR ILE THR GLU ARG ARG LEU          
-SEQRES  30 C  854  PRO ASP LYS ALA ILE ASP LEU ILE ASP GLU ALA ALA ALA          
-SEQRES  31 C  854  ARG LEU ARG MET ALA LEU GLU SER ALA PRO GLU GLU ILE          
-SEQRES  32 C  854  ASP ALA LEU GLU ARG LYS LYS LEU GLN LEU GLU ILE GLU          
-SEQRES  33 C  854  ARG GLU ALA LEU LYS LYS GLU LYS ASP PRO ASP SER GLN          
-SEQRES  34 C  854  GLU ARG LEU LYS ALA ILE GLU ALA GLU ILE ALA LYS LEU          
-SEQRES  35 C  854  THR GLU GLU ILE ALA LYS LEU ARG ALA GLU TRP GLU ARG          
-SEQRES  36 C  854  GLU ARG GLU ILE LEU ARG LYS LEU ARG GLU ALA GLN HIS          
-SEQRES  37 C  854  ARG LEU ASP GLU VAL ARG ARG GLU ILE GLU LEU ALA GLU          
-SEQRES  38 C  854  ARG GLN TYR ASP LEU ASN ARG ALA ALA GLU LEU ARG TYR          
-SEQRES  39 C  854  GLY GLU LEU PRO LYS LEU GLU ALA GLU VAL GLU ALA LEU          
-SEQRES  40 C  854  SER GLU LYS LEU ARG GLY ALA ARG PHE VAL ARG LEU GLU          
-SEQRES  41 C  854  VAL THR GLU GLU ASP ILE ALA GLU ILE VAL SER ARG TRP          
-SEQRES  42 C  854  THR GLY ILE PRO VAL SER LYS LEU LEU GLU GLY GLU ARG          
-SEQRES  43 C  854  GLU LYS LEU LEU ARG LEU GLU GLU GLU LEU HIS LYS ARG          
-SEQRES  44 C  854  VAL VAL GLY GLN ASP GLU ALA ILE ARG ALA VAL ALA ASP          
-SEQRES  45 C  854  ALA ILE ARG ARG ALA ARG ALA GLY LEU LYS ASP PRO ASN          
-SEQRES  46 C  854  ARG PRO ILE GLY SER PHE LEU PHE LEU GLY PRO THR GLY          
-SEQRES  47 C  854  VAL GLY LYS THR GLU LEU ALA LYS THR LEU ALA ALA THR          
-SEQRES  48 C  854  LEU PHE ASP THR GLU GLU ALA MET ILE ARG ILE ASP MET          
-SEQRES  49 C  854  THR GLU TYR MET GLU LYS HIS ALA VAL SER ARG LEU ILE          
-SEQRES  50 C  854  GLY ALA PRO PRO GLY TYR VAL GLY TYR GLU GLU GLY GLY          
-SEQRES  51 C  854  GLN LEU THR GLU ALA VAL ARG ARG ARG PRO TYR SER VAL          
-SEQRES  52 C  854  ILE LEU PHE ASP GLU ILE GLU LYS ALA HIS PRO ASP VAL          
-SEQRES  53 C  854  PHE ASN ILE LEU LEU GLN ILE LEU ASP ASP GLY ARG LEU          
-SEQRES  54 C  854  THR ASP SER HIS GLY ARG THR VAL ASP PHE ARG ASN THR          
-SEQRES  55 C  854  VAL ILE ILE LEU THR SER ASN LEU GLY SER PRO LEU ILE          
-SEQRES  56 C  854  LEU GLU GLY LEU GLN LYS GLY TRP PRO TYR GLU ARG ILE          
-SEQRES  57 C  854  ARG ASP GLU VAL PHE LYS VAL LEU GLN GLN HIS PHE ARG          
-SEQRES  58 C  854  PRO GLU PHE LEU ASN ARG LEU ASP GLU ILE VAL VAL PHE          
-SEQRES  59 C  854  ARG PRO LEU THR LYS GLU GLN ILE ARG GLN ILE VAL GLU          
-SEQRES  60 C  854  ILE GLN LEU SER TYR LEU ARG ALA ARG LEU ALA GLU LYS          
-SEQRES  61 C  854  ARG ILE SER LEU GLU LEU THR GLU ALA ALA LYS ASP PHE          
-SEQRES  62 C  854  LEU ALA GLU ARG GLY TYR ASP PRO VAL PHE GLY ALA ARG          
-SEQRES  63 C  854  PRO LEU ARG ARG VAL ILE GLN ARG GLU LEU GLU THR PRO          
-SEQRES  64 C  854  LEU ALA GLN LYS ILE LEU ALA GLY GLU VAL LYS GLU GLY          
-SEQRES  65 C  854  ASP ARG VAL GLN VAL ASP VAL GLY PRO ALA GLY LEU VAL          
-SEQRES  66 C  854  PHE ALA VAL PRO ALA ARG VAL GLU ALA                          
-HET     PT  B 855       1                                                       
-HET     PT  B 856       1                                                       
-HET     PT  C 855       1                                                       
-HET     PT  A 855       1                                                       
-HET     PT  B 857       1                                                       
-HET     PT  C 856       1                                                       
-HET     PT  A 856       1                                                       
-HET     PT  A 857       1                                                       
-HET     PT  B 858       1                                                       
-HET     PT  B 859       1                                                       
-HET     PT  C 857       1                                                       
-HET     PT  A 858       1                                                       
-HET     PT  B 860       1                                                       
-HET     PT  A 859       1                                                       
-HET     PT  A 860       1                                                       
-HET     PT  C 858       1                                                       
-HET     PT  C 859       1                                                       
-HET     PT  B 861       1                                                       
-HET     PT  B 862       1                                                       
-HET     PT  C 860       1                                                       
-HET     PT  A 861       1                                                       
-HET     PT  A 862       1                                                       
-HET     PT  C 861       1                                                       
-HET    ANP  A 901      31                                                       
-HET    ANP  A 911      31                                                       
-HET    ANP  B 902      31                                                       
-HET    ANP  B 912      31                                                       
-HET    ANP  C 903      31                                                       
-HET    ANP  C 913      31                                                       
-HETNAM      PT PLATINUM (II) ION                                                
-HETNAM     ANP PHOSPHOAMINOPHOSPHONIC ACID-ADENYLATE ESTER                      
-FORMUL   4   PT    23(PT 2+)                                                    
-FORMUL  27  ANP    6(C10 H17 N6 O12 P3)                                         
+HEADER    CHAPERONE                               28-AUG-03   1QVR
+TITLE     CRYSTAL STRUCTURE ANALYSIS OF CLPB
+COMPND    MOL_ID: 1;
+COMPND   2 MOLECULE: CLPB PROTEIN;
+COMPND   3 CHAIN: A, B, C;
+COMPND   4 ENGINEERED: YES
+SOURCE    MOL_ID: 1;
+SOURCE   2 ORGANISM_SCIENTIFIC: THERMUS THERMOPHILUS;
+SOURCE   3 ORGANISM_TAXID: 274;
+SOURCE   4 GENE: CLPB;
+SOURCE   5 EXPRESSION_SYSTEM: ESCHERICHIA COLI;
+SOURCE   6 EXPRESSION_SYSTEM_TAXID: 562
+KEYWDS    COILED COIL, AAA ATPASE, CHAPERONE
+EXPDTA    X-RAY DIFFRACTION
+AUTHOR    S.LEE,M.E.SOWA,Y.WATANABE,P.B.SIGLER,W.CHIU,M.YOSHIDA,
+AUTHOR   2 F.T.F.TSAI
+REVDAT   2   24-FEB-09 1QVR    1       VERSN
+REVDAT   1   21-OCT-03 1QVR    0
+JRNL        AUTH   S.LEE,M.E.SOWA,Y.WATANABE,P.B.SIGLER,W.CHIU,
+JRNL        AUTH 2 M.YOSHIDA,F.T.F.TSAI
+JRNL        TITL   THE STRUCTURE OF CLPB: A MOLECULAR CHAPERONE THAT
+JRNL        TITL 2 RESCUES PROTEINS FROM AN AGGREGATED STATE
+JRNL        REF    CELL(CAMBRIDGE,MASS.)         V. 115   229 2003
+JRNL        REFN                   ISSN 0092-8674
+JRNL        PMID   14567920
+JRNL        DOI    10.1016/S0092-8674(03)00807-9
+REMARK   1
+REMARK   2
+REMARK   2 RESOLUTION.    3.00 ANGSTROMS.
+REMARK   3
+REMARK   3 REFINEMENT.
+REMARK   3   PROGRAM     : CNS 1.1
+REMARK   3   AUTHORS     : BRUNGER,ADAMS,CLORE,DELANO,GROS,GROSSE-
+REMARK   3               : KUNSTLEVE,JIANG,KUSZEWSKI,NILGES, PANNU,
+REMARK   3               : READ,RICE,SIMONSON,WARREN
+REMARK   3
+REMARK   3  REFINEMENT TARGET : ENGH & HUBER
+REMARK   3
+REMARK   3  DATA USED IN REFINEMENT.
+REMARK   3   RESOLUTION RANGE HIGH (ANGSTROMS) : 3.00
+REMARK   3   RESOLUTION RANGE LOW  (ANGSTROMS) : 48.04
+REMARK   3   DATA CUTOFF            (SIGMA(F)) : 0.000
+REMARK   3   DATA CUTOFF HIGH         (ABS(F)) : NULL
+REMARK   3   DATA CUTOFF LOW          (ABS(F)) : NULL
+REMARK   3   COMPLETENESS (WORKING+TEST)   (%) : 83.4
+REMARK   3   NUMBER OF REFLECTIONS             : 102421
+REMARK   3
+REMARK   3  FIT TO DATA USED IN REFINEMENT.
+REMARK   3   CROSS-VALIDATION METHOD          : THROUGHOUT
+REMARK   3   FREE R VALUE TEST SET SELECTION  : RANDOM
+REMARK   3   R VALUE            (WORKING SET) : 0.263
+REMARK   3   FREE R VALUE                     : 0.307
+REMARK   3   FREE R VALUE TEST SET SIZE   (%) : 4.700
+REMARK   3   FREE R VALUE TEST SET COUNT      : 4803
+REMARK   3   ESTIMATED ERROR OF FREE R VALUE  : 0.004
+REMARK   3
+REMARK   3  FIT IN THE HIGHEST RESOLUTION BIN.
+REMARK   3   TOTAL NUMBER OF BINS USED           : 6
+REMARK   3   BIN RESOLUTION RANGE HIGH       (A) : 3.00
+REMARK   3   BIN RESOLUTION RANGE LOW        (A) : 3.19
+REMARK   3   BIN COMPLETENESS (WORKING+TEST) (%) : 33.40
+REMARK   3   REFLECTIONS IN BIN    (WORKING SET) : 6585
+REMARK   3   BIN R VALUE           (WORKING SET) : 0.4570
+REMARK   3   BIN FREE R VALUE                    : 0.4840
+REMARK   3   BIN FREE R VALUE TEST SET SIZE  (%) : 3.60
+REMARK   3   BIN FREE R VALUE TEST SET COUNT     : 246
+REMARK   3   ESTIMATED ERROR OF BIN FREE R VALUE : 0.031
+REMARK   3
+REMARK   3  NUMBER OF NON-HYDROGEN ATOMS USED IN REFINEMENT.
+REMARK   3   PROTEIN ATOMS            : 19287
+REMARK   3   NUCLEIC ACID ATOMS       : 0
+REMARK   3   HETEROGEN ATOMS          : 209
+REMARK   3   SOLVENT ATOMS            : 0
+REMARK   3
+REMARK   3  B VALUES.
+REMARK   3   FROM WILSON PLOT           (A**2) : 110.40
+REMARK   3   MEAN B VALUE      (OVERALL, A**2) : 99.10
+REMARK   3   OVERALL ANISOTROPIC B VALUE.
+REMARK   3    B11 (A**2) : -4.28000
+REMARK   3    B22 (A**2) : -0.24000
+REMARK   3    B33 (A**2) : 4.53000
+REMARK   3    B12 (A**2) : 0.00000
+REMARK   3    B13 (A**2) : 0.00000
+REMARK   3    B23 (A**2) : 0.00000
+REMARK   3
+REMARK   3  ESTIMATED COORDINATE ERROR.
+REMARK   3   ESD FROM LUZZATI PLOT        (A) : 0.51
+REMARK   3   ESD FROM SIGMAA              (A) : 0.75
+REMARK   3   LOW RESOLUTION CUTOFF        (A) : NULL
+REMARK   3
+REMARK   3  CROSS-VALIDATED ESTIMATED COORDINATE ERROR.
+REMARK   3   ESD FROM C-V LUZZATI PLOT    (A) : 0.60
+REMARK   3   ESD FROM C-V SIGMAA          (A) : 0.81
+REMARK   3
+REMARK   3  RMS DEVIATIONS FROM IDEAL VALUES.
+REMARK   3   BOND LENGTHS                 (A) : 0.005
+REMARK   3   BOND ANGLES            (DEGREES) : 1.10
+REMARK   3   DIHEDRAL ANGLES        (DEGREES) : 19.20
+REMARK   3   IMPROPER ANGLES        (DEGREES) : 0.86
+REMARK   3
+REMARK   3  ISOTROPIC THERMAL MODEL : RESTRAINED
+REMARK   3
+REMARK   3  ISOTROPIC THERMAL FACTOR RESTRAINTS.    RMS    SIGMA
+REMARK   3   MAIN-CHAIN BOND              (A**2) : 4.660 ; 1.500
+REMARK   3   MAIN-CHAIN ANGLE             (A**2) : 7.470 ; 2.000
+REMARK   3   SIDE-CHAIN BOND              (A**2) : 7.360 ; 2.000
+REMARK   3   SIDE-CHAIN ANGLE             (A**2) : 10.990; 2.500
+REMARK   3
+REMARK   3  BULK SOLVENT MODELING.
+REMARK   3   METHOD USED : FLAT MODEL
+REMARK   3   KSOL        : 0.30
+REMARK   3   BSOL        : 29.28
+REMARK   3
+REMARK   3  NCS MODEL : NULL
+REMARK   3
+REMARK   3  NCS RESTRAINTS.                         RMS   SIGMA/WEIGHT
+REMARK   3   GROUP  1  POSITIONAL            (A) : NULL  ; NULL
+REMARK   3   GROUP  1  B-FACTOR           (A**2) : NULL  ; NULL
+REMARK   3
+REMARK   3  PARAMETER FILE  1  : PROTEIN_REP.PARAM
+REMARK   3  PARAMETER FILE  2  : ADP_ANP_XPLOR_PAR2.TXT
+REMARK   3  PARAMETER FILE  3  : ION.PARAM
+REMARK   3  PARAMETER FILE  4  : NULL
+REMARK   3  TOPOLOGY FILE  1   : PROTEIN.TOP
+REMARK   3  TOPOLOGY FILE  2   : NULL
+REMARK   3  TOPOLOGY FILE  3   : NULL
+REMARK   3  TOPOLOGY FILE  4   : NULL
+REMARK   3
+REMARK   3  OTHER REFINEMENT REMARKS: NULL
+REMARK   4
+REMARK   4 1QVR COMPLIES WITH FORMAT V. 3.15, 01-DEC-08
+REMARK 100
+REMARK 100 THIS ENTRY HAS BEEN PROCESSED BY RCSB ON 09-SEP-03.
+REMARK 100 THE RCSB ID CODE IS RCSB020127.
+REMARK 200
+REMARK 200 EXPERIMENTAL DETAILS
+REMARK 200  EXPERIMENT TYPE                : X-RAY DIFFRACTION
+REMARK 200  DATE OF DATA COLLECTION        : 16-MAR-01; 12-NOV-02; 18-NOV-
+REMARK 200                                   00
+REMARK 200  TEMPERATURE           (KELVIN) : 100; 100; 100
+REMARK 200  PH                             : 4.1
+REMARK 200  NUMBER OF CRYSTALS USED        : 1
+REMARK 200
+REMARK 200  SYNCHROTRON              (Y/N) : Y; Y; Y
+REMARK 200  RADIATION SOURCE               : APS; NSLS; CHESS
+REMARK 200  BEAMLINE                       : 19-ID; X25; A1
+REMARK 200  X-RAY GENERATOR MODEL          : NULL; NULL; NULL
+REMARK 200  MONOCHROMATIC OR LAUE    (M/L) : M; M; M
+REMARK 200  WAVELENGTH OR RANGE        (A) : 0.9793, 0.9795, 1.0197;
+REMARK 200                                   1.072; 1.1
+REMARK 200  MONOCHROMATOR                  : SI 220; SI 111; SI 111
+REMARK 200  OPTICS                         : NULL; NULL; NULL
+REMARK 200
+REMARK 200  DETECTOR TYPE                  : CCD; CCD; CCD
+REMARK 200  DETECTOR MANUFACTURER          : SBC-2; BRANDEIS - B4; ADSC
+REMARK 200                                   QUANTUM 4
+REMARK 200  INTENSITY-INTEGRATION SOFTWARE : HKL-2000
+REMARK 200  DATA SCALING SOFTWARE          : SCALEPACK
+REMARK 200
+REMARK 200  NUMBER OF UNIQUE REFLECTIONS   : 107224
+REMARK 200  RESOLUTION RANGE HIGH      (A) : 3.000
+REMARK 200  RESOLUTION RANGE LOW       (A) : 48.040
+REMARK 200  REJECTION CRITERIA  (SIGMA(I)) : -3.000
+REMARK 200
+REMARK 200 OVERALL.
+REMARK 200  COMPLETENESS FOR RANGE     (%) : 91.4
+REMARK 200  DATA REDUNDANCY                : 2.400
+REMARK 200  R MERGE                    (I) : NULL
+REMARK 200  R SYM                      (I) : 0.05300
+REMARK 200  <I/SIGMA(I)> FOR THE DATA SET  : 19.1000
+REMARK 200
+REMARK 200 IN THE HIGHEST RESOLUTION SHELL.
+REMARK 200  HIGHEST RESOLUTION SHELL, RANGE HIGH (A) : 3.00
+REMARK 200  HIGHEST RESOLUTION SHELL, RANGE LOW  (A) : 3.11
+REMARK 200  COMPLETENESS FOR SHELL     (%) : 37.1
+REMARK 200  DATA REDUNDANCY IN SHELL       : 1.80
+REMARK 200  R MERGE FOR SHELL          (I) : NULL
+REMARK 200  R SYM FOR SHELL            (I) : 0.38100
+REMARK 200  <I/SIGMA(I)> FOR SHELL         : NULL
+REMARK 200
+REMARK 200 DIFFRACTION PROTOCOL: MAD; SINGLE WAVELENGTH; SINGLE WAVELENGTH
+REMARK 200 METHOD USED TO DETERMINE THE STRUCTURE: MAD
+REMARK 200 SOFTWARE USED: CNS
+REMARK 200 STARTING MODEL: NULL
+REMARK 200
+REMARK 200 REMARK: NULL
+REMARK 280
+REMARK 280 CRYSTAL
+REMARK 280 SOLVENT CONTENT, VS   (%): 55.05
+REMARK 280 MATTHEWS COEFFICIENT, VM (ANGSTROMS**3/DA): 2.74
+REMARK 280
+REMARK 280 CRYSTALLIZATION CONDITIONS: PEG 4000, SODIUM ACETATE, POTASSIUM
+REMARK 280  CHLORIDE, GLYCEROL, PH 4.1, VAPOR DIFFUSION, HANGING DROP,
+REMARK 280  TEMPERATURE 291K
+REMARK 290
+REMARK 290 CRYSTALLOGRAPHIC SYMMETRY
+REMARK 290 SYMMETRY OPERATORS FOR SPACE GROUP: P 21 21 21
+REMARK 290
+REMARK 290      SYMOP   SYMMETRY
+REMARK 290     NNNMMM   OPERATOR
+REMARK 290       1555   X,Y,Z
+REMARK 290       2555   -X+1/2,-Y,Z+1/2
+REMARK 290       3555   -X,Y+1/2,-Z+1/2
+REMARK 290       4555   X+1/2,-Y+1/2,-Z
+REMARK 290
+REMARK 290     WHERE NNN -> OPERATOR NUMBER
+REMARK 290           MMM -> TRANSLATION VECTOR
+REMARK 290
+REMARK 290 CRYSTALLOGRAPHIC SYMMETRY TRANSFORMATIONS
+REMARK 290 THE FOLLOWING TRANSFORMATIONS OPERATE ON THE ATOM/HETATM
+REMARK 290 RECORDS IN THIS ENTRY TO PRODUCE CRYSTALLOGRAPHICALLY
+REMARK 290 RELATED MOLECULES.
+REMARK 290   SMTRY1   1  1.000000  0.000000  0.000000        0.00000
+REMARK 290   SMTRY2   1  0.000000  1.000000  0.000000        0.00000
+REMARK 290   SMTRY3   1  0.000000  0.000000  1.000000        0.00000
+REMARK 290   SMTRY1   2 -1.000000  0.000000  0.000000       53.87350
+REMARK 290   SMTRY2   2  0.000000 -1.000000  0.000000        0.00000
+REMARK 290   SMTRY3   2  0.000000  0.000000  1.000000      106.10750
+REMARK 290   SMTRY1   3 -1.000000  0.000000  0.000000        0.00000
+REMARK 290   SMTRY2   3  0.000000  1.000000  0.000000       69.24100
+REMARK 290   SMTRY3   3  0.000000  0.000000 -1.000000      106.10750
+REMARK 290   SMTRY1   4  1.000000  0.000000  0.000000       53.87350
+REMARK 290   SMTRY2   4  0.000000 -1.000000  0.000000       69.24100
+REMARK 290   SMTRY3   4  0.000000  0.000000 -1.000000        0.00000
+REMARK 290
+REMARK 290 REMARK: NULL
+REMARK 300
+REMARK 300 BIOMOLECULE: 1
+REMARK 300 SEE REMARK 350 FOR THE AUTHOR PROVIDED AND/OR PROGRAM
+REMARK 300 GENERATED ASSEMBLY INFORMATION FOR THE STRUCTURE IN
+REMARK 300 THIS ENTRY.  THE REMARK MAY ALSO  PROVIDE INFORMATION ON
+REMARK 300 BURIED SURFACE AREA.
+REMARK 350
+REMARK 350 COORDINATES FOR A COMPLETE MULTIMER  REPRESENTING THE KNOWN
+REMARK 350 BIOLOGICALLY SIGNIFICANT OLIGOMERIZATION STATE  OF THE
+REMARK 350 MOLECULE CAN BE GENERATED BY APPLYING BIOMT  TRANSFORMATIONS
+REMARK 350 GIVEN BELOW.  BOTH NON-CRYSTALLOGRAPHIC  AND
+REMARK 350 CRYSTALLOGRAPHIC OPERATIONS ARE GIVEN.
+REMARK 350
+REMARK 350 BIOMOLECULE: 1
+REMARK 350 SOFTWARE USED: UCSF CHIMERA 1.10.2_b40686.
+REMARK 350 APPLY THE FOLLOWING TO CHAINS: A, B, C
+REMARK 350   BIOMT1   1 -0.875827 -0.481601  0.031429      244.87024
+REMARK 350   BIOMT2   1 -0.481601  0.867872 -0.121894        8.34288
+REMARK 350   BIOMT3   1  0.031429 -0.121894 -0.992045       14.60818
+REMARK 350   BIOMT1   2  1.000000  0.000000 -0.000000        0.00000
+REMARK 350   BIOMT2   2 -0.000000  1.000000 -0.000000        0.00000
+REMARK 350   BIOMT3   2  0.000000  0.000000  1.000000        0.00000
+REMARK 465
+REMARK 465 MISSING RESIDUES
+REMARK 465 THE FOLLOWING RESIDUES WERE NOT LOCATED IN THE
+REMARK 465 EXPERIMENT. (M=MODEL NUMBER; RES=RESIDUE NAME; C=CHAIN
+REMARK 465 IDENTIFIER; SSSEQ=SEQUENCE NUMBER; I=INSERTION CODE.)
+REMARK 465
+REMARK 465   M RES C SSSEQI
+REMARK 465     MET A     1
+REMARK 465     ASN A     2
+REMARK 465     LEU A     3
+REMARK 465     GLY A   235
+REMARK 465     SER A   236
+REMARK 465     LEU A   237
+REMARK 465     LEU A   238
+REMARK 465     ALA A   239
+REMARK 465     GLY A   240
+REMARK 465     ALA A   241
+REMARK 465     LYS A   242
+REMARK 465     TYR A   243
+REMARK 465     ARG A   244
+REMARK 465     GLY A   245
+REMARK 465     LEU A   272
+REMARK 465     HIS A   273
+REMARK 465     THR A   274
+REMARK 465     VAL A   275
+REMARK 465     VAL A   276
+REMARK 465     GLY A   277
+REMARK 465     ALA A   278
+REMARK 465     GLY A   279
+REMARK 465     LYS A   280
+REMARK 465     ALA A   281
+REMARK 465     GLU A   282
+REMARK 465     GLY A   283
+REMARK 465     ALA A   284
+REMARK 465     VAL A   285
+REMARK 465     ASP A   286
+REMARK 465     ALA A   287
+REMARK 465     GLY A   288
+REMARK 465     ASN A   289
+REMARK 465     MET A   290
+REMARK 465     ILE A   637
+REMARK 465     GLY A   638
+REMARK 465     ALA A   639
+REMARK 465     PRO A   640
+REMARK 465     PRO A   641
+REMARK 465     GLY A   642
+REMARK 465     TYR A   643
+REMARK 465     VAL A   644
+REMARK 465     GLY A   645
+REMARK 465     TYR A   646
+REMARK 465     GLU A   647
+REMARK 465     GLU A   648
+REMARK 465     GLY A   649
+REMARK 465     GLY A   650
+REMARK 465     ARG A   851
+REMARK 465     VAL A   852
+REMARK 465     GLU A   853
+REMARK 465     ALA A   854
+REMARK 465     MET B     1
+REMARK 465     ASN B     2
+REMARK 465     LEU B     3
+REMARK 465     GLY B   235
+REMARK 465     SER B   236
+REMARK 465     LEU B   237
+REMARK 465     LEU B   238
+REMARK 465     ALA B   239
+REMARK 465     GLY B   240
+REMARK 465     ALA B   241
+REMARK 465     LYS B   242
+REMARK 465     TYR B   243
+REMARK 465     ARG B   244
+REMARK 465     GLY B   245
+REMARK 465     LEU B   272
+REMARK 465     HIS B   273
+REMARK 465     THR B   274
+REMARK 465     VAL B   275
+REMARK 465     VAL B   276
+REMARK 465     GLY B   277
+REMARK 465     ALA B   278
+REMARK 465     GLY B   279
+REMARK 465     LYS B   280
+REMARK 465     ALA B   281
+REMARK 465     GLU B   282
+REMARK 465     GLY B   283
+REMARK 465     ALA B   284
+REMARK 465     VAL B   285
+REMARK 465     ASP B   286
+REMARK 465     ALA B   287
+REMARK 465     GLY B   288
+REMARK 465     ASN B   289
+REMARK 465     MET B   290
+REMARK 465     ILE B   637
+REMARK 465     GLY B   638
+REMARK 465     ALA B   639
+REMARK 465     PRO B   640
+REMARK 465     PRO B   641
+REMARK 465     GLY B   642
+REMARK 465     TYR B   643
+REMARK 465     VAL B   644
+REMARK 465     GLY B   645
+REMARK 465     TYR B   646
+REMARK 465     GLU B   647
+REMARK 465     GLU B   648
+REMARK 465     GLY B   649
+REMARK 465     GLY B   650
+REMARK 465     ARG B   851
+REMARK 465     VAL B   852
+REMARK 465     GLU B   853
+REMARK 465     ALA B   854
+REMARK 465     MET C     1
+REMARK 465     ASN C     2
+REMARK 465     LEU C     3
+REMARK 465     GLY C   235
+REMARK 465     SER C   236
+REMARK 465     LEU C   237
+REMARK 465     LEU C   238
+REMARK 465     ALA C   239
+REMARK 465     GLY C   240
+REMARK 465     ALA C   241
+REMARK 465     LYS C   242
+REMARK 465     TYR C   243
+REMARK 465     ARG C   244
+REMARK 465     GLY C   245
+REMARK 465     LEU C   272
+REMARK 465     HIS C   273
+REMARK 465     THR C   274
+REMARK 465     VAL C   275
+REMARK 465     VAL C   276
+REMARK 465     GLY C   277
+REMARK 465     ALA C   278
+REMARK 465     GLY C   279
+REMARK 465     LYS C   280
+REMARK 465     ALA C   281
+REMARK 465     GLU C   282
+REMARK 465     GLY C   283
+REMARK 465     ALA C   284
+REMARK 465     VAL C   285
+REMARK 465     ASP C   286
+REMARK 465     ALA C   287
+REMARK 465     GLY C   288
+REMARK 465     ASN C   289
+REMARK 465     MET C   290
+REMARK 465     ILE C   637
+REMARK 465     GLY C   638
+REMARK 465     ALA C   639
+REMARK 465     PRO C   640
+REMARK 465     PRO C   641
+REMARK 465     GLY C   642
+REMARK 465     TYR C   643
+REMARK 465     VAL C   644
+REMARK 465     GLY C   645
+REMARK 465     TYR C   646
+REMARK 465     GLU C   647
+REMARK 465     GLU C   648
+REMARK 465     GLY C   649
+REMARK 465     GLY C   650
+REMARK 465     ARG C   851
+REMARK 465     VAL C   852
+REMARK 465     GLU C   853
+REMARK 465     ALA C   854
+REMARK 500
+REMARK 500 GEOMETRY AND STEREOCHEMISTRY
+REMARK 500 SUBTOPIC: COVALENT BOND ANGLES
+REMARK 500
+REMARK 500 THE STEREOCHEMICAL PARAMETERS OF THE FOLLOWING RESIDUES
+REMARK 500 HAVE VALUES WHICH DEVIATE FROM EXPECTED VALUES BY MORE
+REMARK 500 THAN 6*RMSD (M=MODEL NUMBER; RES=RESIDUE NAME; C=CHAIN
+REMARK 500 IDENTIFIER; SSEQ=SEQUENCE NUMBER; I=INSERTION CODE).
+REMARK 500
+REMARK 500 STANDARD TABLE:
+REMARK 500 FORMAT: (10X,I3,1X,A3,1X,A1,I4,A1,3(1X,A4,2X),12X,F5.1)
+REMARK 500
+REMARK 500 EXPECTED VALUES PROTEIN: ENGH AND HUBER, 1999
+REMARK 500 EXPECTED VALUES NUCLEIC ACID: CLOWNEY ET AL 1996
+REMARK 500
+REMARK 500  M RES CSSEQI ATM1   ATM2   ATM3
+REMARK 500    ARG B 658   NE  -  CZ  -  NH2 ANGL. DEV. =  -3.0 DEGREES
+REMARK 500    ARG B 659   NE  -  CZ  -  NH1 ANGL. DEV. =   3.5 DEGREES
+REMARK 500    ARG B 659   NE  -  CZ  -  NH2 ANGL. DEV. =  -3.4 DEGREES
+REMARK 500
+REMARK 500 REMARK: NULL
+REMARK 500
+REMARK 500 GEOMETRY AND STEREOCHEMISTRY
+REMARK 500 SUBTOPIC: TORSION ANGLES
+REMARK 500
+REMARK 500 TORSION ANGLES OUTSIDE THE EXPECTED RAMACHANDRAN REGIONS:
+REMARK 500 (M=MODEL NUMBER; RES=RESIDUE NAME; C=CHAIN IDENTIFIER;
+REMARK 500 SSEQ=SEQUENCE NUMBER; I=INSERTION CODE).
+REMARK 500
+REMARK 500 STANDARD TABLE:
+REMARK 500 FORMAT:(10X,I3,1X,A3,1X,A1,I4,A1,4X,F7.2,3X,F7.2)
+REMARK 500
+REMARK 500 EXPECTED VALUES: GJ KLEYWEGT AND TA JONES (1996). PHI/PSI-
+REMARK 500 CHOLOGY: RAMACHANDRAN REVISITED. STRUCTURE 4, 1395 - 1400
+REMARK 500
+REMARK 500  M RES CSSEQI        PSI       PHI
+REMARK 500    ARG A   5      -38.00    174.74
+REMARK 500    ALA A   9      -73.53    -54.38
+REMARK 500    VAL A  74     -141.82    -86.16
+REMARK 500    ALA A  77        0.90    -67.69
+REMARK 500    LYS A 102       -0.85     89.53
+REMARK 500    PRO A 123      144.28    -18.14
+REMARK 500    LEU A 135       36.57   -165.64
+REMARK 500    ARG A 136       83.54      6.76
+REMARK 500    VAL A 141     -149.78    -61.59
+REMARK 500    HIS A 145      106.34   -175.33
+REMARK 500    GLU A 147       75.75     56.01
+REMARK 500    TYR A 150      -50.05   -130.03
+REMARK 500    PRO A 171      105.91    -57.09
+REMARK 500    PRO A 221     -165.63    -55.78
+REMARK 500    LYS A 227      160.33    -48.78
+REMARK 500    GLN A 262       63.06     68.70
+REMARK 500    GLU A 299       -4.63   -143.19
+REMARK 500    ALA A 305      124.10   -173.46
+REMARK 500    GLU A 315       52.78    -90.99
+REMARK 500    PRO A 318      -30.39    -38.83
+REMARK 500    GLU A 321       34.22    -61.86
+REMARK 500    ARG A 322       27.38    -70.82
+REMARK 500    ARG A 323       86.65     64.96
+REMARK 500    PHE A 324       23.66    -63.04
+REMARK 500    PRO A 332      157.98    -47.85
+REMARK 500    GLU A 374      -99.95    -66.30
+REMARK 500    LEU A 377      -82.98      3.13
+REMARK 500    ASP A 379      -79.65    -57.03
+REMARK 500    GLU A 397       41.77    -71.27
+REMARK 500    ASP A 425       78.20   -118.72
+REMARK 500    ASP A 427       53.49   -105.21
+REMARK 500    SER A 428      -23.89   -166.44
+REMARK 500    LYS A 448      -78.27    -69.01
+REMARK 500    GLU A 481       22.64    -62.37
+REMARK 500    GLN A 483       37.65   -141.02
+REMARK 500    TYR A 484        8.40     36.96
+REMARK 500    LEU A 486        2.72    -56.38
+REMARK 500    ALA A 489      -19.58    -48.15
+REMARK 500    GLU A 496      -84.13    -40.61
+REMARK 500    LYS A 499      -73.70    -53.44
+REMARK 500    LEU A 511       59.40   -102.25
+REMARK 500    ARG A 512     -113.49    -60.49
+REMARK 500    ALA A 514      151.20    -43.40
+REMARK 500    ARG A 518       45.57   -108.27
+REMARK 500    LEU A 519      -93.56   -121.60
+REMARK 500    THR A 534      -91.53   -149.47
+REMARK 500    ILE A 536      101.41     48.66
+REMARK 500    LEU A 541     -112.30    -75.96
+REMARK 500    LEU A 542      -89.81     -4.26
+REMARK 500    GLU A 543      119.39    -28.46
+REMARK 500    ARG A 578     -164.03    -67.70
+REMARK 500    ALA A 579      -18.40     63.78
+REMARK 500    PRO A 596     -171.77    -62.55
+REMARK 500    LYS A 601      -73.72    -35.34
+REMARK 500    ASP A 614       28.52     49.51
+REMARK 500    THR A 615      141.05    176.73
+REMARK 500    THR A 625       -4.94    -57.72
+REMARK 500    GLU A 629     -112.61   -115.03
+REMARK 500    LYS A 630       38.96    -86.51
+REMARK 500    HIS A 631      -71.26    -30.39
+REMARK 500    SER A 634       21.42    -72.43
+REMARK 500    ARG A 635       14.62   -145.90
+REMARK 500    GLU A 668       74.17     29.20
+REMARK 500    PRO A 674      -35.43    -30.76
+REMARK 500    ASP A 686       -2.81     47.45
+REMARK 500    ARG A 695      106.46    -48.80
+REMARK 500    LYS A 721        3.67    -65.99
+REMARK 500    PRO A 724      131.43    -33.30
+REMARK 500    ARG A 781       14.90     52.54
+REMARK 500    GLU A 796      -73.48    -47.62
+REMARK 500    VAL A 839     -153.65    -78.11
+REMARK 500    ALA A 842       17.25     59.44
+REMARK 500    PRO A 849     -105.15     47.98
+REMARK 500    ARG B   5     -137.96   -152.76
+REMARK 500    ALA B   9      -73.90    -43.63
+REMARK 500    VAL B  74     -141.11    -86.21
+REMARK 500    ALA B  77        1.33    -68.62
+REMARK 500    GLU B 100       -5.99    -57.78
+REMARK 500    PRO B 123      142.35    -25.67
+REMARK 500    LEU B 125      -31.78    -37.01
+REMARK 500    GLU B 126      -70.70    -55.47
+REMARK 500    GLU B 134       -7.02    -48.27
+REMARK 500    LEU B 135      -74.97    -86.81
+REMARK 500    ARG B 136      -65.36   -104.05
+REMARK 500    VAL B 141       87.78   -165.43
+REMARK 500    THR B 143      -49.39   -146.17
+REMARK 500    GLU B 147      130.18    161.26
+REMARK 500    SER B 148       91.58    -56.56
+REMARK 500    TYR B 156       23.02   -140.36
+REMARK 500    GLU B 177      -80.87    -51.40
+REMARK 500    GLN B 184      -73.62    -60.22
+REMARK 500    LEU B 187       -5.71   -142.78
+REMARK 500    PRO B 221     -165.45    -55.73
+REMARK 500    LYS B 227      160.94    -48.28
+REMARK 500    GLN B 262       63.56     68.45
+REMARK 500    ALA B 296       31.89    -69.17
+REMARK 500    ARG B 297       -3.90   -154.92
+REMARK 500    ALA B 305      123.87   -176.45
+REMARK 500    LEU B 308      -70.87    -61.64
+REMARK 500    LEU B 320      -66.79    -99.39
+REMARK 500    GLU B 321       -2.73    -54.42
+REMARK 500    GLU B 374      -98.17    -66.49
+REMARK 500    LEU B 377      -80.46     -0.11
+REMARK 500    ASP B 379      -78.45    -56.06
+REMARK 500    LYS B 380      -37.74    -39.15
+REMARK 500    ALA B 388      -71.32    -57.14
+REMARK 500    ARG B 391      -74.31    -43.33
+REMARK 500    PRO B 400     -176.96    -51.89
+REMARK 500    LYS B 422     -136.54    -78.23
+REMARK 500    GLU B 423      110.56    -24.86
+REMARK 500    LYS B 424     -116.99    -19.37
+REMARK 500    PRO B 426        1.92    -50.38
+REMARK 500    GLU B 481       31.37    -68.37
+REMARK 500    ARG B 482      -45.07   -133.99
+REMARK 500    ASP B 485       72.99    -64.72
+REMARK 500    ASN B 487      -82.86    -46.40
+REMARK 500    ALA B 489      -31.58    -39.25
+REMARK 500    GLU B 496      -72.71    -64.94
+REMARK 500    PHE B 516       20.42   -142.38
+REMARK 500    THR B 534     -102.54   -145.81
+REMARK 500    ILE B 536      103.48     50.78
+REMARK 500    LEU B 541     -112.10    -78.53
+REMARK 500    LEU B 542      -91.31     -0.08
+REMARK 500    ARG B 578     -166.24    -66.65
+REMARK 500    ALA B 579      -18.63     67.91
+REMARK 500    PRO B 596     -171.98    -59.75
+REMARK 500    LYS B 601      -76.70    -29.74
+REMARK 500    THR B 615      140.27   -178.59
+REMARK 500    THR B 625       -3.53    -55.85
+REMARK 500    GLU B 629     -114.01   -115.15
+REMARK 500    LYS B 630       38.20    -84.97
+REMARK 500    HIS B 631      -70.72    -29.32
+REMARK 500    SER B 634       21.02    -72.63
+REMARK 500    ARG B 635       17.53   -145.42
+REMARK 500    GLU B 668       75.57     30.14
+REMARK 500    PRO B 674      -36.65    -29.42
+REMARK 500    ASP B 686       -1.27     45.92
+REMARK 500    ARG B 695      106.16    -49.12
+REMARK 500    LYS B 721        3.74    -66.45
+REMARK 500    PRO B 724      135.34    -36.28
+REMARK 500    GLN B 737       -8.79    -59.03
+REMARK 500    ARG B 781        8.02     56.67
+REMARK 500    GLU B 796      -73.48    -51.90
+REMARK 500    ALA C   9      -72.91    -71.78
+REMARK 500    VAL C  74     -141.86    -86.16
+REMARK 500    ALA C  77        0.84    -67.55
+REMARK 500    LYS C 102       62.03     69.58
+REMARK 500    PRO C 120      106.60    -49.40
+REMARK 500    PRO C 123     -123.72    -51.44
+REMARK 500    LEU C 125      -38.33   -146.64
+REMARK 500    ARG C 136     -142.09     43.48
+REMARK 500    VAL C 141      -88.96    -84.23
+REMARK 500    HIS C 145      129.97      8.87
+REMARK 500    ALA C 146      112.64     72.92
+REMARK 500    PRO C 171      104.48    -57.31
+REMARK 500    ARG C 175       44.25   -140.45
+REMARK 500    PRO C 221     -165.79    -55.75
+REMARK 500    LYS C 227      160.61    -48.60
+REMARK 500    GLN C 262       63.46     68.39
+REMARK 500    ASP C 270      -83.95    -49.70
+REMARK 500    ALA C 294       29.33    -74.28
+REMARK 500    GLU C 299      162.98    177.86
+REMARK 500    LEU C 300       97.43     78.37
+REMARK 500    ALA C 305      124.11   -173.19
+REMARK 500    ALA C 319       -7.18    -59.09
+REMARK 500    GLU C 346      -71.69    -54.20
+REMARK 500    GLU C 349       -7.90    -58.94
+REMARK 500    GLU C 374     -102.35    -65.50
+REMARK 500    LEU C 377      -81.79     -0.72
+REMARK 500    ASP C 379      -78.30    -60.94
+REMARK 500    ALA C 390      -67.87   -104.88
+REMARK 500    ALA C 395       49.69    -74.07
+REMARK 500    GLU C 414        2.83    -65.94
+REMARK 500    LYS C 422      -95.09    -52.17
+REMARK 500    GLU C 423      103.58    -54.94
+REMARK 500    LYS C 424       85.56    -61.52
+REMARK 500    GLU C 430        2.08    -63.72
+REMARK 500    ARG C 431      -77.86   -117.64
+REMARK 500    GLN C 483      -56.43   -173.45
+REMARK 500    ASP C 485       57.68     24.23
+REMARK 500    ARG C 488     -113.91    -58.47
+REMARK 500    ALA C 489      -60.50    -92.19
+REMARK 500    ALA C 490      -32.36    -32.68
+REMARK 500    ALA C 514     -148.93   -126.88
+REMARK 500    ARG C 518      129.09    -31.61
+REMARK 500    LEU C 519      -57.06   -156.44
+REMARK 500    THR C 534      -99.83   -141.07
+REMARK 500    ILE C 536       99.97     51.88
+REMARK 500    LEU C 541     -109.75    -78.27
+REMARK 500    LEU C 542      -86.68     -8.62
+REMARK 500    GLU C 543      115.64    -28.16
+REMARK 500    ARG C 568      -74.95    -45.93
+REMARK 500    ARG C 578     -168.48    -67.06
+REMARK 500    ALA C 579      -15.00     66.83
+REMARK 500    PRO C 596     -175.07    -62.66
+REMARK 500    LYS C 601      -78.21    -35.40
+REMARK 500    ASP C 614       26.72     49.74
+REMARK 500    THR C 615      141.24    177.51
+REMARK 500    MET C 624      -39.49    -39.98
+REMARK 500    THR C 625       -5.17    -56.80
+REMARK 500    GLU C 629     -112.42   -114.77
+REMARK 500    LYS C 630       39.53    -86.47
+REMARK 500    HIS C 631      -71.15    -30.81
+REMARK 500    ARG C 635       18.07   -144.90
+REMARK 500    GLU C 668       75.23     30.82
+REMARK 500    PRO C 674      -39.66    -30.57
+REMARK 500    ASP C 686       -2.16     46.90
+REMARK 500    ARG C 695      106.28    -49.49
+REMARK 500    LYS C 721        5.09    -65.85
+REMARK 500    ARG C 781        8.01     56.04
+REMARK 500    GLU C 796      -73.93    -49.65
+REMARK 500
+REMARK 500 REMARK: NULL
+REMARK 620
+REMARK 620 METAL COORDINATION
+REMARK 620  (M=MODEL NUMBER; RES=RESIDUE NAME; C=CHAIN IDENTIFIER;
+REMARK 620  SSEQ=SEQUENCE NUMBER; I=INSERTION CODE):
+REMARK 620
+REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL
+REMARK 620                              PT A 856  PT
+REMARK 620 N RES CSSEQI ATOM
+REMARK 620 1 MET A  24   SD
+REMARK 620 2 LYS A  73   NZ  121.4
+REMARK 620 N                    1
+REMARK 620
+REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL
+REMARK 620                              PT A 859  PT
+REMARK 620 N RES CSSEQI ATOM
+REMARK 620 1 THR A 625   O
+REMARK 620 2 THR A 625   OG1  73.0
+REMARK 620 3 MET A 628   SD   78.3 151.1
+REMARK 620 N                    1     2
+REMARK 620
+REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL
+REMARK 620                              PT A 861  PT
+REMARK 620 N RES CSSEQI ATOM
+REMARK 620 1 GLN B 184   NE2
+REMARK 620 2 GLN B 184   OE1  40.0
+REMARK 620 3 ARG A 393   NH1  87.8  98.4
+REMARK 620 4 ARG A 393   NH2  67.2  61.6  38.3
+REMARK 620 N                    1     2     3
+REMARK 620
+REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL
+REMARK 620                              PT A 862  PT
+REMARK 620 N RES CSSEQI ATOM
+REMARK 620 1 MET A 624   SD
+REMARK 620 2 MET A 624   O    56.4
+REMARK 620 3 TYR A 627   O    90.1  66.6
+REMARK 620 N                    1     2
+REMARK 620
+REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL
+REMARK 620                              PT B 857  PT
+REMARK 620 N RES CSSEQI ATOM
+REMARK 620 1 ARG C 180   NH1
+REMARK 620 2 ARG C 180   NH2  41.2
+REMARK 620 3 MET B 394   SD   94.2  59.3
+REMARK 620 N                    1     2
+REMARK 620
+REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL
+REMARK 620                              PT B 858  PT
+REMARK 620 N RES CSSEQI ATOM
+REMARK 620 1 ARG C 180   NH2
+REMARK 620 2 MET B 394   SD   74.4
+REMARK 620 N                    1
+REMARK 620
+REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL
+REMARK 620                              PT B 859  PT
+REMARK 620 N RES CSSEQI ATOM
+REMARK 620 1 MET B 628   SD
+REMARK 620 2 THR B 625   O    66.4
+REMARK 620 3 THR B 625   OG1 131.6  65.2
+REMARK 620 N                    1     2
+REMARK 620
+REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL
+REMARK 620                              PT B 861  PT
+REMARK 620 N RES CSSEQI ATOM
+REMARK 620 1 TYR B 627   O
+REMARK 620 2 TYR B 627   N    58.0
+REMARK 620 3 MET B 624   O    68.6  52.5
+REMARK 620 4 MET B 624   SD   79.7 111.5  63.4
+REMARK 620 N                    1     2     3
+REMARK 620
+REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL
+REMARK 620                              PT C 856  PT
+REMARK 620 N RES CSSEQI ATOM
+REMARK 620 1 TYR C 627   N
+REMARK 620 2 TYR C 627   O    59.0
+REMARK 620 3 MET C 624   SD  114.1  78.2
+REMARK 620 4 MET C 624   O    54.1  68.2  65.0
+REMARK 620 N                    1     2     3
+REMARK 620
+REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL
+REMARK 620                              PT C 857  PT
+REMARK 620 N RES CSSEQI ATOM
+REMARK 620 1 MET C 628   SD
+REMARK 620 2 THR C 625   O    84.2
+REMARK 620 3 THR C 625   OG1 148.3  64.1
+REMARK 620 N                    1     2
+REMARK 620
+REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL
+REMARK 620                              PT C 859  PT
+REMARK 620 N RES CSSEQI ATOM
+REMARK 620 1 ARG C 391   NH1
+REMARK 620 2 ARG C 391   NE   46.2
+REMARK 620 3 MET C 394   SD  128.3 151.5
+REMARK 620 N                    1     2
+REMARK 620
+REMARK 620 COORDINATION ANGLES FOR:  M RES CSSEQI METAL
+REMARK 620                              PT C 861  PT
+REMARK 620 N RES CSSEQI ATOM
+REMARK 620 1 MET C 394   SD
+REMARK 620 2 ARG A 188   NH2  74.4
+REMARK 620 N                    1
+REMARK 800
+REMARK 800 SITE
+REMARK 800 SITE_IDENTIFIER: AC1
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT B 855
+REMARK 800 SITE_IDENTIFIER: AC2
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT B 856
+REMARK 800 SITE_IDENTIFIER: AC3
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT C 855
+REMARK 800 SITE_IDENTIFIER: AC4
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT A 855
+REMARK 800 SITE_IDENTIFIER: AC5
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT B 857
+REMARK 800 SITE_IDENTIFIER: AC6
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT C 856
+REMARK 800 SITE_IDENTIFIER: AC7
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT A 856
+REMARK 800 SITE_IDENTIFIER: AC8
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT B 858
+REMARK 800 SITE_IDENTIFIER: AC9
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT B 859
+REMARK 800 SITE_IDENTIFIER: BC1
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT C 857
+REMARK 800 SITE_IDENTIFIER: BC2
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT A 858
+REMARK 800 SITE_IDENTIFIER: BC3
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT A 859
+REMARK 800 SITE_IDENTIFIER: BC4
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT A 860
+REMARK 800 SITE_IDENTIFIER: BC5
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT C 858
+REMARK 800 SITE_IDENTIFIER: BC6
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT C 859
+REMARK 800 SITE_IDENTIFIER: BC7
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT B 861
+REMARK 800 SITE_IDENTIFIER: BC8
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT C 860
+REMARK 800 SITE_IDENTIFIER: BC9
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT A 861
+REMARK 800 SITE_IDENTIFIER: CC1
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT A 862
+REMARK 800 SITE_IDENTIFIER: CC2
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE PT C 861
+REMARK 800 SITE_IDENTIFIER: CC3
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE ANP A 901
+REMARK 800 SITE_IDENTIFIER: CC4
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE ANP A 911
+REMARK 800 SITE_IDENTIFIER: CC5
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE ANP B 902
+REMARK 800 SITE_IDENTIFIER: CC6
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE ANP B 912
+REMARK 800 SITE_IDENTIFIER: CC7
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE ANP C 903
+REMARK 800 SITE_IDENTIFIER: CC8
+REMARK 800 EVIDENCE_CODE: SOFTWARE
+REMARK 800 SITE_DESCRIPTION: BINDING SITE FOR RESIDUE ANP C 913
+DBREF  1QVR A    1   854  UNP    Q9RA63   CLPB_THET8       1    854
+DBREF  1QVR B    1   854  UNP    Q9RA63   CLPB_THET8       1    854
+DBREF  1QVR C    1   854  UNP    Q9RA63   CLPB_THET8       1    854
+SEQRES   1 A  854  MET ASN LEU GLU ARG TRP THR GLN ALA ALA ARG GLU ALA
+SEQRES   2 A  854  LEU ALA GLN ALA GLN VAL LEU ALA GLN ARG MET LYS HIS
+SEQRES   3 A  854  GLN ALA ILE ASP LEU PRO HIS LEU TRP ALA VAL LEU LEU
+SEQRES   4 A  854  LYS ASP GLU ARG SER LEU ALA TRP ARG LEU LEU GLU LYS
+SEQRES   5 A  854  ALA GLY ALA ASP PRO LYS ALA LEU LYS GLU LEU GLN GLU
+SEQRES   6 A  854  ARG GLU LEU ALA ARG LEU PRO LYS VAL GLU GLY ALA GLU
+SEQRES   7 A  854  VAL GLY GLN TYR LEU THR SER ARG LEU SER GLY ALA LEU
+SEQRES   8 A  854  ASN ARG ALA GLU GLY LEU MET GLU GLU LEU LYS ASP ARG
+SEQRES   9 A  854  TYR VAL ALA VAL ASP THR LEU VAL LEU ALA LEU ALA GLU
+SEQRES  10 A  854  ALA THR PRO GLY LEU PRO GLY LEU GLU ALA LEU LYS GLY
+SEQRES  11 A  854  ALA LEU LYS GLU LEU ARG GLY GLY ARG THR VAL GLN THR
+SEQRES  12 A  854  GLU HIS ALA GLU SER THR TYR ASN ALA LEU GLU GLN TYR
+SEQRES  13 A  854  GLY ILE ASP LEU THR ARG LEU ALA ALA GLU GLY LYS LEU
+SEQRES  14 A  854  ASP PRO VAL ILE GLY ARG ASP GLU GLU ILE ARG ARG VAL
+SEQRES  15 A  854  ILE GLN ILE LEU LEU ARG ARG THR LYS ASN ASN PRO VAL
+SEQRES  16 A  854  LEU ILE GLY GLU PRO GLY VAL GLY LYS THR ALA ILE VAL
+SEQRES  17 A  854  GLU GLY LEU ALA GLN ARG ILE VAL LYS GLY ASP VAL PRO
+SEQRES  18 A  854  GLU GLY LEU LYS GLY LYS ARG ILE VAL SER LEU GLN MET
+SEQRES  19 A  854  GLY SER LEU LEU ALA GLY ALA LYS TYR ARG GLY GLU PHE
+SEQRES  20 A  854  GLU GLU ARG LEU LYS ALA VAL ILE GLN GLU VAL VAL GLN
+SEQRES  21 A  854  SER GLN GLY GLU VAL ILE LEU PHE ILE ASP GLU LEU HIS
+SEQRES  22 A  854  THR VAL VAL GLY ALA GLY LYS ALA GLU GLY ALA VAL ASP
+SEQRES  23 A  854  ALA GLY ASN MET LEU LYS PRO ALA LEU ALA ARG GLY GLU
+SEQRES  24 A  854  LEU ARG LEU ILE GLY ALA THR THR LEU ASP GLU TYR ARG
+SEQRES  25 A  854  GLU ILE GLU LYS ASP PRO ALA LEU GLU ARG ARG PHE GLN
+SEQRES  26 A  854  PRO VAL TYR VAL ASP GLU PRO THR VAL GLU GLU THR ILE
+SEQRES  27 A  854  SER ILE LEU ARG GLY LEU LYS GLU LYS TYR GLU VAL HIS
+SEQRES  28 A  854  HIS GLY VAL ARG ILE SER ASP SER ALA ILE ILE ALA ALA
+SEQRES  29 A  854  ALA THR LEU SER HIS ARG TYR ILE THR GLU ARG ARG LEU
+SEQRES  30 A  854  PRO ASP LYS ALA ILE ASP LEU ILE ASP GLU ALA ALA ALA
+SEQRES  31 A  854  ARG LEU ARG MET ALA LEU GLU SER ALA PRO GLU GLU ILE
+SEQRES  32 A  854  ASP ALA LEU GLU ARG LYS LYS LEU GLN LEU GLU ILE GLU
+SEQRES  33 A  854  ARG GLU ALA LEU LYS LYS GLU LYS ASP PRO ASP SER GLN
+SEQRES  34 A  854  GLU ARG LEU LYS ALA ILE GLU ALA GLU ILE ALA LYS LEU
+SEQRES  35 A  854  THR GLU GLU ILE ALA LYS LEU ARG ALA GLU TRP GLU ARG
+SEQRES  36 A  854  GLU ARG GLU ILE LEU ARG LYS LEU ARG GLU ALA GLN HIS
+SEQRES  37 A  854  ARG LEU ASP GLU VAL ARG ARG GLU ILE GLU LEU ALA GLU
+SEQRES  38 A  854  ARG GLN TYR ASP LEU ASN ARG ALA ALA GLU LEU ARG TYR
+SEQRES  39 A  854  GLY GLU LEU PRO LYS LEU GLU ALA GLU VAL GLU ALA LEU
+SEQRES  40 A  854  SER GLU LYS LEU ARG GLY ALA ARG PHE VAL ARG LEU GLU
+SEQRES  41 A  854  VAL THR GLU GLU ASP ILE ALA GLU ILE VAL SER ARG TRP
+SEQRES  42 A  854  THR GLY ILE PRO VAL SER LYS LEU LEU GLU GLY GLU ARG
+SEQRES  43 A  854  GLU LYS LEU LEU ARG LEU GLU GLU GLU LEU HIS LYS ARG
+SEQRES  44 A  854  VAL VAL GLY GLN ASP GLU ALA ILE ARG ALA VAL ALA ASP
+SEQRES  45 A  854  ALA ILE ARG ARG ALA ARG ALA GLY LEU LYS ASP PRO ASN
+SEQRES  46 A  854  ARG PRO ILE GLY SER PHE LEU PHE LEU GLY PRO THR GLY
+SEQRES  47 A  854  VAL GLY LYS THR GLU LEU ALA LYS THR LEU ALA ALA THR
+SEQRES  48 A  854  LEU PHE ASP THR GLU GLU ALA MET ILE ARG ILE ASP MET
+SEQRES  49 A  854  THR GLU TYR MET GLU LYS HIS ALA VAL SER ARG LEU ILE
+SEQRES  50 A  854  GLY ALA PRO PRO GLY TYR VAL GLY TYR GLU GLU GLY GLY
+SEQRES  51 A  854  GLN LEU THR GLU ALA VAL ARG ARG ARG PRO TYR SER VAL
+SEQRES  52 A  854  ILE LEU PHE ASP GLU ILE GLU LYS ALA HIS PRO ASP VAL
+SEQRES  53 A  854  PHE ASN ILE LEU LEU GLN ILE LEU ASP ASP GLY ARG LEU
+SEQRES  54 A  854  THR ASP SER HIS GLY ARG THR VAL ASP PHE ARG ASN THR
+SEQRES  55 A  854  VAL ILE ILE LEU THR SER ASN LEU GLY SER PRO LEU ILE
+SEQRES  56 A  854  LEU GLU GLY LEU GLN LYS GLY TRP PRO TYR GLU ARG ILE
+SEQRES  57 A  854  ARG ASP GLU VAL PHE LYS VAL LEU GLN GLN HIS PHE ARG
+SEQRES  58 A  854  PRO GLU PHE LEU ASN ARG LEU ASP GLU ILE VAL VAL PHE
+SEQRES  59 A  854  ARG PRO LEU THR LYS GLU GLN ILE ARG GLN ILE VAL GLU
+SEQRES  60 A  854  ILE GLN LEU SER TYR LEU ARG ALA ARG LEU ALA GLU LYS
+SEQRES  61 A  854  ARG ILE SER LEU GLU LEU THR GLU ALA ALA LYS ASP PHE
+SEQRES  62 A  854  LEU ALA GLU ARG GLY TYR ASP PRO VAL PHE GLY ALA ARG
+SEQRES  63 A  854  PRO LEU ARG ARG VAL ILE GLN ARG GLU LEU GLU THR PRO
+SEQRES  64 A  854  LEU ALA GLN LYS ILE LEU ALA GLY GLU VAL LYS GLU GLY
+SEQRES  65 A  854  ASP ARG VAL GLN VAL ASP VAL GLY PRO ALA GLY LEU VAL
+SEQRES  66 A  854  PHE ALA VAL PRO ALA ARG VAL GLU ALA
+SEQRES   1 B  854  MET ASN LEU GLU ARG TRP THR GLN ALA ALA ARG GLU ALA
+SEQRES   2 B  854  LEU ALA GLN ALA GLN VAL LEU ALA GLN ARG MET LYS HIS
+SEQRES   3 B  854  GLN ALA ILE ASP LEU PRO HIS LEU TRP ALA VAL LEU LEU
+SEQRES   4 B  854  LYS ASP GLU ARG SER LEU ALA TRP ARG LEU LEU GLU LYS
+SEQRES   5 B  854  ALA GLY ALA ASP PRO LYS ALA LEU LYS GLU LEU GLN GLU
+SEQRES   6 B  854  ARG GLU LEU ALA ARG LEU PRO LYS VAL GLU GLY ALA GLU
+SEQRES   7 B  854  VAL GLY GLN TYR LEU THR SER ARG LEU SER GLY ALA LEU
+SEQRES   8 B  854  ASN ARG ALA GLU GLY LEU MET GLU GLU LEU LYS ASP ARG
+SEQRES   9 B  854  TYR VAL ALA VAL ASP THR LEU VAL LEU ALA LEU ALA GLU
+SEQRES  10 B  854  ALA THR PRO GLY LEU PRO GLY LEU GLU ALA LEU LYS GLY
+SEQRES  11 B  854  ALA LEU LYS GLU LEU ARG GLY GLY ARG THR VAL GLN THR
+SEQRES  12 B  854  GLU HIS ALA GLU SER THR TYR ASN ALA LEU GLU GLN TYR
+SEQRES  13 B  854  GLY ILE ASP LEU THR ARG LEU ALA ALA GLU GLY LYS LEU
+SEQRES  14 B  854  ASP PRO VAL ILE GLY ARG ASP GLU GLU ILE ARG ARG VAL
+SEQRES  15 B  854  ILE GLN ILE LEU LEU ARG ARG THR LYS ASN ASN PRO VAL
+SEQRES  16 B  854  LEU ILE GLY GLU PRO GLY VAL GLY LYS THR ALA ILE VAL
+SEQRES  17 B  854  GLU GLY LEU ALA GLN ARG ILE VAL LYS GLY ASP VAL PRO
+SEQRES  18 B  854  GLU GLY LEU LYS GLY LYS ARG ILE VAL SER LEU GLN MET
+SEQRES  19 B  854  GLY SER LEU LEU ALA GLY ALA LYS TYR ARG GLY GLU PHE
+SEQRES  20 B  854  GLU GLU ARG LEU LYS ALA VAL ILE GLN GLU VAL VAL GLN
+SEQRES  21 B  854  SER GLN GLY GLU VAL ILE LEU PHE ILE ASP GLU LEU HIS
+SEQRES  22 B  854  THR VAL VAL GLY ALA GLY LYS ALA GLU GLY ALA VAL ASP
+SEQRES  23 B  854  ALA GLY ASN MET LEU LYS PRO ALA LEU ALA ARG GLY GLU
+SEQRES  24 B  854  LEU ARG LEU ILE GLY ALA THR THR LEU ASP GLU TYR ARG
+SEQRES  25 B  854  GLU ILE GLU LYS ASP PRO ALA LEU GLU ARG ARG PHE GLN
+SEQRES  26 B  854  PRO VAL TYR VAL ASP GLU PRO THR VAL GLU GLU THR ILE
+SEQRES  27 B  854  SER ILE LEU ARG GLY LEU LYS GLU LYS TYR GLU VAL HIS
+SEQRES  28 B  854  HIS GLY VAL ARG ILE SER ASP SER ALA ILE ILE ALA ALA
+SEQRES  29 B  854  ALA THR LEU SER HIS ARG TYR ILE THR GLU ARG ARG LEU
+SEQRES  30 B  854  PRO ASP LYS ALA ILE ASP LEU ILE ASP GLU ALA ALA ALA
+SEQRES  31 B  854  ARG LEU ARG MET ALA LEU GLU SER ALA PRO GLU GLU ILE
+SEQRES  32 B  854  ASP ALA LEU GLU ARG LYS LYS LEU GLN LEU GLU ILE GLU
+SEQRES  33 B  854  ARG GLU ALA LEU LYS LYS GLU LYS ASP PRO ASP SER GLN
+SEQRES  34 B  854  GLU ARG LEU LYS ALA ILE GLU ALA GLU ILE ALA LYS LEU
+SEQRES  35 B  854  THR GLU GLU ILE ALA LYS LEU ARG ALA GLU TRP GLU ARG
+SEQRES  36 B  854  GLU ARG GLU ILE LEU ARG LYS LEU ARG GLU ALA GLN HIS
+SEQRES  37 B  854  ARG LEU ASP GLU VAL ARG ARG GLU ILE GLU LEU ALA GLU
+SEQRES  38 B  854  ARG GLN TYR ASP LEU ASN ARG ALA ALA GLU LEU ARG TYR
+SEQRES  39 B  854  GLY GLU LEU PRO LYS LEU GLU ALA GLU VAL GLU ALA LEU
+SEQRES  40 B  854  SER GLU LYS LEU ARG GLY ALA ARG PHE VAL ARG LEU GLU
+SEQRES  41 B  854  VAL THR GLU GLU ASP ILE ALA GLU ILE VAL SER ARG TRP
+SEQRES  42 B  854  THR GLY ILE PRO VAL SER LYS LEU LEU GLU GLY GLU ARG
+SEQRES  43 B  854  GLU LYS LEU LEU ARG LEU GLU GLU GLU LEU HIS LYS ARG
+SEQRES  44 B  854  VAL VAL GLY GLN ASP GLU ALA ILE ARG ALA VAL ALA ASP
+SEQRES  45 B  854  ALA ILE ARG ARG ALA ARG ALA GLY LEU LYS ASP PRO ASN
+SEQRES  46 B  854  ARG PRO ILE GLY SER PHE LEU PHE LEU GLY PRO THR GLY
+SEQRES  47 B  854  VAL GLY LYS THR GLU LEU ALA LYS THR LEU ALA ALA THR
+SEQRES  48 B  854  LEU PHE ASP THR GLU GLU ALA MET ILE ARG ILE ASP MET
+SEQRES  49 B  854  THR GLU TYR MET GLU LYS HIS ALA VAL SER ARG LEU ILE
+SEQRES  50 B  854  GLY ALA PRO PRO GLY TYR VAL GLY TYR GLU GLU GLY GLY
+SEQRES  51 B  854  GLN LEU THR GLU ALA VAL ARG ARG ARG PRO TYR SER VAL
+SEQRES  52 B  854  ILE LEU PHE ASP GLU ILE GLU LYS ALA HIS PRO ASP VAL
+SEQRES  53 B  854  PHE ASN ILE LEU LEU GLN ILE LEU ASP ASP GLY ARG LEU
+SEQRES  54 B  854  THR ASP SER HIS GLY ARG THR VAL ASP PHE ARG ASN THR
+SEQRES  55 B  854  VAL ILE ILE LEU THR SER ASN LEU GLY SER PRO LEU ILE
+SEQRES  56 B  854  LEU GLU GLY LEU GLN LYS GLY TRP PRO TYR GLU ARG ILE
+SEQRES  57 B  854  ARG ASP GLU VAL PHE LYS VAL LEU GLN GLN HIS PHE ARG
+SEQRES  58 B  854  PRO GLU PHE LEU ASN ARG LEU ASP GLU ILE VAL VAL PHE
+SEQRES  59 B  854  ARG PRO LEU THR LYS GLU GLN ILE ARG GLN ILE VAL GLU
+SEQRES  60 B  854  ILE GLN LEU SER TYR LEU ARG ALA ARG LEU ALA GLU LYS
+SEQRES  61 B  854  ARG ILE SER LEU GLU LEU THR GLU ALA ALA LYS ASP PHE
+SEQRES  62 B  854  LEU ALA GLU ARG GLY TYR ASP PRO VAL PHE GLY ALA ARG
+SEQRES  63 B  854  PRO LEU ARG ARG VAL ILE GLN ARG GLU LEU GLU THR PRO
+SEQRES  64 B  854  LEU ALA GLN LYS ILE LEU ALA GLY GLU VAL LYS GLU GLY
+SEQRES  65 B  854  ASP ARG VAL GLN VAL ASP VAL GLY PRO ALA GLY LEU VAL
+SEQRES  66 B  854  PHE ALA VAL PRO ALA ARG VAL GLU ALA
+SEQRES   1 C  854  MET ASN LEU GLU ARG TRP THR GLN ALA ALA ARG GLU ALA
+SEQRES   2 C  854  LEU ALA GLN ALA GLN VAL LEU ALA GLN ARG MET LYS HIS
+SEQRES   3 C  854  GLN ALA ILE ASP LEU PRO HIS LEU TRP ALA VAL LEU LEU
+SEQRES   4 C  854  LYS ASP GLU ARG SER LEU ALA TRP ARG LEU LEU GLU LYS
+SEQRES   5 C  854  ALA GLY ALA ASP PRO LYS ALA LEU LYS GLU LEU GLN GLU
+SEQRES   6 C  854  ARG GLU LEU ALA ARG LEU PRO LYS VAL GLU GLY ALA GLU
+SEQRES   7 C  854  VAL GLY GLN TYR LEU THR SER ARG LEU SER GLY ALA LEU
+SEQRES   8 C  854  ASN ARG ALA GLU GLY LEU MET GLU GLU LEU LYS ASP ARG
+SEQRES   9 C  854  TYR VAL ALA VAL ASP THR LEU VAL LEU ALA LEU ALA GLU
+SEQRES  10 C  854  ALA THR PRO GLY LEU PRO GLY LEU GLU ALA LEU LYS GLY
+SEQRES  11 C  854  ALA LEU LYS GLU LEU ARG GLY GLY ARG THR VAL GLN THR
+SEQRES  12 C  854  GLU HIS ALA GLU SER THR TYR ASN ALA LEU GLU GLN TYR
+SEQRES  13 C  854  GLY ILE ASP LEU THR ARG LEU ALA ALA GLU GLY LYS LEU
+SEQRES  14 C  854  ASP PRO VAL ILE GLY ARG ASP GLU GLU ILE ARG ARG VAL
+SEQRES  15 C  854  ILE GLN ILE LEU LEU ARG ARG THR LYS ASN ASN PRO VAL
+SEQRES  16 C  854  LEU ILE GLY GLU PRO GLY VAL GLY LYS THR ALA ILE VAL
+SEQRES  17 C  854  GLU GLY LEU ALA GLN ARG ILE VAL LYS GLY ASP VAL PRO
+SEQRES  18 C  854  GLU GLY LEU LYS GLY LYS ARG ILE VAL SER LEU GLN MET
+SEQRES  19 C  854  GLY SER LEU LEU ALA GLY ALA LYS TYR ARG GLY GLU PHE
+SEQRES  20 C  854  GLU GLU ARG LEU LYS ALA VAL ILE GLN GLU VAL VAL GLN
+SEQRES  21 C  854  SER GLN GLY GLU VAL ILE LEU PHE ILE ASP GLU LEU HIS
+SEQRES  22 C  854  THR VAL VAL GLY ALA GLY LYS ALA GLU GLY ALA VAL ASP
+SEQRES  23 C  854  ALA GLY ASN MET LEU LYS PRO ALA LEU ALA ARG GLY GLU
+SEQRES  24 C  854  LEU ARG LEU ILE GLY ALA THR THR LEU ASP GLU TYR ARG
+SEQRES  25 C  854  GLU ILE GLU LYS ASP PRO ALA LEU GLU ARG ARG PHE GLN
+SEQRES  26 C  854  PRO VAL TYR VAL ASP GLU PRO THR VAL GLU GLU THR ILE
+SEQRES  27 C  854  SER ILE LEU ARG GLY LEU LYS GLU LYS TYR GLU VAL HIS
+SEQRES  28 C  854  HIS GLY VAL ARG ILE SER ASP SER ALA ILE ILE ALA ALA
+SEQRES  29 C  854  ALA THR LEU SER HIS ARG TYR ILE THR GLU ARG ARG LEU
+SEQRES  30 C  854  PRO ASP LYS ALA ILE ASP LEU ILE ASP GLU ALA ALA ALA
+SEQRES  31 C  854  ARG LEU ARG MET ALA LEU GLU SER ALA PRO GLU GLU ILE
+SEQRES  32 C  854  ASP ALA LEU GLU ARG LYS LYS LEU GLN LEU GLU ILE GLU
+SEQRES  33 C  854  ARG GLU ALA LEU LYS LYS GLU LYS ASP PRO ASP SER GLN
+SEQRES  34 C  854  GLU ARG LEU LYS ALA ILE GLU ALA GLU ILE ALA LYS LEU
+SEQRES  35 C  854  THR GLU GLU ILE ALA LYS LEU ARG ALA GLU TRP GLU ARG
+SEQRES  36 C  854  GLU ARG GLU ILE LEU ARG LYS LEU ARG GLU ALA GLN HIS
+SEQRES  37 C  854  ARG LEU ASP GLU VAL ARG ARG GLU ILE GLU LEU ALA GLU
+SEQRES  38 C  854  ARG GLN TYR ASP LEU ASN ARG ALA ALA GLU LEU ARG TYR
+SEQRES  39 C  854  GLY GLU LEU PRO LYS LEU GLU ALA GLU VAL GLU ALA LEU
+SEQRES  40 C  854  SER GLU LYS LEU ARG GLY ALA ARG PHE VAL ARG LEU GLU
+SEQRES  41 C  854  VAL THR GLU GLU ASP ILE ALA GLU ILE VAL SER ARG TRP
+SEQRES  42 C  854  THR GLY ILE PRO VAL SER LYS LEU LEU GLU GLY GLU ARG
+SEQRES  43 C  854  GLU LYS LEU LEU ARG LEU GLU GLU GLU LEU HIS LYS ARG
+SEQRES  44 C  854  VAL VAL GLY GLN ASP GLU ALA ILE ARG ALA VAL ALA ASP
+SEQRES  45 C  854  ALA ILE ARG ARG ALA ARG ALA GLY LEU LYS ASP PRO ASN
+SEQRES  46 C  854  ARG PRO ILE GLY SER PHE LEU PHE LEU GLY PRO THR GLY
+SEQRES  47 C  854  VAL GLY LYS THR GLU LEU ALA LYS THR LEU ALA ALA THR
+SEQRES  48 C  854  LEU PHE ASP THR GLU GLU ALA MET ILE ARG ILE ASP MET
+SEQRES  49 C  854  THR GLU TYR MET GLU LYS HIS ALA VAL SER ARG LEU ILE
+SEQRES  50 C  854  GLY ALA PRO PRO GLY TYR VAL GLY TYR GLU GLU GLY GLY
+SEQRES  51 C  854  GLN LEU THR GLU ALA VAL ARG ARG ARG PRO TYR SER VAL
+SEQRES  52 C  854  ILE LEU PHE ASP GLU ILE GLU LYS ALA HIS PRO ASP VAL
+SEQRES  53 C  854  PHE ASN ILE LEU LEU GLN ILE LEU ASP ASP GLY ARG LEU
+SEQRES  54 C  854  THR ASP SER HIS GLY ARG THR VAL ASP PHE ARG ASN THR
+SEQRES  55 C  854  VAL ILE ILE LEU THR SER ASN LEU GLY SER PRO LEU ILE
+SEQRES  56 C  854  LEU GLU GLY LEU GLN LYS GLY TRP PRO TYR GLU ARG ILE
+SEQRES  57 C  854  ARG ASP GLU VAL PHE LYS VAL LEU GLN GLN HIS PHE ARG
+SEQRES  58 C  854  PRO GLU PHE LEU ASN ARG LEU ASP GLU ILE VAL VAL PHE
+SEQRES  59 C  854  ARG PRO LEU THR LYS GLU GLN ILE ARG GLN ILE VAL GLU
+SEQRES  60 C  854  ILE GLN LEU SER TYR LEU ARG ALA ARG LEU ALA GLU LYS
+SEQRES  61 C  854  ARG ILE SER LEU GLU LEU THR GLU ALA ALA LYS ASP PHE
+SEQRES  62 C  854  LEU ALA GLU ARG GLY TYR ASP PRO VAL PHE GLY ALA ARG
+SEQRES  63 C  854  PRO LEU ARG ARG VAL ILE GLN ARG GLU LEU GLU THR PRO
+SEQRES  64 C  854  LEU ALA GLN LYS ILE LEU ALA GLY GLU VAL LYS GLU GLY
+SEQRES  65 C  854  ASP ARG VAL GLN VAL ASP VAL GLY PRO ALA GLY LEU VAL
+SEQRES  66 C  854  PHE ALA VAL PRO ALA ARG VAL GLU ALA
+HET     PT  B 855       1
+HET     PT  B 856       1
+HET     PT  C 855       1
+HET     PT  A 855       1
+HET     PT  B 857       1
+HET     PT  C 856       1
+HET     PT  A 856       1
+HET     PT  A 857       1
+HET     PT  B 858       1
+HET     PT  B 859       1
+HET     PT  C 857       1
+HET     PT  A 858       1
+HET     PT  B 860       1
+HET     PT  A 859       1
+HET     PT  A 860       1
+HET     PT  C 858       1
+HET     PT  C 859       1
+HET     PT  B 861       1
+HET     PT  B 862       1
+HET     PT  C 860       1
+HET     PT  A 861       1
+HET     PT  A 862       1
+HET     PT  C 861       1
+HET    ANP  A 901      31
+HET    ANP  A 911      31
+HET    ANP  B 902      31
+HET    ANP  B 912      31
+HET    ANP  C 903      31
+HET    ANP  C 913      31
+HETNAM      PT PLATINUM (II) ION
+HETNAM     ANP PHOSPHOAMINOPHOSPHONIC ACID-ADENYLATE ESTER
+FORMUL   4   PT    23(PT 2+)
+FORMUL  27  ANP    6(C10 H17 N6 O12 P3)
 HELIX    1   1 THR A    7  MET A   24  1                                  18
 HELIX    2   2 ASP A   30  LEU A   39  1                                  10
 HELIX    3   3 SER A   44  LYS A   52  1                                   9
@@ -1230,102 +1230,102 @@ SHEET   54  54 1 THR C 702  THR C 707  0
 SHEET   55  55 1 SER C 783  LEU C 786  0
 SHEET   56  56 1 ARG C 834  ASP C 838  0
 SHEET   57  57 1 VAL C 845  ALA C 847  0
-LINK        PT    PT A 855                 SD  MET A 619     1555   1555  2.37  
-LINK        PT    PT A 856                 SD  MET A  24     1555   1555  2.00  
-LINK        PT    PT A 856                 NZ  LYS A  73     1555   1555  3.07  
-LINK        PT    PT A 858                 SD  MET A 234     1555   1555  2.55  
-LINK        PT    PT A 859                 O   THR A 625     1555   1555  2.11  
-LINK        PT    PT A 859                 OG1 THR A 625     1555   1555  2.47  
-LINK        PT    PT A 859                 SD  MET A 628     1555   1555  2.50  
-LINK        PT    PT A 860                 SD  MET A 394     1555   1555  2.48  
-LINK        PT    PT A 861                 NE2 GLN B 184     1555   1555  2.38  
-LINK        PT    PT A 861                 OE1 GLN B 184     1555   1555  3.46  
-LINK        PT    PT A 861                 NH1 ARG A 393     1555   1555  1.92  
-LINK        PT    PT A 861                 NH2 ARG A 393     1555   1555  3.46  
-LINK        PT    PT A 862                 SD  MET A 624     1555   1555  2.20  
-LINK        PT    PT A 862                 O   MET A 624     1555   1555  3.55  
-LINK        PT    PT A 862                 O   TYR A 627     1555   1555  2.88  
-LINK        PT    PT B 855                 SD  MET B  24     1555   1555  2.34  
-LINK        PT    PT B 856                 SD  MET B 619     1555   1555  2.45  
-LINK        PT    PT B 857                 NH1 ARG C 180     1555   1555  2.98  
-LINK        PT    PT B 857                 NH2 ARG C 180     1555   1555  3.43  
-LINK        PT    PT B 857                 SD  MET B 394     1555   1555  2.55  
-LINK        PT    PT B 858                 NH2 ARG C 180     1555   1555  2.63  
-LINK        PT    PT B 858                 SD  MET B 394     1555   1555  2.42  
-LINK        PT    PT B 859                 SD  MET B 628     1555   1555  2.89  
-LINK        PT    PT B 859                 O   THR B 625     1555   1555  2.63  
-LINK        PT    PT B 859                 OG1 THR B 625     1555   1555  2.42  
-LINK        PT    PT B 861                 O   TYR B 627     1555   1555  3.18  
-LINK        PT    PT B 861                 N   TYR B 627     1555   1555  3.48  
-LINK        PT    PT B 861                 O   MET B 624     1555   1555  3.18  
-LINK        PT    PT B 861                 SD  MET B 624     1555   1555  2.15  
-LINK        PT    PT C 855                 SD  MET C 619     1555   1555  2.45  
-LINK        PT    PT C 856                 N   TYR C 627     1555   1555  3.38  
-LINK        PT    PT C 856                 O   TYR C 627     1555   1555  3.21  
-LINK        PT    PT C 856                 SD  MET C 624     1555   1555  2.36  
-LINK        PT    PT C 856                 O   MET C 624     1555   1555  3.18  
-LINK        PT    PT C 857                 SD  MET C 628     1555   1555  2.19  
-LINK        PT    PT C 857                 O   THR C 625     1555   1555  2.24  
-LINK        PT    PT C 857                 OG1 THR C 625     1555   1555  2.80  
-LINK        PT    PT C 858                 SD  MET C 234     1555   1555  2.40  
-LINK        PT    PT C 859                 NH1 ARG C 391     1555   1555  2.09  
-LINK        PT    PT C 859                 NE  ARG C 391     1555   1555  3.20  
-LINK        PT    PT C 859                 SD  MET C 394     1555   1555  2.58  
-LINK        PT    PT C 860                 SD  MET C  24     1555   1555  2.43  
-LINK        PT    PT C 861                 SD  MET C 394     1555   1555  3.28  
-LINK        PT    PT C 861                 NH2 ARG A 188     1555   4455  2.01  
-SITE     1 AC1  1 MET B  24                                                     
-SITE     1 AC2  2 LYS B 606  MET B 619                                          
-SITE     1 AC3  2 LYS C 606  MET C 619                                          
-SITE     1 AC4  2 LYS A 606  MET A 619                                          
-SITE     1 AC5  3 MET B 394  ARG C 180  PRO C 221                               
-SITE     1 AC6  2 MET C 624  TYR C 627                                          
-SITE     1 AC7  2 MET A  24  LYS A  73                                          
-SITE     1 AC8  2 MET B 394  ARG C 180                                          
-SITE     1 AC9  2 THR B 625  MET B 628                                          
-SITE     1 BC1  2 THR C 625  MET C 628                                          
-SITE     1 BC2  1 MET A 234                                                     
-SITE     1 BC3  2 THR A 625  MET A 628                                          
-SITE     1 BC4  1 MET A 394                                                     
-SITE     1 BC5  2 MET C 234  PHE C 247                                          
-SITE     1 BC6  2 ARG C 391  MET C 394                                          
-SITE     1 BC7  2 MET B 624  TYR B 627                                          
-SITE     1 BC8  1 MET C  24                                                     
-SITE     1 BC9  4 ALA A 390  ARG A 393  MET A 394  GLN B 184                    
-SITE     1 CC1  2 MET A 624  TYR A 627                                          
-SITE     1 CC2  2 ARG A 188  MET C 394                                          
-SITE     1 CC3 14 VAL A 172  ILE A 173  GLU A 199  PRO A 200                    
-SITE     2 CC3 14 GLY A 201  VAL A 202  GLY A 203  LYS A 204                    
-SITE     3 CC3 14 THR A 205  ALA A 206  ASP A 270  ILE A 340                    
-SITE     4 CC3 14 LEU A 344  ILE A 382                                          
-SITE     1 CC4 13 ARG A 559  VAL A 560  VAL A 561  THR A 597                    
-SITE     2 CC4 13 GLY A 598  VAL A 599  GLY A 600  LYS A 601                    
-SITE     3 CC4 13 THR A 602  GLU A 603  ILE A 765  ALA A 805                    
-SITE     4 CC4 13 ARG A 806                                                     
-SITE     1 CC5 18 PRO B 171  VAL B 172  ILE B 173  GLU B 199                    
-SITE     2 CC5 18 PRO B 200  GLY B 201  VAL B 202  GLY B 203                    
-SITE     3 CC5 18 LYS B 204  THR B 205  ALA B 206  GLU B 271                    
-SITE     4 CC5 18 ILE B 340  LEU B 344  ILE B 382  PRO C 318                    
-SITE     5 CC5 18 GLU C 321  ARG C 322                                          
-SITE     1 CC6 15 ARG B 559  VAL B 560  VAL B 561  THR B 597                    
-SITE     2 CC6 15 GLY B 598  VAL B 599  GLY B 600  LYS B 601                    
-SITE     3 CC6 15 THR B 602  GLU B 603  ARG B 621  ILE B 765                    
-SITE     4 CC6 15 GLN B 769  ALA B 805  ARG B 806                               
-SITE     1 CC7 14 PRO C 171  VAL C 172  ILE C 173  PRO C 200                    
-SITE     2 CC7 14 GLY C 201  VAL C 202  GLY C 203  LYS C 204                    
-SITE     3 CC7 14 THR C 205  ALA C 206  GLU C 209  ILE C 340                    
-SITE     4 CC7 14 LEU C 344  ILE C 382                                          
-SITE     1 CC8 13 ARG C 559  VAL C 560  VAL C 561  THR C 597                    
-SITE     2 CC8 13 GLY C 598  VAL C 599  GLY C 600  LYS C 601                    
-SITE     3 CC8 13 THR C 602  GLU C 603  ILE C 765  ALA C 805                    
-SITE     4 CC8 13 ARG C 806                                                     
-CRYST1  107.747  138.482  212.215  90.00  90.00  90.00 P 21 21 21   12          
-ORIGX1      1.000000  0.000000  0.000000        0.00000                         
-ORIGX2      0.000000  1.000000  0.000000        0.00000                         
-ORIGX3      0.000000  0.000000  1.000000        0.00000                         
-SCALE1      0.009281  0.000000  0.000000        0.00000                         
-SCALE2      0.000000  0.007221  0.000000        0.00000                         
-SCALE3      0.000000  0.000000  0.004712        0.00000                         
+LINK        PT    PT A 855                 SD  MET A 619     1555   1555  2.37
+LINK        PT    PT A 856                 SD  MET A  24     1555   1555  2.00
+LINK        PT    PT A 856                 NZ  LYS A  73     1555   1555  3.07
+LINK        PT    PT A 858                 SD  MET A 234     1555   1555  2.55
+LINK        PT    PT A 859                 O   THR A 625     1555   1555  2.11
+LINK        PT    PT A 859                 OG1 THR A 625     1555   1555  2.47
+LINK        PT    PT A 859                 SD  MET A 628     1555   1555  2.50
+LINK        PT    PT A 860                 SD  MET A 394     1555   1555  2.48
+LINK        PT    PT A 861                 NE2 GLN B 184     1555   1555  2.38
+LINK        PT    PT A 861                 OE1 GLN B 184     1555   1555  3.46
+LINK        PT    PT A 861                 NH1 ARG A 393     1555   1555  1.92
+LINK        PT    PT A 861                 NH2 ARG A 393     1555   1555  3.46
+LINK        PT    PT A 862                 SD  MET A 624     1555   1555  2.20
+LINK        PT    PT A 862                 O   MET A 624     1555   1555  3.55
+LINK        PT    PT A 862                 O   TYR A 627     1555   1555  2.88
+LINK        PT    PT B 855                 SD  MET B  24     1555   1555  2.34
+LINK        PT    PT B 856                 SD  MET B 619     1555   1555  2.45
+LINK        PT    PT B 857                 NH1 ARG C 180     1555   1555  2.98
+LINK        PT    PT B 857                 NH2 ARG C 180     1555   1555  3.43
+LINK        PT    PT B 857                 SD  MET B 394     1555   1555  2.55
+LINK        PT    PT B 858                 NH2 ARG C 180     1555   1555  2.63
+LINK        PT    PT B 858                 SD  MET B 394     1555   1555  2.42
+LINK        PT    PT B 859                 SD  MET B 628     1555   1555  2.89
+LINK        PT    PT B 859                 O   THR B 625     1555   1555  2.63
+LINK        PT    PT B 859                 OG1 THR B 625     1555   1555  2.42
+LINK        PT    PT B 861                 O   TYR B 627     1555   1555  3.18
+LINK        PT    PT B 861                 N   TYR B 627     1555   1555  3.48
+LINK        PT    PT B 861                 O   MET B 624     1555   1555  3.18
+LINK        PT    PT B 861                 SD  MET B 624     1555   1555  2.15
+LINK        PT    PT C 855                 SD  MET C 619     1555   1555  2.45
+LINK        PT    PT C 856                 N   TYR C 627     1555   1555  3.38
+LINK        PT    PT C 856                 O   TYR C 627     1555   1555  3.21
+LINK        PT    PT C 856                 SD  MET C 624     1555   1555  2.36
+LINK        PT    PT C 856                 O   MET C 624     1555   1555  3.18
+LINK        PT    PT C 857                 SD  MET C 628     1555   1555  2.19
+LINK        PT    PT C 857                 O   THR C 625     1555   1555  2.24
+LINK        PT    PT C 857                 OG1 THR C 625     1555   1555  2.80
+LINK        PT    PT C 858                 SD  MET C 234     1555   1555  2.40
+LINK        PT    PT C 859                 NH1 ARG C 391     1555   1555  2.09
+LINK        PT    PT C 859                 NE  ARG C 391     1555   1555  3.20
+LINK        PT    PT C 859                 SD  MET C 394     1555   1555  2.58
+LINK        PT    PT C 860                 SD  MET C  24     1555   1555  2.43
+LINK        PT    PT C 861                 SD  MET C 394     1555   1555  3.28
+LINK        PT    PT C 861                 NH2 ARG A 188     1555   4455  2.01
+SITE     1 AC1  1 MET B  24
+SITE     1 AC2  2 LYS B 606  MET B 619
+SITE     1 AC3  2 LYS C 606  MET C 619
+SITE     1 AC4  2 LYS A 606  MET A 619
+SITE     1 AC5  3 MET B 394  ARG C 180  PRO C 221
+SITE     1 AC6  2 MET C 624  TYR C 627
+SITE     1 AC7  2 MET A  24  LYS A  73
+SITE     1 AC8  2 MET B 394  ARG C 180
+SITE     1 AC9  2 THR B 625  MET B 628
+SITE     1 BC1  2 THR C 625  MET C 628
+SITE     1 BC2  1 MET A 234
+SITE     1 BC3  2 THR A 625  MET A 628
+SITE     1 BC4  1 MET A 394
+SITE     1 BC5  2 MET C 234  PHE C 247
+SITE     1 BC6  2 ARG C 391  MET C 394
+SITE     1 BC7  2 MET B 624  TYR B 627
+SITE     1 BC8  1 MET C  24
+SITE     1 BC9  4 ALA A 390  ARG A 393  MET A 394  GLN B 184
+SITE     1 CC1  2 MET A 624  TYR A 627
+SITE     1 CC2  2 ARG A 188  MET C 394
+SITE     1 CC3 14 VAL A 172  ILE A 173  GLU A 199  PRO A 200
+SITE     2 CC3 14 GLY A 201  VAL A 202  GLY A 203  LYS A 204
+SITE     3 CC3 14 THR A 205  ALA A 206  ASP A 270  ILE A 340
+SITE     4 CC3 14 LEU A 344  ILE A 382
+SITE     1 CC4 13 ARG A 559  VAL A 560  VAL A 561  THR A 597
+SITE     2 CC4 13 GLY A 598  VAL A 599  GLY A 600  LYS A 601
+SITE     3 CC4 13 THR A 602  GLU A 603  ILE A 765  ALA A 805
+SITE     4 CC4 13 ARG A 806
+SITE     1 CC5 18 PRO B 171  VAL B 172  ILE B 173  GLU B 199
+SITE     2 CC5 18 PRO B 200  GLY B 201  VAL B 202  GLY B 203
+SITE     3 CC5 18 LYS B 204  THR B 205  ALA B 206  GLU B 271
+SITE     4 CC5 18 ILE B 340  LEU B 344  ILE B 382  PRO C 318
+SITE     5 CC5 18 GLU C 321  ARG C 322
+SITE     1 CC6 15 ARG B 559  VAL B 560  VAL B 561  THR B 597
+SITE     2 CC6 15 GLY B 598  VAL B 599  GLY B 600  LYS B 601
+SITE     3 CC6 15 THR B 602  GLU B 603  ARG B 621  ILE B 765
+SITE     4 CC6 15 GLN B 769  ALA B 805  ARG B 806
+SITE     1 CC7 14 PRO C 171  VAL C 172  ILE C 173  PRO C 200
+SITE     2 CC7 14 GLY C 201  VAL C 202  GLY C 203  LYS C 204
+SITE     3 CC7 14 THR C 205  ALA C 206  GLU C 209  ILE C 340
+SITE     4 CC7 14 LEU C 344  ILE C 382
+SITE     1 CC8 13 ARG C 559  VAL C 560  VAL C 561  THR C 597
+SITE     2 CC8 13 GLY C 598  VAL C 599  GLY C 600  LYS C 601
+SITE     3 CC8 13 THR C 602  GLU C 603  ILE C 765  ALA C 805
+SITE     4 CC8 13 ARG C 806
+CRYST1  107.747  138.482  212.215  90.00  90.00  90.00 P 21 21 21   12
+ORIGX1      1.000000  0.000000  0.000000        0.00000
+ORIGX2      0.000000  1.000000  0.000000        0.00000
+ORIGX3      0.000000  0.000000  1.000000        0.00000
+SCALE1      0.009281  0.000000  0.000000        0.00000
+SCALE2      0.000000  0.007221  0.000000        0.00000
+SCALE3      0.000000  0.000000  0.004712        0.00000
 ATOM      1  N   GLU A   4      39.587 125.066  36.038  1.00148.16           N
 ATOM      2  CA  GLU A   4      40.861 124.448  36.502  1.00141.86           C
 ATOM      3  C   GLU A   4      40.663 122.992  36.918  1.00137.17           C

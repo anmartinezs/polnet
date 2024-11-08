@@ -2,7 +2,7 @@
 Classes with the info for a synthetic tomograms
 """
 
-__author__ = 'Antonio Martinez-Sanchez'
+__author__ = "Antonio Martinez-Sanchez"
 
 
 import csv
@@ -64,7 +64,11 @@ class MmerFile:
         :param in_file: path to the input file with extension .pns
         """
 
-        assert isinstance(in_file, str) and in_file.endswith('.pms') or in_file.endswith('.pns')
+        assert (
+            isinstance(in_file, str)
+            and in_file.endswith(".pms")
+            or in_file.endswith(".pns")
+        )
 
         # Reading input file
         with open(in_file) as file:
@@ -72,34 +76,38 @@ class MmerFile:
                 if len(linea.strip()) > 0:
 
                     # Remove coments
-                    linea = linea.split('#', 1)[0]
+                    linea = linea.split("#", 1)[0]
 
                     # Parsing an file entry
-                    var, value = linea.split('=')
-                    var = var.replace(' ', '')
-                    var = var.replace('\n', '')
-                    value = value.replace(' ', '')
-                    value = value.replace('\n', '')
-                    if var == 'MMER_ID':
+                    var, value = linea.split("=")
+                    var = var.replace(" ", "")
+                    var = var.replace("\n", "")
+                    value = value.replace(" ", "")
+                    value = value.replace("\n", "")
+                    if var == "MMER_ID":
                         self.__mmer_id = value
-                    elif var == 'MMER_SVOL':
+                    elif var == "MMER_SVOL":
                         self.__mmer_svol = value
-                    elif var == 'MMER_ISO':
+                    elif var == "MMER_ISO":
                         self.__iso = float(value)
-                    elif var == 'PMER_L':
+                    elif var == "PMER_L":
                         self.__pmer_l = float(value)
-                    elif var == 'PMER_OCC':
+                    elif var == "PMER_OCC":
                         try:
                             self.__pmer_occ = float(value)
                         except ValueError:
-                            value_0 = value[value.index('(') + 1:value.index(',')]
-                            value_1 = value[value.index(',') + 1:value.index(')')]
+                            value_0 = value[
+                                value.index("(") + 1 : value.index(",")
+                            ]
+                            value_1 = value[
+                                value.index(",") + 1 : value.index(")")
+                            ]
                             self.__pmer_occ = (float(value_0), float(value_1))
-                    elif var == 'PMER_NP':
+                    elif var == "PMER_NP":
                         self.__pmer_np = int(value)
-                    elif var == 'PMER_L_MAX':
+                    elif var == "PMER_L_MAX":
                         self.__pmer_l_max = float(value)
-                    elif var == 'PMER_OVER_TOL':
+                    elif var == "PMER_OVER_TOL":
                         self.__pmer_over_tol = float(value)
                     # else:
                     #     print('ERROR: (MmerFile - load_protein_file) input entry not recognized:', value)
@@ -147,25 +155,27 @@ class MmerMbFile(MmerFile):
                 if len(linea.strip()) > 0:
 
                     # Remove coments
-                    linea = linea.split('#', 1)[0]
+                    linea = linea.split("#", 1)[0]
 
                     # Parsing an file entry
-                    var, value = linea.split('=')
-                    var = var.replace(' ', '')
-                    var = var.replace('\n', '')
-                    value = value.replace(' ', '')
-                    value = value.replace('\n', '')
-                    if var == 'MMER_CENTER':
-                        hold_str = value.replace('[', '')
-                        hold_str = hold_str.replace(']', '')
-                        hold_str = hold_str.split(',')
-                        self.__mmer_center = [float(hold_str[0]), float(hold_str[1]), float(hold_str[2])]
-                    elif var == 'MB_Z_HEIGHT':
+                    var, value = linea.split("=")
+                    var = var.replace(" ", "")
+                    var = var.replace("\n", "")
+                    value = value.replace(" ", "")
+                    value = value.replace("\n", "")
+                    if var == "MMER_CENTER":
+                        hold_str = value.replace("[", "")
+                        hold_str = hold_str.replace("]", "")
+                        hold_str = hold_str.split(",")
+                        self.__mmer_center = [
+                            float(hold_str[0]),
+                            float(hold_str[1]),
+                            float(hold_str[2]),
+                        ]
+                    elif var == "MB_Z_HEIGHT":
                         self.__mb_z_height = int(value)
-                    elif var == 'PMER_REVERSE_NORMALS':
+                    elif var == "PMER_REVERSE_NORMALS":
                         self.__pmer_reverse_normals = bool(value)
-
-
 
 
 class MbFile:
@@ -214,7 +224,7 @@ class MbFile:
         :param in_file: path to the input file with extension .mbs
         """
 
-        assert isinstance(in_file, str) and in_file.endswith('.mbs')
+        assert isinstance(in_file, str) and in_file.endswith(".mbs")
 
         # Reading input file
         with open(in_file) as file:
@@ -222,43 +232,50 @@ class MbFile:
                 if len(linea.strip()) > 0:
 
                     # Remove coments
-                    linea = linea.split('#', 1)[0]
+                    linea = linea.split("#", 1)[0]
 
                     # Parsing an file entry
-                    var, value = linea.split('=')
-                    var = var.replace(' ', '')
-                    var = var.replace('\n', '')
-                    value = value.replace(' ', '')
-                    value = value.replace('\n', '')
-                    if var == 'MB_TYPE':
+                    var, value = linea.split("=")
+                    var = var.replace(" ", "")
+                    var = var.replace("\n", "")
+                    value = value.replace(" ", "")
+                    value = value.replace("\n", "")
+                    if var == "MB_TYPE":
                         self.__type = value
-                    elif var == 'MB_OCC':
+                    elif var == "MB_OCC":
                         try:
                             self.__occ = float(value)
                         except ValueError:
-                            value_0 = value[value.index('(') + 1:value.index(',')]
-                            value_1 = value[value.index(',') + 1:value.index(')')]
+                            value_0 = value[
+                                value.index("(") + 1 : value.index(",")
+                            ]
+                            value_1 = value[
+                                value.index(",") + 1 : value.index(")")
+                            ]
                             self.__occ = (float(value_0), float(value_1))
-                    elif var == 'MB_THICK_RG':
-                        value_0 = value[value.index('(')+1:value.index(',')]
-                        value_1 = value[value.index(',')+1:value.index(')')]
+                    elif var == "MB_THICK_RG":
+                        value_0 = value[value.index("(") + 1 : value.index(",")]
+                        value_1 = value[value.index(",") + 1 : value.index(")")]
                         self.__thick_rg = (float(value_0), float(value_1))
-                    elif var == 'MB_LAYER_S_RG':
-                        value_0 = value[value.index('(') + 1:value.index(',')]
-                        value_1 = value[value.index(',') + 1:value.index(')')]
+                    elif var == "MB_LAYER_S_RG":
+                        value_0 = value[value.index("(") + 1 : value.index(",")]
+                        value_1 = value[value.index(",") + 1 : value.index(")")]
                         self.__layer_s_rg = (float(value_0), float(value_1))
-                    elif var == 'MB_MAX_ECC':
+                    elif var == "MB_MAX_ECC":
                         self.__max_ecc = float(value)
-                    elif var == 'MB_OVER_TOL':
+                    elif var == "MB_OVER_TOL":
                         self.__over_tol = float(value)
-                    elif var == 'MB_MIN_RAD':
+                    elif var == "MB_MIN_RAD":
                         self.__min_rad = float(value)
-                    elif var == 'MB_DEN_CF_RG':
-                        value_0 = value[value.index('(') + 1:value.index(',')]
-                        value_1 = value[value.index(',') + 1:value.index(')')]
+                    elif var == "MB_DEN_CF_RG":
+                        value_0 = value[value.index("(") + 1 : value.index(",")]
+                        value_1 = value[value.index(",") + 1 : value.index(")")]
                         self.__den_cf_rg = (float(value_0), float(value_1))
                     else:
-                        print('ERROR: (MmerFile - load_protein_file) input entry not recognized:', value)
+                        print(
+                            "ERROR: (MmerFile - load_protein_file) input entry not recognized:",
+                            value,
+                        )
 
 
 class HelixFile:
@@ -323,7 +340,7 @@ class HelixFile:
         :param in_file: path to the input file with extension .hns
         """
 
-        assert isinstance(in_file, str) and in_file.endswith('.hns')
+        assert isinstance(in_file, str) and in_file.endswith(".hns")
 
         # Reading input file
         with open(in_file) as file:
@@ -331,42 +348,46 @@ class HelixFile:
                 if len(linea.strip()) > 0:
 
                     # Remove coments
-                    linea = linea.split('#', 1)[0]
+                    linea = linea.split("#", 1)[0]
 
                     # Parsing an file entry
-                    var, value = linea.split('=')
-                    var = var.replace(' ', '')
-                    var = var.replace('\n', '')
-                    value = value.replace(' ', '')
-                    value = value.replace('\n', '')
-                    if var == 'HLIX_TYPE':
+                    var, value = linea.split("=")
+                    var = var.replace(" ", "")
+                    var = var.replace("\n", "")
+                    value = value.replace(" ", "")
+                    value = value.replace("\n", "")
+                    if var == "HLIX_TYPE":
                         self.__type = value
-                    elif var == 'HLIX_PMER_L':
+                    elif var == "HLIX_PMER_L":
                         self.__l = float(value)
-                    elif var == 'HLIX_PMER_OCC':
+                    elif var == "HLIX_PMER_OCC":
                         try:
                             self.__occ = float(value)
                         except ValueError:
-                            value_0 = value[value.index('(') + 1:value.index(',')]
-                            value_1 = value[value.index(',') + 1:value.index(')')]
+                            value_0 = value[
+                                value.index("(") + 1 : value.index(",")
+                            ]
+                            value_1 = value[
+                                value.index(",") + 1 : value.index(")")
+                            ]
                             self.__occ = (float(value_0), float(value_1))
-                    elif var == 'HLIX_MIN_P_LEN':
+                    elif var == "HLIX_MIN_P_LEN":
                         self.__min_p_len = float(value)
-                    elif var == 'HLIX_HP_LEN':
+                    elif var == "HLIX_HP_LEN":
                         self.__hp_len = float(value)
-                    elif var == 'HLIX_MZ_LEN':
+                    elif var == "HLIX_MZ_LEN":
                         self.__mz_len = float(value)
-                    elif var == 'HLIX_MZ_LEN_F':
+                    elif var == "HLIX_MZ_LEN_F":
                         self.__mz_len_f = float(value)
-                    elif var == 'HLIX_MMER_RAD':
+                    elif var == "HLIX_MMER_RAD":
                         self.__mmer_rad = float(value)
-                    elif var == 'HLIX_OVER_TOL':
+                    elif var == "HLIX_OVER_TOL":
                         self.__over_tol = float(value)
-                    elif var == 'HLIX_DEN_CF_RG':
-                        value_0 = value[value.index('(') + 1:value.index(',')]
-                        value_1 = value[value.index(',') + 1:value.index(')')]
+                    elif var == "HLIX_DEN_CF_RG":
+                        value_0 = value[value.index("(") + 1 : value.index(",")]
+                        value_1 = value[value.index(",") + 1 : value.index(")")]
                         self.__den_cf_rg = (float(value_0), float(value_1))
-                    elif var == 'HLIX_MIN_NMMER':
+                    elif var == "HLIX_MIN_NMMER":
                         self.__min_nmmer = int(value)
 
 
@@ -401,17 +422,17 @@ class MTFile(HelixFile):
                 if len(linea.strip()) > 0:
 
                     # Remove coments
-                    linea = linea.split('#', 1)[0]
+                    linea = linea.split("#", 1)[0]
 
                     # Parsing an file entry
-                    var, value = linea.split('=')
-                    var = var.replace(' ', '')
-                    var = var.replace('\n', '')
-                    value = value.replace(' ', '')
-                    value = value.replace('\n', '')
-                    if var == 'MT_RAD':
+                    var, value = linea.split("=")
+                    var = var.replace(" ", "")
+                    var = var.replace("\n", "")
+                    value = value.replace(" ", "")
+                    value = value.replace("\n", "")
+                    if var == "MT_RAD":
                         self.__rad = float(value)
-                    elif var == 'MT_NUNITS':
+                    elif var == "MT_NUNITS":
                         self.__nunits = float(value)
 
 
@@ -446,19 +467,18 @@ class ActinFile(HelixFile):
                 if len(linea.strip()) > 0:
 
                     # Remove coments
-                    linea = linea.split('#', 1)[0]
+                    linea = linea.split("#", 1)[0]
 
                     # Parsing an file entry
-                    var, value = linea.split('=')
-                    var = var.replace(' ', '')
-                    var = var.replace('\n', '')
-                    value = value.replace(' ', '')
-                    value = value.replace('\n', '')
-                    if var == 'A_BPROP':
+                    var, value = linea.split("=")
+                    var = var.replace(" ", "")
+                    var = var.replace("\n", "")
+                    value = value.replace(" ", "")
+                    value = value.replace("\n", "")
+                    if var == "A_BPROP":
                         self.__bprop = float(value)
-                    elif var == 'A_MAX_P_BRANCH':
+                    elif var == "A_MAX_P_BRANCH":
                         self.__p_branch = float(value)
-
 
 
 class SynthTomo:
@@ -487,19 +507,19 @@ class SynthTomo:
         return self.__tomo
 
     def set_den(self, den):
-        assert isinstance(den, str) and den.endswith('.mrc')
+        assert isinstance(den, str) and den.endswith(".mrc")
         self.__den = den
 
     def set_tomo(self, tomo):
-        assert isinstance(tomo, str) and tomo.endswith('.mrc')
+        assert isinstance(tomo, str) and tomo.endswith(".mrc")
         self.__tomo = tomo
 
     def set_mics(self, mics):
-        assert isinstance(mics, str) and mics.endswith('.mrc')
+        assert isinstance(mics, str) and mics.endswith(".mrc")
         self.__mics = mics
 
     def set_poly(self, poly):
-        assert isinstance(poly, str) and poly.endswith('.vtp')
+        assert isinstance(poly, str) and poly.endswith(".vtp")
         self.__poly = poly
 
     def get_motif_list(self):
@@ -516,16 +536,28 @@ class SynthTomo:
         """
         assert issubclass(type(net), Network)
         assert isinstance(m_type, str)
-        if (lbl is not None): assert isinstance(lbl, int)
-        if (code is not None): assert isinstance(code, str)
+        if lbl is not None:
+            assert isinstance(lbl, int)
+        if code is not None:
+            assert isinstance(code, str)
         for pmer_id, pmer in enumerate(net.get_pmers_list()):
             for mmer_id in range(pmer.get_num_monomers()):
                 if code is None:
                     hold_code = pmer.get_mmer_code(mmer_id)
                 else:
                     hold_code = code
-                self.__motifs.append(list((m_type, lbl, hold_code, pmer_id,
-                                           pmer.get_mmer_center(mmer_id), pmer.get_mmer_rotation(mmer_id))))
+                self.__motifs.append(
+                    list(
+                        (
+                            m_type,
+                            lbl,
+                            hold_code,
+                            pmer_id,
+                            pmer.get_mmer_center(mmer_id),
+                            pmer.get_mmer_rotation(mmer_id),
+                        )
+                    )
+                )
 
     def add_set_mbs(self, set_mbs, m_type, lbl, code, dec=None):
         """
@@ -552,7 +584,9 @@ class SynthTomo:
         for i in range(n_points):
             x, y, z = poly_vtp.GetPoint(i)
             q0, q1, q2 = normals.GetTuple(i)
-            self.__motifs.append(list((m_type, lbl, code, i, [x, y, z], [q0, q1, q2, 0])))
+            self.__motifs.append(
+                list((m_type, lbl, code, i, [x, y, z], [q0, q1, q2, 0]))
+            )
 
     def add_offset(self, offset):
         """
@@ -589,12 +623,31 @@ class SetTomos:
 
         :param out_file: output file path in .csv format
         """
-        assert isinstance(out_file, str) and out_file.endswith('.csv')
+        assert isinstance(out_file, str) and out_file.endswith(".csv")
 
         # Writing output CSV file
-        with open(out_file, 'w') as csv_file:
-            writer = csv.DictWriter(csv_file, dialect=csv.excel_tab, fieldnames=['Density', 'Micrographs', 'PolyData',
-                           'Tomo3D', 'Type', 'Label', 'Code', 'Polymer', 'X', 'Y', 'Z', 'Q1', 'Q2', 'Q3', 'Q4'])
+        with open(out_file, "w") as csv_file:
+            writer = csv.DictWriter(
+                csv_file,
+                dialect=csv.excel_tab,
+                fieldnames=[
+                    "Density",
+                    "Micrographs",
+                    "PolyData",
+                    "Tomo3D",
+                    "Type",
+                    "Label",
+                    "Code",
+                    "Polymer",
+                    "X",
+                    "Y",
+                    "Z",
+                    "Q1",
+                    "Q2",
+                    "Q3",
+                    "Q4",
+                ],
+            )
             writer.writeheader()
 
             # Tomos loop
@@ -614,7 +667,22 @@ class SetTomos:
                     rotation = motif[5]
 
                     # Writing entry
-                    writer.writerow({'Density':den_path, 'Micrographs':mics_path, 'PolyData':poly_path,
-                                     'Tomo3D':rec_path, 'Type':m_type, 'Label':lbl_id, 'Code':text_id,
-                                     'Polymer':pmer_id, 'X':center[0], 'Y':center[1], 'Z':center[2],
-                                     'Q1':rotation[0], 'Q2':rotation[1], 'Q3':rotation[2], 'Q4':rotation[3]})
+                    writer.writerow(
+                        {
+                            "Density": den_path,
+                            "Micrographs": mics_path,
+                            "PolyData": poly_path,
+                            "Tomo3D": rec_path,
+                            "Type": m_type,
+                            "Label": lbl_id,
+                            "Code": text_id,
+                            "Polymer": pmer_id,
+                            "X": center[0],
+                            "Y": center[1],
+                            "Z": center[2],
+                            "Q1": rotation[0],
+                            "Q2": rotation[1],
+                            "Q3": rotation[2],
+                            "Q4": rotation[3],
+                        }
+                    )

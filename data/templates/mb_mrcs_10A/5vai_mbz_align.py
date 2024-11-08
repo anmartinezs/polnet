@@ -131,9 +131,9 @@ kfPickle = 'gAJjQW5pbWF0ZS5LZXlmcmFtZXMKS2V5ZnJhbWVzCnEBKYFxAn1xA1UHZW50cmllc3EE
 def restoreAnimation():
 	'A method to unpickle and restore animation objects'
 	# Scenes must be unpickled after restoring transitions, because each
-	# scene links to a 'scene' transition. Likewise, keyframes must be 
+	# scene links to a 'scene' transition. Likewise, keyframes must be
 	# unpickled after restoring scenes, because each keyframe links to a scene.
-	# The unpickle process is left to the restore* functions, it's 
+	# The unpickle process is left to the restore* functions, it's
 	# important that it doesn't happen prior to calling those functions.
 	import SimpleSession
 	from Animate.Session import restoreTransitions
@@ -659,4 +659,3 @@ replyobj.status('Finishing restore...', blankAfter=0, secondary=True)
 endRestore({})
 replyobj.status('', secondary=True)
 replyobj.status('Restore finished.')
-
