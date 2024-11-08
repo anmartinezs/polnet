@@ -1,16 +1,23 @@
-# Folders
+#Caches
+*__pycache__*
+*pytest_cache*
+
+# Distribution / packaging
+*.egg-info/
+*.egg
+
+# Virtual environments
+*venv*
 bin
 include
 lib
 lib64
 share
 etc
+
+# Data
 data_generated
-polnet.egg-info
-polnet/__pycache__
-gui/core/__pycache__
 
 # Files
-.gitignore
 pyvenv.cfg
 polnet/_version.py

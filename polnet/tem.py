@@ -4,7 +4,7 @@ Models for Transmision Electron Microscopy
 
 """
 
-__author__ = 'Antonio Martinez-Sanchez'
+__author__ = "Antonio Martinez-Sanchez"
 
 import os
 import time
@@ -15,9 +15,9 @@ import scipy as sp
 from polnet import lio
 
 ## IMOD commands
-IMOD_CMD_XYZPROJ = 'xyzproj'
-IMOD_CMD_TILT = 'tilt'
-IMOD_CMD_AHEADER = 'alterheader'
+IMOD_CMD_XYZPROJ = "xyzproj"
+IMOD_CMD_TILT = "tilt"
+IMOD_CMD_AHEADER = "alterheader"
 
 
 class TEM:
@@ -30,12 +30,12 @@ class TEM:
         :param work_dir: path to working directory where intermediate files are stored
         """
         self.__work_dir = work_dir
-        self.__log_file = self.__work_dir + '/TEM.log'
+        self.__log_file = self.__work_dir + "/TEM.log"
         self.__create_work_dir()
-        self.__vol_file = self.__work_dir + '/in_vol.mrc'
-        self.__micgraphs_file = self.__work_dir + '/out_micrographs.mrc'
-        self.__tangs_file = self.__work_dir + '/out_tangs.tlt'
-        self.__rec3d_file = self.__work_dir + '/out_rec3d.mrc'
+        self.__vol_file = self.__work_dir + "/in_vol.mrc"
+        self.__micgraphs_file = self.__work_dir + "/out_micrographs.mrc"
+        self.__tangs_file = self.__work_dir + "/out_tangs.tlt"
+        self.__rec3d_file = self.__work_dir + "/out_rec3d.mrc"
 
     def __create_work_dir(self):
         """
@@ -50,9 +50,9 @@ class TEM:
 
         :param angs: non-empty iterable with the tilt angles
         """
-        with open(self.__tangs_file, 'w') as file:
+        with open(self.__tangs_file, "w") as file:
             for ang in angs:
-                file.write(str(ang) + '\n')
+                file.write(str(ang) + "\n")
 
     def __load_tangs_file(self):
         """
@@ -61,12 +61,12 @@ class TEM:
         :return: output array with the tilt angles
         """
         angs = list()
-        with open(self.__tangs_file, 'r') as file:
+        with open(self.__tangs_file, "r") as file:
             for line in file:
                 angs.append(float(line.strip()))
         return np.asarray(angs)
 
-    def gen_tilt_series_imod(self, vol, angs, ax='X', mode='real'):
+    def gen_tilt_series_imod(self, vol, angs, ax="X", mode="real"):
         """
         Generates the 2D projection series from a 3D volume using 'xyzproj' IMOD binary
 
@@ -78,9 +78,9 @@ class TEM:
 
         # Input parsing
         assert isinstance(vol, np.ndarray) and (len(vol.shape) == 3)
-        assert hasattr(angs, '__len__') and (len(angs) > 0)
-        assert (ax == 'X') or (ax == 'Y') or (ax == 'Z')
-        assert (mode == 'byte') or (mode == 'int') or (mode == 'real')
+        assert hasattr(angs, "__len__") and (len(angs) > 0)
+        assert (ax == "X") or (ax == "Y") or (ax == "Z")
+        assert (mode == "byte") or (mode == "int") or (mode == "real")
 
         # Call to IMOD binary (xyzproj)
 
@@ -88,37 +88,45 @@ class TEM:
         xyzproj_cmd = [IMOD_CMD_XYZPROJ]
         in_vol_path = self.__vol_file
         lio.write_mrc(vol, in_vol_path)
-        xyzproj_cmd += ['-inp', in_vol_path]
+        xyzproj_cmd += ["-inp", in_vol_path]
         out_vol_path = self.__micgraphs_file
-        xyzproj_cmd += ['-o', out_vol_path]
-        xyzproj_cmd += ['-ax', ax]
+        xyzproj_cmd += ["-o", out_vol_path]
+        xyzproj_cmd += ["-ax", ax]
         if isinstance(angs, range):
-            xyzproj_cmd += ['-an']
-            tangles = str(angs.start) + ',' + str(angs.stop) + ',' + str(angs.step)
+            xyzproj_cmd += ["-an"]
+            tangles = (
+                str(angs.start) + "," + str(angs.stop) + "," + str(angs.step)
+            )
         else:
-            xyzproj_cmd += ['-ta']
+            xyzproj_cmd += ["-ta"]
             tangles = str(angs[0])
             for i in range(1, len(angs)):
-                tangles += ',' + str(angs[i])
+                tangles += "," + str(angs[i])
         xyzproj_cmd += [tangles]
-        if mode == 'byte':
-            xyzproj_cmd += ['-m', '0']
-        elif mode == 'int':
-            xyzproj_cmd += ['-m', '1']
-        elif mode == 'real':
-            xyzproj_cmd += ['-m', '2']
+        if mode == "byte":
+            xyzproj_cmd += ["-m", "0"]
+        elif mode == "int":
+            xyzproj_cmd += ["-m", "1"]
+        elif mode == "real":
+            xyzproj_cmd += ["-m", "2"]
 
         # Command calling
         try:
-            with open(self.__log_file, 'a') as file_log:
-                file_log.write('\n[' + time.strftime("%c") + ']RUNNING COMMAND:-> ' + ' '.join(xyzproj_cmd) + '\n')
+            with open(self.__log_file, "a") as file_log:
+                file_log.write(
+                    "\n["
+                    + time.strftime("%c")
+                    + "]RUNNING COMMAND:-> "
+                    + " ".join(xyzproj_cmd)
+                    + "\n"
+                )
                 subprocess.call(xyzproj_cmd, stdout=file_log, stderr=file_log)
             self.__save_tangs_file(angs)
         except subprocess.CalledProcessError:
-            print('ERROR: Error calling the command:', xyzproj_cmd)
+            print("ERROR: Error calling the command:", xyzproj_cmd)
             raise subprocess.CalledProcessError
         except IOError:
-            print('ERROR: Log file could not be written:', self.__log_file)
+            print("ERROR: Log file could not be written:", self.__log_file)
             raise IOError
 
     def add_detector_noise(self, snr):
@@ -159,25 +167,31 @@ class TEM:
         # Building the command
         tilt_cmd = [IMOD_CMD_TILT]
         vol = lio.load_mrc(self.__vol_file, mmap=True, no_saxes=False)
-        tilt_cmd += ['-inp', self.__micgraphs_file]
-        tilt_cmd += ['-output', self.__rec3d_file]
-        tilt_cmd += ['-TILTFILE', self.__tangs_file]
+        tilt_cmd += ["-inp", self.__micgraphs_file]
+        tilt_cmd += ["-output", self.__rec3d_file]
+        tilt_cmd += ["-TILTFILE", self.__tangs_file]
         if thick is None:
-            tilt_cmd += ['-THICKNESS', str(vol.shape[0])]
+            tilt_cmd += ["-THICKNESS", str(vol.shape[0])]
         else:
             assert thick > 0
-            tilt_cmd += ['-THICKNESS', str(thick)]
+            tilt_cmd += ["-THICKNESS", str(thick)]
 
         # Command calling
         try:
-            with open(self.__log_file, 'a') as file_log:
-                file_log.write('\n[' + time.strftime("%c") + ']RUNNING COMMAND:-> ' + ' '.join(tilt_cmd) + '\n')
+            with open(self.__log_file, "a") as file_log:
+                file_log.write(
+                    "\n["
+                    + time.strftime("%c")
+                    + "]RUNNING COMMAND:-> "
+                    + " ".join(tilt_cmd)
+                    + "\n"
+                )
                 subprocess.call(tilt_cmd, stdout=file_log, stderr=file_log)
         except subprocess.CalledProcessError:
-            print('ERROR: Error calling the command:', tilt_cmd)
+            print("ERROR: Error calling the command:", tilt_cmd)
             raise subprocess.CalledProcessError
         except IOError:
-            print('ERROR: Log file could not be written:', self.__log_file)
+            print("ERROR: Log file could not be written:", self.__log_file)
             raise IOError
 
         # Swap Y-Z axes from the output given by IMOD
@@ -185,8 +199,7 @@ class TEM:
         # Flip Z-axis
         lio.write_mrc(np.flip(hold_rec, axis=2), self.__rec3d_file)
 
-
-    def set_header(self, data='mics', p_size=None, origin=None):
+    def set_header(self, data="mics", p_size=None, origin=None):
         """
         Set 3D reconstructed tomogram pixel (voxel) size using alter 'alterheader' IMOD script
 
@@ -194,35 +207,51 @@ class TEM:
         :param p_size: pixel size X, Y and Z dimensions
         :param origin: origin X, Y and Z dimensions
         """
-        assert (data == 'mics') or (data == 'rec3d')
+        assert (data == "mics") or (data == "rec3d")
         if p_size is not None:
-            assert hasattr(p_size, '__len__') and len(p_size) == 3
+            assert hasattr(p_size, "__len__") and len(p_size) == 3
         if origin is not None:
-            assert hasattr(origin, '__len__') and len(origin) == 3
+            assert hasattr(origin, "__len__") and len(origin) == 3
 
         # Call to IMOD binary (tilt)
 
         # Building the command
         aheader_cmd = [IMOD_CMD_AHEADER]
-        if data == 'mics':
-            aheader_cmd += [self.__micgraphs_file,]
+        if data == "mics":
+            aheader_cmd += [
+                self.__micgraphs_file,
+            ]
         else:
-            aheader_cmd += [self.__rec3d_file,]
+            aheader_cmd += [
+                self.__rec3d_file,
+            ]
         if p_size is not None:
-            aheader_cmd += ['-del', str(p_size[0]) + ',' + str(p_size[1]) + ',' + str(p_size[2])]
+            aheader_cmd += [
+                "-del",
+                str(p_size[0]) + "," + str(p_size[1]) + "," + str(p_size[2]),
+            ]
         if origin is not None:
-            aheader_cmd += ['-org', str(origin[0]) + ',' + str(origin[1]) + ',' + str(origin[2])]
+            aheader_cmd += [
+                "-org",
+                str(origin[0]) + "," + str(origin[1]) + "," + str(origin[2]),
+            ]
 
         # Command calling
         try:
-            with open(self.__log_file, 'a') as file_log:
-                file_log.write('\n[' + time.strftime("%c") + ']RUNNING COMMAND:-> ' + ' '.join(aheader_cmd) + '\n')
+            with open(self.__log_file, "a") as file_log:
+                file_log.write(
+                    "\n["
+                    + time.strftime("%c")
+                    + "]RUNNING COMMAND:-> "
+                    + " ".join(aheader_cmd)
+                    + "\n"
+                )
                 subprocess.call(aheader_cmd, stdout=file_log, stderr=file_log)
         except subprocess.CalledProcessError:
-            print('ERROR: Error calling the command:', aheader_cmd)
+            print("ERROR: Error calling the command:", aheader_cmd)
             raise subprocess.CalledProcessError
         except IOError:
-            print('ERROR: Log file could not be written:', self.__log_file)
+            print("ERROR: Log file could not be written:", self.__log_file)
             raise IOError
 
     def invert_mics_den(self):
@@ -251,14 +280,24 @@ class TEM:
         mics = lio.load_mrc(self.__micgraphs_file)
         angs = np.abs(np.radians(self.__load_tangs_file()))
         n_angs = len(angs)
-        shifts = mn + np.sin(angs)/np.sin(angs.max()) + rng.normal(0, n_sigma, n_angs)
+        shifts = (
+            mn
+            + np.sin(angs) / np.sin(angs.max())
+            + rng.normal(0, n_sigma, n_angs)
+        )
         split_fs = rng.uniform(0, 1, n_angs)
         for i, shift, split_f in zip(range(n_angs), shifts, split_fs):
             shift_x = shift / math.sqrt(split_f + 1)
             shift_y = split_f * shift_x
-            mics[:, :, i] = sp.ndimage.shift(mics[:,:,i], (shift_x, shift_y), output=None, order=3, mode='constant',
-                                             cval=0.0, prefilter=True)
+            mics[:, :, i] = sp.ndimage.shift(
+                mics[:, :, i],
+                (shift_x, shift_y),
+                output=None,
+                order=3,
+                mode="constant",
+                cval=0.0,
+                prefilter=True,
+            )
 
         # Save shited micrographs
         lio.write_mrc(mics, self.__micgraphs_file)
-

@@ -2,7 +2,7 @@
 Functionality for Affine Transformations
 """
 
-__author__ = 'Antonio Martinez-Sanchez'
+__author__ = "Antonio Martinez-Sanchez"
 
 import vtk
 import math
@@ -30,7 +30,7 @@ def vector_module(v):
     :param v: input vector (one dimensional numpy array)
     :return: the computed module
     """
-    return math.sqrt((v*v).sum())
+    return math.sqrt((v * v).sum())
 
 
 def poly_rotate_wxyz(in_vtp, w, x, y, z):
@@ -63,7 +63,7 @@ def poly_translate(in_vtp, t):
     """
 
     # Input parsing
-    assert hasattr(t, '__len__') and (len(t) == 3)
+    assert hasattr(t, "__len__") and (len(t) == 3)
 
     # Translation
     box_tr = vtk.vtkTransform()
@@ -126,14 +126,14 @@ def quat_to_angle_axis(qw, qx, qy, qz, deg=True):
     x = np.asarray((qx, qy, qz))
     norm = vector_module(x)
     if norm <= 0:
-        return 0, np.asarray((0., 0., 0.))
+        return 0, np.asarray((0.0, 0.0, 0.0))
     if deg:
-        ang_rad = (2. * math.atan2(norm, qw))
+        ang_rad = 2.0 * math.atan2(norm, qw)
         ang = math.degrees(ang_rad)
-        return ang, x / math.sin(.5 * ang_rad)
+        return ang, x / math.sin(0.5 * ang_rad)
     else:
-        ang = 2. *  math.atan2(norm, qw)
-        return ang, x / math.sin(.5 * ang)
+        ang = 2.0 * math.atan2(norm, qw)
+        return ang, x / math.sin(0.5 * ang)
 
 
 def angle_axis_to_quat(ang, x, y, z, deg=True):
@@ -149,11 +149,11 @@ def angle_axis_to_quat(ang, x, y, z, deg=True):
     """
     ax = np.asarray((x, y, z), dtype=float)
     ax /= vector_module(ax)
-    hold_ang = .5 * wrap_angle(ang, deg=deg)
+    hold_ang = 0.5 * wrap_angle(ang, deg=deg)
     if deg:
         hold_ang = math.radians(hold_ang)
     ca, sa = math.cos(hold_ang), math.sin(hold_ang)
-    return np.asarray((ca, ax[0]*sa, ax[1]*sa, ax[2]*sa), dtype=float)
+    return np.asarray((ca, ax[0] * sa, ax[1] * sa, ax[2] * sa), dtype=float)
 
 
 def rot_vect_quat(v, q):
@@ -177,7 +177,11 @@ def rot_vect_quat(v, q):
 
         # Rodrigues formula
         cos_ang, sin_ang = math.cos(ang), math.sin(ang)
-        return vc * cos_ang + np.cross(k, vc) * sin_ang + k * np.dot(k, vc) * (1.-cos_ang)
+        return (
+            vc * cos_ang
+            + np.cross(k, vc) * sin_ang
+            + k * np.dot(k, vc) * (1.0 - cos_ang)
+        )
     else:
         return v
 
@@ -213,7 +217,16 @@ def quat_to_mat(q):
     return np.array([[r00, r01, r02], [r10, r11, r12], [r20, r21, r22]])
 
 
-def tomo_rotate(tomo, q, center=None, active=True, order=3, mode='constant', cval=0.0, prefilter=True):
+def tomo_rotate(
+    tomo,
+    q,
+    center=None,
+    active=True,
+    order=3,
+    mode="constant",
+    cval=0.0,
+    prefilter=True,
+):
     """
     Applies the rotation defined in a quaternion to a tomogram
 
@@ -230,10 +243,10 @@ def tomo_rotate(tomo, q, center=None, active=True, order=3, mode='constant', cva
 
     # Input parsing
     assert isinstance(tomo, np.ndarray) and (len(tomo.shape) == 3)
-    assert hasattr(q, '__len__') and (len(q) == 4)
+    assert hasattr(q, "__len__") and (len(q) == 4)
     if center is None:
         # center = np.round(.5 * np.asarray(tomo.shape, dtype=np.float32))
-        center = .5 * (np.asarray(tomo.shape, dtype=np.float32) - 1)
+        center = 0.5 * (np.asarray(tomo.shape, dtype=np.float32) - 1)
     else:
         assert isinstance(tomo, np.ndarray) and (len(center) == 3)
 
@@ -249,12 +262,19 @@ def tomo_rotate(tomo, q, center=None, active=True, order=3, mode='constant', cva
         # Jax version (it should be faster when GPU available)
 
         # Compute grid
-        X, Y, Z = jax.numpy.meshgrid(np.arange(tomo.shape[0]), np.arange(tomo.shape[1]), np.arange(tomo.shape[2]),
-                              indexing='ij')
+        X, Y, Z = jax.numpy.meshgrid(
+            np.arange(tomo.shape[0]),
+            np.arange(tomo.shape[1]),
+            np.arange(tomo.shape[2]),
+            indexing="ij",
+        )
 
         # From indices to coordinates
-        X, Y, Z = (X - center[0]).astype(np.float32), (Y - center[1]).astype(np.float32), (Z - center[2]).astype(
-            np.float32)
+        X, Y, Z = (
+            (X - center[0]).astype(np.float32),
+            (Y - center[1]).astype(np.float32),
+            (Z - center[2]).astype(np.float32),
+        )
 
         # Grid rotation
         Xr = X * R[0, 0] + Y * R[1, 0] + Z * R[2, 0]
@@ -267,11 +287,17 @@ def tomo_rotate(tomo, q, center=None, active=True, order=3, mode='constant', cva
         # Re-mapping (interpolation)
         ts = tomo.size
         inds = np.zeros(shape=(3, ts), dtype=np.float32)
-        inds[0, :], inds[1, :], inds[2, :] = X.reshape(ts), Y.reshape(ts), Z.reshape(ts)
+        inds[0, :], inds[1, :], inds[2, :] = (
+            X.reshape(ts),
+            Y.reshape(ts),
+            Z.reshape(ts),
+        )
         # Jax does not support orders beyond 1
         if order > 1:
             order = 1
-        tomo_r = jax.scipy.ndimage.map_coordinates(tomo, inds, order=order, mode=mode, cval=cval)
+        tomo_r = jax.scipy.ndimage.map_coordinates(
+            tomo, inds, order=order, mode=mode, cval=cval
+        )
         tomo_r = np.array(tomo_r)
 
     except ImportError:
@@ -280,11 +306,19 @@ def tomo_rotate(tomo, q, center=None, active=True, order=3, mode='constant', cva
         # print('Warning: GPU acceleration by using JAX is not enabled for rotations!')
 
         # Compute grid
-        X, Y, Z = np.meshgrid(np.arange(tomo.shape[0]), np.arange(tomo.shape[1]), np.arange(tomo.shape[2]),
-                              indexing='ij')
+        X, Y, Z = np.meshgrid(
+            np.arange(tomo.shape[0]),
+            np.arange(tomo.shape[1]),
+            np.arange(tomo.shape[2]),
+            indexing="ij",
+        )
 
         # From indices to coordinates
-        X, Y, Z = (X - center[0]).astype(np.float32), (Y - center[1]).astype(np.float32), (Z - center[2]).astype(np.float32)
+        X, Y, Z = (
+            (X - center[0]).astype(np.float32),
+            (Y - center[1]).astype(np.float32),
+            (Z - center[2]).astype(np.float32),
+        )
 
         # Grid rotation
         Xr = X * R[0, 0] + Y * R[1, 0] + Z * R[2, 0]
@@ -297,8 +331,14 @@ def tomo_rotate(tomo, q, center=None, active=True, order=3, mode='constant', cva
         # Re-mapping (interpolation)
         ts = tomo.size
         inds = np.zeros(shape=(3, ts), dtype=np.float32)
-        inds[0, :], inds[1, :], inds[2, :] = X.reshape(ts), Y.reshape(ts), Z.reshape(ts)
-        tomo_r = spnd.interpolation.map_coordinates(tomo, inds, order=order, mode=mode, cval=cval, prefilter=prefilter)
+        inds[0, :], inds[1, :], inds[2, :] = (
+            X.reshape(ts),
+            Y.reshape(ts),
+            Z.reshape(ts),
+        )
+        tomo_r = spnd.interpolation.map_coordinates(
+            tomo, inds, order=order, mode=mode, cval=cval, prefilter=prefilter
+        )
 
     return tomo_r.reshape(tomo.shape)
 
@@ -315,7 +355,7 @@ def vect_rotate(vect, q, active=True):
 
     # Input parsing
     assert isinstance(vect, np.ndarray) and (len(vect) == 3)
-    assert hasattr(q, '__len__') and (len(q) == 4)
+    assert hasattr(q, "__len__") and (len(q) == 4)
 
     # Getting rotation matrix
     q /= vector_module(q)
@@ -336,10 +376,15 @@ def quat_mult(q1, q2):
     """
     w0, x0, y0, z0 = q1
     w1, x1, y1, z1 = q2
-    hold_q = np.array([-x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0,
-                       x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
-                       -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
-                       x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0], dtype=np.float64)
+    hold_q = np.array(
+        [
+            -x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0,
+            x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
+            -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
+            x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0,
+        ],
+        dtype=np.float64,
+    )
     return hold_q
 
 
@@ -372,27 +417,27 @@ def ortho_vector(v):
     """
     # Handle input is a basis
     if (v[0] < LOW_VALUE) and (v[1] < LOW_VALUE):
-        return np.asarray((1., 0., 0.))
+        return np.asarray((1.0, 0.0, 0.0))
     elif (v[0] < LOW_VALUE) and (v[2] < LOW_VALUE):
-        return np.asarray((1., 0., 0.))
+        return np.asarray((1.0, 0.0, 0.0))
     elif (v[1] < LOW_VALUE) and (v[2] < LOW_VALUE):
-        return np.asarray((0., 1., 0.))
+        return np.asarray((0.0, 1.0, 0.0))
     # Search for the most orthogonal basis vector
     v_abs = np.abs(v)
     if v_abs[0] < v_abs[1]:
         if v_abs[0] < v_abs[2]:
-            other = np.asarray((1., 0., 0.))
+            other = np.asarray((1.0, 0.0, 0.0))
         else:
-            other = np.asarray((0., 0., 1.))
+            other = np.asarray((0.0, 0.0, 1.0))
     else:
         if v_abs[1] < v_abs[2]:
-            other = np.asarray((0., 1., 0.))
+            other = np.asarray((0.0, 1.0, 0.0))
         else:
-            other = np.asarray((0., 0., 1.))
+            other = np.asarray((0.0, 0.0, 1.0))
     return np.cross(v, other)
 
 
-def vect_to_zmat(v_in, mode='active'):
+def vect_to_zmat(v_in, mode="active"):
     """
     Computes the matrix to rotate unit Z-axis vector to a given vector
 
@@ -404,20 +449,22 @@ def vect_to_zmat(v_in, mode='active'):
     # Normalization
     n = v_in / vector_module(v_in)
 
-
     # Computing angles in Extrinsic ZYZ system
     alpha = np.arccos(n[2])
     beta = np.arctan2(n[1], n[0])
 
     # Transform to Relion system (intrinsic ZY'Z'' where rho is free)
-    rot, tilt, psi = 0., wrap_angle(math.degrees(alpha), deg=True), \
-                     wrap_angle(180.-math.degrees(beta), deg=True)
+    rot, tilt, psi = (
+        0.0,
+        wrap_angle(math.degrees(alpha), deg=True),
+        wrap_angle(180.0 - math.degrees(beta), deg=True),
+    )
 
     # Matrix computation
     M = rot_mat_zyz(rot, tilt, psi, deg=True)
 
     # By default is active, invert if passive
-    if mode == 'passive':
+    if mode == "passive":
         M = M.T
 
     return M
@@ -437,21 +484,25 @@ def rot_mat_zyz(rot, tilt, psi, deg=True):
 
     # XMIPP doc
     if deg:
-        rot, tilt, psi = math.radians(rot), math.radians(tilt), math.radians(psi)
+        rot, tilt, psi = (
+            math.radians(rot),
+            math.radians(tilt),
+            math.radians(psi),
+        )
     mt = np.zeros(shape=(3, 3), dtype=np.float32)
     ca, sa = math.cos(rot), math.sin(rot)
     cb, sb = math.cos(tilt), math.sin(tilt)
     cg, sg = math.cos(psi), math.sin(psi)
-    cc, cs = cb*ca, cb*sa
-    sc, ss = sb*ca, sb*sa
+    cc, cs = cb * ca, cb * sa
+    sc, ss = sb * ca, sb * sa
 
     # XMIPP doc inverted
-    mt[0][0] = cg*cc - sg*sa
-    mt[1][0] = cg*cs + sg*ca
-    mt[2][0] = -cg*sb
-    mt[0][1] = -sg*cc - cg*sa
-    mt[1][1] = -sg*cs + cg*ca
-    mt[2][1] = sg*sb
+    mt[0][0] = cg * cc - sg * sa
+    mt[1][0] = cg * cs + sg * ca
+    mt[2][0] = -cg * sb
+    mt[0][1] = -sg * cc - cg * sa
+    mt[1][1] = -sg * cs + cg * ca
+    mt[2][1] = sg * sb
     mt[0][2] = sc
     mt[1][2] = ss
     mt[2][2] = cb
@@ -481,9 +532,17 @@ def tomo_shift(tomo, shift):
 
     # Input parsing
     assert isinstance(tomo, np.ndarray) and (len(tomo.shape) == 3)
-    assert hasattr(shift, '__len__') and (len(shift) == 3)
-    dx, dy, dz = float(tomo.shape[0]), float(tomo.shape[1]), float(tomo.shape[2])
-    dx2, dy2, dz2 = math.floor(.5*dx), math.floor(.5*dy), math.floor(.5*dz)
+    assert hasattr(shift, "__len__") and (len(shift) == 3)
+    dx, dy, dz = (
+        float(tomo.shape[0]),
+        float(tomo.shape[1]),
+        float(tomo.shape[2]),
+    )
+    dx2, dy2, dz2 = (
+        math.floor(0.5 * dx),
+        math.floor(0.5 * dy),
+        math.floor(0.5 * dz),
+    )
     if isinstance(shift, np.ndarray):
         delta = np.copy(shift)
     else:
@@ -492,22 +551,27 @@ def tomo_shift(tomo, shift):
 
     # Generating the grid
     x_l, y_l, z_l = -dx2, -dy2, -dz2
-    x_h, y_h, z_h = -dx2+dx, -dy2+dy, -dz2+dz
-    X, Y, Z = np.meshgrid(np.arange(x_l, x_h), np.arange(y_l, y_h), np.arange(z_l, z_h), indexing='xy')
+    x_h, y_h, z_h = -dx2 + dx, -dy2 + dy, -dz2 + dz
+    X, Y, Z = np.meshgrid(
+        np.arange(x_l, x_h),
+        np.arange(y_l, y_h),
+        np.arange(z_l, z_h),
+        indexing="xy",
+    )
 
     # Check for trivial dimensions
     ids = np.where(dim <= 1)[0]
     delta[ids] = 0
 
     # Shift grid in Fourier space
-    delta[0], delta[1], delta[2] = delta[0]/dx, delta[1]/dy, delta[2]/dz
-    X = np.fft.ifftshift(delta[0]*X + delta[1]*Y + delta[2]*Z)
+    delta[0], delta[1], delta[2] = delta[0] / dx, delta[1] / dy, delta[2] / dz
+    X = np.fft.ifftshift(delta[0] * X + delta[1] * Y + delta[2] * Z)
     del Y, Z
 
     # Tomogram shifting in Fourier space
     j = np.complex(0, 1)
     img = np.fft.fftn(tomo)
-    return np.real(np.fft.ifftn(img * np.exp(-2.*np.pi*j*X)))
+    return np.real(np.fft.ifftn(img * np.exp(-2.0 * np.pi * j * X)))
 
 
 def uniform_sampling_so3(n):

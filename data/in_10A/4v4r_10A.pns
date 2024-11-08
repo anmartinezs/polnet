@@ -5,4 +5,3 @@ PMER_L = 1.2
 PMER_L_MAX = 3000
 PMER_OCC = 0.5
 PMER_OVER_TOL = 0.01
-    

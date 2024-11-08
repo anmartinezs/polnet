@@ -11,6 +11,7 @@ import skimage
 # Other plausible chices are 0.225, 0.356 and 0.425 (see https://www.cgl.ucsf.edu/chimera/docs/UsersGuide/midas/molmap.html)
 SIGMA_FACTOR = 0.187
 
+
 def add_cloud_gauss(tomo, coords, g_std, value):
     """
     Add a translated Gaussian at the specified coordinates
@@ -27,15 +28,27 @@ def add_cloud_gauss(tomo, coords, g_std, value):
     # Mark Gaussian centers
     hold_tomo = np.zeros(shape=tomo.shape, dtype=np.float32)
     for coord in coords:
-        x, y, z = int(round(coord[0])), int(round(coord[1])), int(round(coord[2]))
+        x, y, z = (
+            int(round(coord[0])),
+            int(round(coord[1])),
+            int(round(coord[2])),
+        )
         # Detect limits
-        if 0 <= x < tomo.shape[0] and 0 <= y < tomo.shape[1] and 0 <= z < tomo.shape[2]:
+        if (
+            0 <= x < tomo.shape[0]
+            and 0 <= y < tomo.shape[1]
+            and 0 <= z < tomo.shape[2]
+        ):
             hold_tomo[x, y, z] = 1
-    print('\t\t-Time placing atoms:', time.time() - hold_time, 'secs')
+    print("\t\t-Time placing atoms:", time.time() - hold_time, "secs")
 
     hold_time = time.time()
     # Building Guassian model
-    nx, ny, nz = (tomo.shape[0] - 1) * .5, (tomo.shape[1] - 1) * .5, (tomo.shape[2] - 1) * .5
+    nx, ny, nz = (
+        (tomo.shape[0] - 1) * 0.5,
+        (tomo.shape[1] - 1) * 0.5,
+        (tomo.shape[2] - 1) * 0.5,
+    )
     if (nx % 1) == 0:
         arr_x = np.concatenate((np.arange(-nx, 0, 1), np.arange(0, nx + 1, 1)))
     else:
@@ -60,7 +73,7 @@ def add_cloud_gauss(tomo, coords, g_std, value):
         else:
             nz = math.ceil(nz)
             arr_z = np.concatenate((np.arange(-nz, 0, 1), np.arange(0, nz, 1)))
-    [X, Y, Z] = np.meshgrid(arr_x, arr_y, arr_z, indexing='ij')
+    [X, Y, Z] = np.meshgrid(arr_x, arr_y, arr_z, indexing="ij")
     X = X.astype(np.float32, copy=False)
     Y = Y.astype(np.float32, copy=False)
     Z = Z.astype(np.float32, copy=False)
@@ -68,23 +81,29 @@ def add_cloud_gauss(tomo, coords, g_std, value):
     del X
     del Y
     del Z
-    gauss = (1/(g_std*g_std*g_std*math.sqrt(2*np.pi))) * np.exp(-R / (2. * g_std * g_std))
-    print('\t\t-Time building Gaussian model:', time.time() - hold_time, 'secs')
+    gauss = (1 / (g_std * g_std * g_std * math.sqrt(2 * np.pi))) * np.exp(
+        -R / (2.0 * g_std * g_std)
+    )
+    print("\t\t-Time building Gaussian model:", time.time() - hold_time, "secs")
 
     hold_time = time.time()
     # Convolution
-    tomo_conv = np.fft.fftshift(np.real(np.fft.ifftn(np.fft.fftn(hold_tomo) * np.fft.fftn(gauss))))
+    tomo_conv = np.fft.fftshift(
+        np.real(np.fft.ifftn(np.fft.fftn(hold_tomo) * np.fft.fftn(gauss)))
+    )
     # import scipy
     # tomo_conv = scipy.fft.fftshift(scipy.real(scipy.fft.ifftn(scipy.fft.fftn(hold_tomo) * scipy.fft.fftn(gauss))))
 
     # Add influence
     tomo_conv *= value
-    print('\t\t-Time convolution:', time.time() - hold_time, 'secs')
+    print("\t\t-Time convolution:", time.time() - hold_time, "secs")
     # Adding the Gaussian to the input tomogram
     return tomo_conv
 
 
-def pdb_2_mrc(file_name, output_file, apix, res, offset, het, selected_atoms, model):
+def pdb_2_mrc(
+    file_name, output_file, apix, res, offset, het, selected_atoms, model
+):
     """
     Converts a PDB file to an MRC file.
 
@@ -98,12 +117,24 @@ def pdb_2_mrc(file_name, output_file, apix, res, offset, het, selected_atoms, mo
     :param model: Model number in the PDB file to use (None to include all models).
     """
 
-    print('Processing PDB:', file_name)
-    
+    print("Processing PDB:", file_name)
+
     # HO is a hydrogen attached to an oxygen. 'W' is water (infrequently found)
-    atomdefs={'H':(1.0,1.00794),'HO':(1.0,1.00794),'C':(6.0,12.0107),'A':(7.0,14.00674),'N':(7.0,14.00674),'O':(8.0,15.9994),'P':(15.0,30.973761),'K':(19.0,39.0983),'S':(16.0,32.066),'W':(18.0,1.00794*2.0+15.9994),'AU':(79.0,196.96655) }
-    transmap=str.maketrans("", "", "0123456789")
-    
+    atomdefs = {
+        "H": (1.0, 1.00794),
+        "HO": (1.0, 1.00794),
+        "C": (6.0, 12.0107),
+        "A": (7.0, 14.00674),
+        "N": (7.0, 14.00674),
+        "O": (8.0, 15.9994),
+        "P": (15.0, 30.973761),
+        "K": (19.0, 39.0983),
+        "S": (16.0, 32.066),
+        "W": (18.0, 1.00794 * 2.0 + 15.9994),
+        "AU": (79.0, 196.96655),
+    }
+    transmap = str.maketrans("", "", "0123456789")
+
     try:
         infile = open(file_name, "r")
     except:
@@ -126,9 +157,9 @@ def pdb_2_mrc(file_name, output_file, apix, res, offset, het, selected_atoms, mo
                 break
             if not stm:
                 continue
-            
+
         # process all models
-        if line[:4] == 'ATOM' or (line[:6] == 'HETATM' and het):
+        if line[:4] == "ATOM" or (line[:6] == "HETATM" and het):
             if selected_atoms and not (line[21] in selected_atoms):
                 continue
             try:
@@ -138,63 +169,82 @@ def pdb_2_mrc(file_name, output_file, apix, res, offset, het, selected_atoms, mo
                 z = float(line[46:54])
                 coords.append([x, y, z])
             except:
-                print("PDB Parse error:\n%s\n'%s','%s','%s'  '%s','%s','%s'\n" % (
-                    line, line[12:14], line[6:11], line[22:26], line[30:38], line[38:46], line[46:54]))
+                print(
+                    "PDB Parse error:\n%s\n'%s','%s','%s'  '%s','%s','%s'\n"
+                    % (
+                        line,
+                        line[12:14],
+                        line[6:11],
+                        line[22:26],
+                        line[30:38],
+                        line[38:46],
+                        line[46:54],
+                    )
+                )
                 print(a, x, y, z)
 
             if a in atoms:
                 atoms[a].append([x, y, z])
             else:
                 atoms[a] = [[x, y, z]]
-        
+
             amin = [min(x, amin[0]), min(y, amin[1]), min(z, amin[2])]
             amax = [max(x, amax[0]), max(y, amax[1]), max(z, amax[2])]
 
-
     infile.close()
-   
+
     # Prepare coords
     coords = np.array(coords, dtype=np.float32)
     amax = np.array(amax, dtype=np.float32)
     amin = np.array(amin, dtype=np.float32)
-    
+
     # Calculate center of mass
-    cm = np.mean(coords, axis=0)  
-    print('\tCenter of mass:', cm)
+    cm = np.mean(coords, axis=0)
+    print("\tCenter of mass:", cm)
 
     # Calculate box size
-    print('\tOffset:', offset)
-    axis_size = np.ceil((amax - amin + 2 * offset)).astype(np.int32) 
+    print("\tOffset:", offset)
+    axis_size = np.ceil((amax - amin + 2 * offset)).astype(np.int32)
     max_dimension = np.max(axis_size)
     box_size = [max_dimension, max_dimension, max_dimension]
     print("\tInitial box size:", box_size)
 
-    tomo_final = np.zeros((box_size[0], box_size[1], box_size[2]), dtype=np.float32)
-    
+    tomo_final = np.zeros(
+        (box_size[0], box_size[1], box_size[2]), dtype=np.float32
+    )
+
     # Modify coordinates
     for key, coord_list in atoms.items():
         # Use scalar dimensions
         print("\tAdding atoms:", str(key))
-        tomo_size = np.zeros((box_size[0], box_size[1], box_size[2]), dtype=np.float32)
-        c = np.array(coord_list, dtype=np.float32) 
+        tomo_size = np.zeros(
+            (box_size[0], box_size[1], box_size[2]), dtype=np.float32
+        )
+        c = np.array(coord_list, dtype=np.float32)
         c -= cm
-        c[:,0] += box_size[0] / 2 - 1
-        c[:,1] += box_size[1] / 2 - 1
-        c[:,2] += box_size[2] / 2 - 1
+        c[:, 0] += box_size[0] / 2 - 1
+        c[:, 1] += box_size[1] / 2 - 1
+        c[:, 2] += box_size[2] / 2 - 1
         value = atomdefs[key][0]
         tomo_size = add_cloud_gauss(tomo_size, c, SIGMA_FACTOR, value)
         tomo_final += tomo_size
-        
+
     # Apply transform
-    print('\tRescaling (scale=' + str(1/apix) + ')...')
-    tomo_final = skimage.transform.rescale(tomo_final, scale=1/apix, order=0, anti_aliasing = True)
+    print("\tRescaling (scale=" + str(1 / apix) + ")...")
+    tomo_final = skimage.transform.rescale(
+        tomo_final, scale=1 / apix, order=0, anti_aliasing=True
+    )
     if res > apix:
         f_res = res / apix
-        print('\tLow-pass filter by (f_res=' + str(SIGMA_FACTOR * f_res) + ')...')
-        tomo_final = scipy.ndimage.gaussian_filter(tomo_final, SIGMA_FACTOR*f_res)
+        print(
+            "\tLow-pass filter by (f_res=" + str(SIGMA_FACTOR * f_res) + ")..."
+        )
+        tomo_final = scipy.ndimage.gaussian_filter(
+            tomo_final, SIGMA_FACTOR * f_res
+        )
     tomo_final = tomo_final.astype(np.float32)
     print("\tFinal box size: ", tomo_final.shape)
-    
+
     # #tipificar
     # tomo_final -= tomo_final.mean()
     # tomo_final /= tomo_final.std()

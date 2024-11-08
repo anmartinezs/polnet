@@ -30,12 +30,12 @@ Here is how to get it installed:
     conda create --name polnet pip
     conda activate polnet
     ```
-   
+
 3. Install PolNet package with its requirements:
     ```console
     pip install -e .
     ```
-**For developers** who do not want to install PolNet in the virtual environment as a package, you can only install 
+**For developers** who do not want to install PolNet in the virtual environment as a package, you can only install
 the requirements by:
 
     pip install -r requirements.txt
@@ -51,15 +51,15 @@ First open **Jupyter** by running:
 ```console
 jupyter notebook
 ```
-If you are not familiar with jupyter notebooks, first get started with https://docs.jupyter.org/en/latest/running.html 
+If you are not familiar with jupyter notebooks, first get started with https://docs.jupyter.org/en/latest/running.html
 
 To generate a synthetic dataset run on **Jupyter** next notebook: **gui/gen_dataset.ipynb**
 
 To create you own structural models next Jupyter notebooks are available:
-    
+
 1. Membranes:  **gui/create_membrane_models.ipynb**
 2. Filaments:  **gui/create_filament_models.ipynb**
-3. Macromolecules: 
+3. Macromolecules:
    - Atomic model (PDB) to electron density map (MRC): **gui/atomic_to_density.ipynb**
    - Only for membrane bound macromolecules: **gui/align_membrane_proteins.ipynb**
    - Models: **gui/create_macromolecule_models.ipynb**
@@ -82,13 +82,13 @@ In addition, table in **docs/molecules_table.md** contains more detailed descrip
   * **core**: functionality required by the notebooks.
 * **scripts**: python scripts for generating different types of synthetic datasets. Folders:
   + **data_gen**: scripts for data generation.
-    * **deprecated**: contains 
+    * **deprecated**: contains
     some scripts for evaluations carried out during the software development, they are not prepared for external users
     because some hardcoded paths need to be modified.
       * **templates**: scripts for building the structural units for macromolecules (requires the installation **EMAN2**). Their usage is strongly deprecated, now GUI notebooks include all functionality.
   + **csv**: scripts for postprocessing the CSV generated files.
   + **data_prep**: script to convert the generated dataset in [nn-UNet](https://github.com/MIC-DKFZ/nnUNet) format.
-* **tests**: unit tests for functionalities in **polnet**. The script **tests/test_transformations.py** requires to generate at 
+* **tests**: unit tests for functionalities in **polnet**. The script **tests/test_transformations.py** requires to generate at
 least 1 output tomo with the script **scripts/all_features.py** and modified the hardcoded input paths, that is because
 the size of the input data avoid to upload them to the repository.
 * **data**: contains input data, mainly macromolecules densities and configuration input files, that con be used to simulate tomograms. These are the default input, an user can add/remove/modify these input data using the notebooks in **GUI**.
@@ -97,21 +97,18 @@ the size of the input data avoid to upload them to the repository.
   * **in_mbsx**: input models for membrane structures.
   * **tempaltes**: atomic models and density maps used by macromolecular models.
 * **docs**:
-  * API documentation. 
+  * API documentation.
   * A PDF with the suplementary material for [1] with the next tables:
     + Glossary of acronyms by order of appearance in the main text.
     + Glossary mathematical symbols defined in the main text organized by scope
     + Table Variables used by the input files to model the generators.
-    + Table with the structures used to simulate the cellular context. 
+    + Table with the structures used to simulate the cellular context.
 
 ### Code documentation
 
-The API documentation for polnet Python package is available in [docs/apidoc/index.html](http://htmlpreview.github.io/?https://raw.githubusercontent.com/anmartinezs/polnet/main/docs/apidoc/index.html) 
+The API documentation for polnet Python package is available in [docs/apidoc/index.html](http://htmlpreview.github.io/?https://raw.githubusercontent.com/anmartinezs/polnet/main/docs/apidoc/index.html)
 
 
 ## Main publication (Citation)
 
 [1] Martinez-Sanchez A.*, and Lamm L., Jasnin M. and Phelippeau H. (2024) "Simulating the cellular context in synthetic datasets for cryo-electron tomography" *IEEE Transactions on Medical Imaging* [10.1109/TMI.2024.3398401](https://doi.org/10.1109/TMI.2024.3398401)
-
-
-

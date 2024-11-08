@@ -1,14 +1,14 @@
-HEADER    RIBOSOME                                2005-09-30  XXXX              
-AUTHOR    S.PETRY, D.E.BRODERSEN, F.V.MURPHY IV, C.M.DUNHAM, M.SELMER,          
-AUTHOR   2 M.J.TARRY, A.C.KELLEY, V.RAMAKRISHNAN                                
-JRNL        AUTH   S.Petry, D.E.Brodersen, F.V.Murphy IV, C.M.Dunham, M.Selmer, 
-JRNL        AUTH 2 M.J.Tarry, A.C.Kelley, V.Ramakrishnan                        
-JRNL        TITL   Crystal Structures of the Ribosome in Complex with Release   
-JRNL        TITL 2 Factors RF1 and RF2 Bound to a Cognate Stop Codon.           
-JRNL        REF    Cell(Cambridge,Mass.)         V. 123  1255 2005              
-JRNL        REFN        CELLB5  US      0092-8674                               
-JRNL        PMID   16377566                                                     
-JRNL        DOI    10.1016/j.cell.2005.09.039                                   
+HEADER    RIBOSOME                                2005-09-30  XXXX
+AUTHOR    S.PETRY, D.E.BRODERSEN, F.V.MURPHY IV, C.M.DUNHAM, M.SELMER,
+AUTHOR   2 M.J.TARRY, A.C.KELLEY, V.RAMAKRISHNAN
+JRNL        AUTH   S.Petry, D.E.Brodersen, F.V.Murphy IV, C.M.Dunham, M.Selmer,
+JRNL        AUTH 2 M.J.Tarry, A.C.Kelley, V.Ramakrishnan
+JRNL        TITL   Crystal Structures of the Ribosome in Complex with Release
+JRNL        TITL 2 Factors RF1 and RF2 Bound to a Cognate Stop Codon.
+JRNL        REF    Cell(Cambridge,Mass.)         V. 123  1255 2005
+JRNL        REFN        CELLB5  US      0092-8674
+JRNL        PMID   16377566
+JRNL        DOI    10.1016/j.cell.2005.09.039
 HELIX    1   1 LEU E   44  ALA E   62  1                                  19
 HELIX    2   2 GLN E   78  ARG E   87  1                                  10
 HELIX    3   3 PHE E  105  ALA E  120  1                                  16
@@ -153,10 +153,10 @@ SHEET   60  60 1 PHE T  71  VAL T  73  0
 SHEET   61  61 1 ILE V  31  THR V  33  0
 SHEET   62  62 1 THR V  48  TYR V  52  0
 SHEET   63  63 1 HIS V  57  TYR V  61  0
-CRYST1  518.993  518.993  365.139  90.00  90.00  90.00 P 43 21 2     8          
-SCALE1      0.001927  0.000000  0.000000        0.00000                         
-SCALE2      0.000000  0.001927  0.000000        0.00000                         
-SCALE3      0.000000  0.000000  0.002739        0.00000                         
+CRYST1  518.993  518.993  365.139  90.00  90.00  90.00 P 43 21 2     8
+SCALE1      0.001927  0.000000  0.000000        0.00000
+SCALE2      0.000000  0.001927  0.000000        0.00000
+SCALE3      0.000000  0.000000  0.002739        0.00000
 ATOM      1  O5' U   A   5    -197.933  54.893 -88.164  1.00236.07           O
 ATOM      2  C5' U   A   5    -197.035  56.007 -88.202  1.00236.07           C
 ATOM      3  C4' U   A   5    -196.927  56.565 -89.613  1.00236.07           C
