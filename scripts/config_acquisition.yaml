@@ -1,0 +1,19 @@
+step: acquisition
+acquisition_name: basic
+detector_snr:
+- 1
+- 2
+malign_mn: 1
+malign_mx: 1.5
+malign_sg: 0.2
+ntomos: 20
+out_dir: test_docker
+root_path: data
+surf_dec: 0.9
+tilt_angs:
+- -60
+- 61
+- 3
+voi_vsize: 10
+multi_process: true
+verbose: false
