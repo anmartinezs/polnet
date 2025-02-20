@@ -1,0 +1,1 @@
+docker build . -t polnet_docker
