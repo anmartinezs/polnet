@@ -46,6 +46,8 @@ The installation has been tested in Ubuntu 22.04 and Windows 10 and 11.
 
 ## Usage
 
+### Local usage
+
 First open **Jupyter** by running:
 
 ```console
@@ -67,6 +69,27 @@ To create you own structural models next Jupyter notebooks are available:
 Exemplary videos for using the GUI are avilable at [Zenodo](https://zenodo.org/records/10735525).
 
 **Important note**: all Jupyter notebooks are thoroughly self-documented in order to guide the user in the process. In addition, they contain graphic objects and default setting to facilitate the process.
+
+### Launch with Docker
+
+#### Build docker
+
+```
+bash create_docker.sh
+```
+
+#### Digital sample generation
+First, you need to modify the config file (example:`scripts/config_sample.yaml`).
+
+```
+bash run_docker.sh --out_dir /path/to/output/directory --config /path/to/config_script.yaml
+```
+
+#### Acquisition simulation
+First, you need to modify the config file (example:`scripts/config_acquisition.yaml`).
+```
+bash run_docker.sh --out_dir /path/to/output/directory --config /path/to/config_script.yaml
+```
 
 ## Documentation
 
@@ -113,26 +136,6 @@ The API documentation for polnet Python package is available in [docs/apidoc/ind
 
 [1] Martinez-Sanchez A.*, and Lamm L., Jasnin M. and Phelippeau H. (2024) "Simulating the cellular context in synthetic datasets for cryo-electron tomography" *IEEE Transactions on Medical Imaging* [10.1109/TMI.2024.3398401](https://doi.org/10.1109/TMI.2024.3398401)
 
-# Launch with Docker
-
-## Build docker
-
-```
-bash create_docker.sh
-```
-
-## Digital sample generation
-First, you need to modify the config file (example:`scripts/config_sample.yaml`).
-
-```
-bash run_docker.sh --out_dir /path/to/output/directory --config /path/to/config_script.yaml
-```
-
-## Acquisition simulation
-First, you need to modify the config file (example:`scripts/config_acquisition.yaml`).
-```
-bash run_docker.sh --out_dir /path/to/output/directory --config /path/to/config_script.yaml
-```
 
 
 

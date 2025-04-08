@@ -49,7 +49,7 @@ for file_path in glob.iglob(in_dir + "/*.*"):
         round(float(v_sizes[1]), v_size_decimal),
         round(float(v_sizes[2]), v_size_decimal),
     )
-    if (v_sizes[0] != v_sizes[1]) or (v_sizes[0] != v_sizes[1]):
+    if (v_sizes[0] != v_sizes[1]) or (v_sizes[0] != v_sizes[2]):
         print(
             "\t-WARNING: this tomograms cannot pre processes due to its anisotropic voxel size ",
             v_sizes,
