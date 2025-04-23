@@ -378,6 +378,8 @@ class SetMembranes:
         :param gen_rnd_surf: an of object that inherits from lrandom.SurfGen class to generate random instances with
                              membrane surface parameters, therefore the objects class determine the shape of the membranes
                              generated
+        :param param_rg: 3-tuple with parameters relative to membrane geometry (min_radius, max_radius,
+                         max_eccentricity)
         :param thick_rg: membrane thickness range (2-tuple)
         :param layer_s: lipid layer range (2-tuple)
         :param occ: occupancy threshold in percentage [0, 100]%

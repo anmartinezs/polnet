@@ -253,9 +253,12 @@ for tomod_id in range(NTOMOS):
             hold_occ = OccGen(hold_occ).gen_occupancy()
 
         # Membrane random generation by type
+        hold_max_rad = memb.get_max_rad()
+        if hold_max_rad is None:
+            hold_max_rad = math.sqrt(3) * max(VOI_SHAPE) * VOI_VSIZE
         param_rg = (
             memb.get_min_rad(),
-            math.sqrt(3) * max(VOI_SHAPE) * VOI_VSIZE,
+            hold_max_rad,
             memb.get_max_ecc(),
         )
         if memb.get_type() == "sphere":
