@@ -10,10 +10,8 @@ vtk>=9.3.0,<10
 pandas>=2.1.4,<3
 scikit-image>=0.22.0,<1
 PyYAML>=6.0
-
-# --- Optional: curvatubes (GPU membrane generation) ---
-# torch>=2.0
-# nibabel>=5.0
+torch>=2.0
+nibabel>=5.0
 
 # --- Optional: GUI (Jupyter notebooks) ---
 # jupyter>=1.0.0

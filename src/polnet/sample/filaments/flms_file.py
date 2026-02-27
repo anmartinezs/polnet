@@ -24,6 +24,7 @@ class FlmsFile:
     """
 
     def __init__(self):
+        """Initialise an empty filament configuration."""
         self.__params = {}
 
     @property

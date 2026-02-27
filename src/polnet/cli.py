@@ -19,6 +19,7 @@ Usage::
 import argparse
 import logging
 from pathlib import Path
+import shutil
 import sys
 
 import yaml
@@ -47,7 +48,7 @@ def app() -> int:
             f"Error: Configuration file {config_path} does not exist.",
             file=sys.stderr,
         )
-        sys.exit(1)
+        return 1
 
     with open(config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
@@ -65,13 +66,12 @@ def app() -> int:
         print("Error: Config missing 'tem' section.", file=sys.stderr)
         return 1
 
-    # Follow up with the logging configuration
     if args.log_dir is not None:
         log_dir = Path(args.log_dir)
     else:
         root = config["folders"].get("root", None)
         if root is None:
-            root = Path(__file__).parents[2]
+            root = Path.cwd()
             config["folders"]["root"] = str(root)
 
         if "output" not in config["folders"]:
@@ -102,6 +102,16 @@ def app() -> int:
         config["global"]["ntomos"] = args.ntomos
         logger.debug("Number of tomograms overridden to %s", args.ntomos)
 
+    # Ensure root is resolved before computing the output directory
+    root = config["folders"].get("root", None)
+    if root is None:
+        root = str(Path.cwd())
+        config["folders"]["root"] = root
+
+    out_dir = Path(root) / config["folders"]["output"]
+    out_dir.mkdir(parents=True, exist_ok=True)
+    _save_config_copy(config_path, out_dir, args)
+
     try:
         gen_tomos(config)
     except Exception as e:
@@ -109,6 +119,54 @@ def app() -> int:
         logger.debug("Traceback:", exc_info=True)
         return 1
     return 0
+
+
+def _reconstruct_command(args: argparse.Namespace) -> str:
+    """Rebuild the CLI invocation string from parsed arguments.
+
+    Args:
+        args: Parsed argument namespace.
+
+    Returns:
+        The reconstructed command as a single string.
+    """
+    parts = ["polnet", args.config]
+    for _ in range(args.verbose):
+        parts.append("-v")
+    if args.seed is not None:
+        parts.extend(["-s", str(args.seed)])
+    if args.ntomos is not None:
+        parts.extend(["-n", str(args.ntomos)])
+    if args.log_dir is not None:
+        parts.extend(["-o", args.log_dir])
+    return " ".join(parts)
+
+
+def _save_config_copy(
+    config_path: Path, out_dir: Path, args: argparse.Namespace
+) -> None:
+    """Copy the YAML config into the output folder with a CLI provenance comment.
+
+    A comment block is appended at the end of the copy recording the
+    exact command that was used to launch the run, so that any output
+    directory is fully self-documenting.
+
+    Args:
+        config_path: Original config file.
+        out_dir: Destination output directory (must already exist).
+        args: Parsed CLI arguments.
+    """
+    saved_config = out_dir / config_path.name
+    shutil.copy2(config_path, saved_config)
+
+    cli_cmd = _reconstruct_command(args)
+    with open(saved_config, "a", encoding="utf-8") as f:
+        f.write("\n# ---------------------------------------------------------\n")
+        f.write(f"# Command used to generate these tomograms:\n")
+        f.write(f"#   {cli_cmd}\n")
+        f.write("# ---------------------------------------------------------\n")
+
+    logger.debug("Config saved to %s", saved_config)
 
 
 def config_parser() -> argparse.ArgumentParser:
@@ -169,4 +227,4 @@ def config_parser() -> argparse.ArgumentParser:
 
 
 if __name__ == "__main__":
-    app()
+    sys.exit(app())

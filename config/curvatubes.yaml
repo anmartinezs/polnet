@@ -10,7 +10,7 @@ global:
     ntomos: 1
     seed: 42
 sample:
-    voi_shape: [300, 300, 250]
+    voi_shape: [500, 500, 250]
     voi_offset: [4, 4, 4]
     v_size: 10.0
     membranes:

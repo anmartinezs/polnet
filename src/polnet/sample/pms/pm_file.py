@@ -24,6 +24,7 @@ class PmFile:
     """
 
     def __init__(self):
+        """Initialise an empty membrane-bound protein configuration."""
         self.__params = {}
 
     @property

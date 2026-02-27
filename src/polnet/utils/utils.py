@@ -21,12 +21,8 @@ from vtkmodules.util import numpy_support
 
 from ..logging_conf import _LOGGER as logger
 
-# CONSTANTS
-
 PI_2 = 2 * np.pi
 VTK_RAY_TOLERANCE = 0.000001  # 0.001
-
-# FUNCTIONS
 
 
 def gen_uni_s2_sample(center, rad):
@@ -81,7 +77,6 @@ def iso_surface(tomo, th, flp=None, closed=False, normals=None):
             is not closed.
     """
 
-    # Marching cubes configuration
     march = vtk.vtkMarchingCubes()
     tomo_vtk = numpy_to_vti(tomo)
     if closed:
@@ -94,7 +89,6 @@ def iso_surface(tomo, th, flp=None, closed=False, normals=None):
         padder.Update()
         tomo_vtk = padder.GetOutput()
 
-    # Flipping
     if flp is not None:
         flp_i = int(flp)
         if (flp_i >= 0) and (flp_i <= 3):
@@ -104,16 +98,13 @@ def iso_surface(tomo, th, flp=None, closed=False, normals=None):
             fliper.Update()
             tomo_vtk = fliper.GetOutput()
 
-    # Running Marching Cubes
     march.SetInputData(tomo_vtk)
     march.SetValue(0, th)
     march.Update()
     hold_poly = march.GetOutput()
 
-    # Filtering
     hold_poly = poly_filter_triangles(hold_poly)
 
-    # Normals orientation
     if normals is not None:
         orienter = vtk.vtkPolyDataNormals()
         orienter.SetInputData(hold_poly)
@@ -164,28 +155,28 @@ def poly_filter_triangles(poly):
     return cut_tr.GetOutput()
 
 
-def numpy_to_vti(array, spacing=[1, 1, 1]):
+def numpy_to_vti(array, spacing=None):
     """Convert a 3-D numpy array to a vtkImageData object.
 
     Args:
         array (numpy.ndarray): Input 3-D array.
-        spacing (list[float]): Voxel spacing for each axis
-            (default [1, 1, 1]).
+        spacing (list[float] | None): Voxel spacing for each axis
+            (default ``[1, 1, 1]``).
 
     Returns:
         vtk.vtkImageData: The resulting VTK image object.
     """
+    if spacing is None:
+        spacing = [1, 1, 1]
     if not isinstance(array, np.ndarray):
         raise TypeError("Input array must be a 3-D numpy array.")
 
-    # Flattern the input array
     array_1d = numpy_support.numpy_to_vtk(
         num_array=np.reshape(array, -1, order="F"),
         deep=True,
         array_type=vtk.VTK_FLOAT,
     )
 
-    # Create the new vtkImageData
     nx, ny, nz = array.shape
     image = vtk.vtkImageData()
     image.SetSpacing(spacing)
@@ -270,7 +261,6 @@ def insert_svol_tomo(svol, tomo, sub_pt, merge="max"):
             'sum', 'insert', or 'and'.
     """
 
-    # Initialization
     sub_shape = svol.shape
     nx, ny, nz = sub_shape[0], sub_shape[1], sub_shape[2]
     mx, my, mz = tomo.shape[0], tomo.shape[1], tomo.shape[2]
@@ -365,9 +355,6 @@ def lin_map(array, lb=0, ub=1):
 
     Returns:
         numpy.ndarray: The remapped array with values in [lb, ub].
-    
-    Note:
-        If the input array is constant, returns the original array unchanged.
     """
     a = np.max(array)
     i = np.min(array)
@@ -484,7 +471,6 @@ def trilin_interp(x, y, z, tomogram):
         ValueError: If any coordinate is out of bounds.
     """
 
-    # Input parsing
     if not isinstance(tomogram, np.ndarray) or tomogram.ndim != 3:
         raise TypeError("tomogram must be a 3-D numpy array.")
     xc = int(math.ceil(x))
@@ -503,7 +489,6 @@ def trilin_interp(x, y, z, tomogram):
     ):
         raise ValueError("Coordinates are out of tomogram bounds.")
 
-    # Get neigbourhood values
     v000 = float(tomogram[xf, yf, zf])
     v100 = float(tomogram[xc, yf, zf])
     v010 = float(tomogram[xf, yc, zf])
@@ -513,7 +498,6 @@ def trilin_interp(x, y, z, tomogram):
     v110 = float(tomogram[xc, yc, zf])
     v111 = float(tomogram[xc, yc, zc])
 
-    # Coordinates correction
     xn = x - xf
     yn = y - yf
     zn = z - zf
@@ -521,7 +505,6 @@ def trilin_interp(x, y, z, tomogram):
     y1 = 1 - yn
     z1 = 1 - zn
 
-    # Interpolation
     return (
         (v000 * x1 * y1 * z1)
         + (v100 * xn * y1 * z1)
@@ -551,7 +534,6 @@ def nn_iterp(x, y, z, tomogram):
         ValueError: If any coordinate is out of bounds.
     """
 
-    # Input parsing
     if not isinstance(tomogram, np.ndarray) or tomogram.ndim != 3:
         raise TypeError("tomogram must be a 3-D numpy array.")
     xc = int(math.ceil(x))
@@ -570,7 +552,6 @@ def nn_iterp(x, y, z, tomogram):
     ):
         raise ValueError("Coordinates are out of tomogram bounds.")
 
-    # Finding the closest voxel
     point = np.asarray((x, y, z))
     X, Y, Z = np.meshgrid(
         range(xf, xc + 1), range(yf, yc + 1), range(zf, zc + 1), indexing="ij"
@@ -587,7 +568,6 @@ def nn_iterp(x, y, z, tomogram):
             min_point = hold_point
             min_dist = hold_dist
 
-    # Interpolation
     return tomogram[min_point[0], min_point[1], min_point[2]]
 
 
@@ -611,7 +591,6 @@ def poly_threshold(poly, p_name, mode="points", low_th=None, hi_th=None):
         ValueError: If mode is invalid or p_name is not found.
     """
 
-    # Input parsing
     prop = None
     if mode not in ("points", "cells"):
         raise ValueError("mode must be 'points' or 'cells'.")
@@ -637,7 +616,6 @@ def poly_threshold(poly, p_name, mode="points", low_th=None, hi_th=None):
     if hi_th is None:
         hi_th = rg_hi
 
-    # Points thresholding filter
     th_flt = vtk.vtkThreshold()
     th_flt.SetInputData(poly)
     if mode == "cells":
@@ -648,8 +626,6 @@ def poly_threshold(poly, p_name, mode="points", low_th=None, hi_th=None):
         th_flt.SetInputArrayToProcess(
             0, 0, 0, vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, p_name
         )
-    # th_flt.ThresholdByUpper(.5)
-    # th_flt.ThresholdBetween(low_th, hi_th)
     th_flt.SetLowerThreshold(low_th)
     th_flt.SetUpperThreshold(hi_th)
     th_flt.AllScalarsOff()
@@ -763,7 +739,7 @@ def vol_cube(vol, off=0):
     return out_vol
 
 
-def gen_shpere_mask(shape, radius, center=None):
+def gen_sphere_mask(shape, radius, center=None):
     """Generate a binary spherical mask as a 3-D boolean array.
 
     Args:

@@ -17,15 +17,11 @@ from scipy.spatial.transform import Rotation as spR
 
 from .utils import wrap_angle
 
-# CONSTANTS
-
 PI_2 = 2 * np.pi
 LOW_VALUE = 0.000001
 # Super-fibonacci constants
 PHI = np.sqrt(2.0)
 PSI = 1.533751168755204288118041
-
-# FUNCTIONS
 
 
 def vector_module(v):
@@ -76,11 +72,9 @@ def poly_translate(in_vtp, t):
         ValueError: If t does not have exactly 3 elements.
     """
 
-    # Input parsing
     if not hasattr(t, "__len__") or len(t) != 3:
         raise ValueError("Translation vector t must have 3 elements.")
 
-    # Translation
     box_tr = vtk.vtkTransform()
     box_tr.Translate(t[0], t[1], t[2])
     tr_box = vtk.vtkTransformPolyDataFilter()
@@ -100,7 +94,6 @@ def poly_scale(in_vtp, s):
     Returns:
         vtk.vtkPolyData: The scaled polygon dataset.
     """
-    # Translation
     box_sc = vtk.vtkTransform()
     box_sc.Scale(s, s, s)
     tr_box = vtk.vtkTransformPolyDataFilter()
@@ -199,10 +192,8 @@ def rot_vect_quat(v, q):
         array-like: The rotated vector with the same type as v.
     """
 
-    # Get axis angle representation
-    ang, ax = quat_to_angle_axis(q[0], q[1], q[2], q[3])
+    ang, ax = quat_to_angle_axis(q[0], q[1], q[2], q[3], deg=False)
 
-    # Make sure axis is a unit vector
     k = np.asarray((ax[0], ax[1], ax[2]))
     mod_k = math.sqrt((k * k).sum())
     if mod_k > 0:
@@ -232,25 +223,20 @@ def quat_to_mat(q):
             point from the local reference frame to the global
             reference frame.
     """
-    # Extract the values from Q
     q0, q1, q2, q3 = q[0], q[1], q[2], q[3]
 
-    # First row of the rotation matrix
     r00 = 2 * (q0 * q0 + q1 * q1) - 1
     r01 = 2 * (q1 * q2 - q0 * q3)
     r02 = 2 * (q1 * q3 + q0 * q2)
 
-    # Second row of the rotation matrix
     r10 = 2 * (q1 * q2 + q0 * q3)
     r11 = 2 * (q0 * q0 + q2 * q2) - 1
     r12 = 2 * (q2 * q3 - q0 * q1)
 
-    # Third row of the rotation matrix
     r20 = 2 * (q1 * q3 - q0 * q2)
     r21 = 2 * (q2 * q3 + q0 * q1)
     r22 = 2 * (q0 * q0 + q3 * q3) - 1
 
-    # 3x3 rotation matrix
     return np.array([[r00, r01, r02], [r10, r11, r12], [r20, r21, r22]])
 
 
@@ -293,7 +279,6 @@ def tomo_rotate(
             not a 3-element array.
     """
 
-    # Input parsing
     if not isinstance(tomo, np.ndarray) or tomo.ndim != 3:
         raise TypeError("tomo must be a 3-D numpy array.")
     if not hasattr(q, "__len__") or len(q) != 4:
@@ -306,7 +291,6 @@ def tomo_rotate(
                 "center must be a numpy array with " "3 elements."
             )
 
-    # Getting rotation matrix
     q /= vector_module(q)
     R = quat_to_mat(q)
     if not active:
@@ -344,19 +328,16 @@ def vect_rotate(vect, q, active=True):
         ValueError: If q does not have exactly 4 elements.
     """
 
-    # Input parsing
     if not isinstance(vect, np.ndarray) or len(vect) != 3:
         raise TypeError("vect must be a numpy array with " "3 elements.")
     if not hasattr(q, "__len__") or len(q) != 4:
         raise ValueError("Quaternion q must have 4 elements.")
 
-    # Getting rotation matrix
     q /= vector_module(q)
     R = quat_to_mat(q)
     if not active:
         R = R.T
 
-    # Applying rotation matrix
     return np.matmul(R, vect)
 
 
@@ -401,7 +382,8 @@ def quat_two_vectors(a, b):
     u, v = a / vector_module(a), b / vector_module(b)
     if vector_module(u - v) < LOW_VALUE:
         ax = ortho_vector(u)
-        return np.asarray(0, ax / vector_module(ax))
+        ax_n = ax / vector_module(ax)
+        return np.asarray((0.0, ax_n[0], ax_n[1], ax_n[2]))
     else:
         half = u + v
         half /= vector_module(half)
@@ -459,7 +441,6 @@ def vect_to_zmat(v_in, mode="active"):
         numpy.ndarray: A (3, 3) rotation matrix.
     """
 
-    # Normalization
     n = v_in / vector_module(v_in)
 
     # Computing angles in Extrinsic ZYZ system
@@ -473,10 +454,8 @@ def vect_to_zmat(v_in, mode="active"):
         wrap_angle(180.0 - math.degrees(beta), deg=True),
     )
 
-    # Matrix computation
     M = rot_mat_zyz(rot, tilt, psi, deg=True)
 
-    # By default is active, invert if passive
     if mode == "passive":
         M = M.T
 
@@ -566,7 +545,6 @@ def tomo_shift(tomo, shift):
         ValueError: If shift does not have exactly 3 elements.
     """
 
-    # Input parsing
     if not isinstance(tomo, np.ndarray) or tomo.ndim != 3:
         raise TypeError("tomo must be a 3-D numpy array.")
     if not hasattr(shift, "__len__") or len(shift) != 3:
@@ -587,7 +565,6 @@ def tomo_shift(tomo, shift):
         delta = np.asarray(shift, dtype=np.float32)
     dim = np.asarray((dx, dy, dz), dtype=np.float32)
 
-    # Generating the grid
     x_l, y_l, z_l = -dx2, -dy2, -dz2
     x_h, y_h, z_h = -dx2 + dx, -dy2 + dy, -dz2 + dz
     X, Y, Z = np.meshgrid(

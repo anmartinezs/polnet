@@ -100,26 +100,32 @@ class SyntheticSample:
 
     @property
     def density(self) -> np.ndarray:
+        """Deep copy of the current density tomogram."""
         return self._density.copy()
 
     @property
     def labels(self) -> np.ndarray:
+        """Deep copy of the per-voxel entity-ID label volume."""
         return self._labels.copy()
 
     @property
     def poly_vtp(self) -> vtk.vtkPolyData | None:
+        """Merged polygon surface of all inserted components, or None."""
         return self._poly_vtp
 
     @property
     def skel_vtp(self) -> vtk.vtkPolyData | None:
+        """Merged skeleton polydata of all inserted components, or None."""
         return self._skel_vtp
 
     @property
     def mbs_vtp(self) -> vtk.vtkPolyData | None:
+        """Merged membrane-only polygon surface, or None."""
         return self._mbs_vtp
 
     @property
     def v_size(self) -> float:
+        """Voxel size in Angstroms."""
         return self._v_size
 
     @property
@@ -200,7 +206,6 @@ class SyntheticSample:
             )
             add_label_to_poly(hold_skel_vtp, type_label, "Type", mode="both")
 
-        # Merge
         if self._poly_vtp is None:
             self._poly_vtp = hold_vtp
             self._skel_vtp = hold_skel_vtp
@@ -208,7 +213,6 @@ class SyntheticSample:
             self._poly_vtp = merge_polys(self._poly_vtp, hold_vtp)
             self._skel_vtp = merge_polys(self._skel_vtp, hold_skel_vtp)
 
-        # Membrane VTP accumulation
         if is_membrane:
             if self._mbs_vtp is None:
                 self._mbs_vtp = hold_vtp
@@ -355,12 +359,10 @@ class SyntheticSample:
         """Generate and add a helicoidal fiber network to the sample."""
         hx_type = params["FLMS_TYPE"]
 
-        # Occupancy
         occ = params["HX_PMER_OCC"]
         if isinstance(occ, (list, tuple)):
             occ = random.uniform(occ[0], occ[1])
 
-        # Factory creates components
         fiber_unit, param_gen, NetworkCls, net_kwargs = FlmsFactory.create(
             hx_type, params, self._v_size
         )
@@ -368,7 +370,6 @@ class SyntheticSample:
         model_surf = fiber_unit.vtp
         model_mask = model_svol < 0.05
 
-        # Build network
         net = NetworkCls(
             voi=self._voi,
             v_size=self._v_size,

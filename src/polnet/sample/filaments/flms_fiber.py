@@ -186,7 +186,6 @@ class HelixFiber(Polymer):
 
         hold_m = Monomer(self._m_surf, self._m_diam)
 
-        # Rotation
         t = self.__compute_tangent(self.__ct)
         t = t * (self.__mz_length / vector_module(t))
         self.__za = wrap_angle(self.__za + self.__hp_astep)
@@ -195,17 +194,14 @@ class HelixFiber(Polymer):
         q = rot_to_quat(M)
         hold_m.rotate_q(quat_mult(q, q1))
 
-        # Translation
         hold_r = self._r[-1]
         self.__ct += self.__l
         r = hold_r + t
         hold_m.translate(r)
 
-        # Avoid forbidden regions
         if voi is not None:
             if hold_m.overlap_voi(voi, v_size, over_tolerance=over_tolerance):
                 return None
-        # Self-avoiding and network avoiding
         if branch is None:
             if self.overlap_polymer(hold_m, over_tolerance=over_tolerance):
                 return None

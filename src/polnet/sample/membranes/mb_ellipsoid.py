@@ -192,7 +192,6 @@ class EllipGen(MbGen):
             indexing="ij",
         )
 
-        # Mask
         R_o = (
             ((X - p0_v[0]) / ao_v) ** 2
             + ((Y - p0_v[1]) / bo_v) ** 2
@@ -209,7 +208,6 @@ class EllipGen(MbGen):
                 "Generated membrane has zero volume. Try changing its parameters."
             )
 
-        # Surface
         R_i = (
             ((X - p0_v[0]) / a_v) ** 2
             + ((Y - p0_v[1]) / b_v) ** 2

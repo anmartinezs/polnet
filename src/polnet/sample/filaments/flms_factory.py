@@ -31,7 +31,26 @@ class FlmsFactory:
 
     @classmethod
     def create(cls, hx_type: str, params: dict, v_size: float):
-        """Returns (fiber_unit, param_gen, NetworkClass, net_kwargs)."""
+        """Create filament components for the given helix type.
+
+        Args:
+            hx_type (str): Helix type identifier (``"mt"`` for
+                microtubule, ``"actin"`` for actin).
+            params (dict): Parsed ``.flms`` configuration dict.
+            v_size (float): Voxel size in Angstroms.
+
+        Returns:
+            tuple: A 4-tuple ``(fiber_unit, param_gen, NetworkCls,
+            net_kwargs)`` where *fiber_unit* is the structural
+            repeat, *param_gen* the stochastic parameter
+            generator, *NetworkCls* the network class to
+            instantiate, and *net_kwargs* extra keyword arguments
+            for its constructor.
+
+        Raises:
+            ValueError: If *hx_type* is not ``"mt"`` or
+                ``"actin"``.
+        """
         if hx_type == "mt":
             fiber_unit = MTUnit(
                 sph_rad=params["HX_MMER_RAD"],

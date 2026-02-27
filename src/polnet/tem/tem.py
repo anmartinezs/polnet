@@ -11,10 +11,10 @@ Wraps IMOD command-line binaries (``xyzproj``, ``tilt``,
 """
 
 import math
-import os
 import random
 import subprocess
 import time
+from pathlib import Path
 
 import numpy as np
 from scipy.ndimage import shift as sp_shift
@@ -47,20 +47,17 @@ class TEM:
             work_dir (str | Path): Directory for intermediate
                 files (created if it does not exist).
         """
-        self.__work_dir = work_dir
-        self.__log_file = self.__work_dir + "/TEM.log"
+        self.__work_dir = Path(work_dir)
+        self.__log_file = self.__work_dir / "TEM.log"
         self.__create_work_dir()
-        self.__vol_file = self.__work_dir + "/in_vol.mrc"
-        self.__micgraphs_file = self.__work_dir + "/out_micrographs.mrc"
-        self.__tangs_file = self.__work_dir + "/out_tangs.tlt"
-        self.__rec3d_file = self.__work_dir + "/out_rec3d.mrc"
+        self.__vol_file = self.__work_dir / "in_vol.mrc"
+        self.__micgraphs_file = self.__work_dir / "out_micrographs.mrc"
+        self.__tangs_file = self.__work_dir / "out_tangs.tlt"
+        self.__rec3d_file = self.__work_dir / "out_rec3d.mrc"
 
     def __create_work_dir(self):
-        """
-        Create the working directory
-        """
-        if not os.path.exists(self.__work_dir):
-            os.mkdir(self.__work_dir)
+        """Create the working directory if it does not already exist."""
+        self.__work_dir.mkdir(parents=True, exist_ok=True)
 
     def __save_tangs_file(self, angs):
         """Write tilt angles to an IMOD-format .tlt file.
@@ -118,9 +115,9 @@ class TEM:
         xyzproj_cmd = [IMOD_CMD_XYZPROJ]
         in_vol_path = self.__vol_file
         lio.write_mrc(vol, in_vol_path)
-        xyzproj_cmd += ["-inp", in_vol_path]
+        xyzproj_cmd += ["-inp", str(in_vol_path)]
         out_vol_path = self.__micgraphs_file
-        xyzproj_cmd += ["-o", out_vol_path]
+        xyzproj_cmd += ["-o", str(out_vol_path)]
         xyzproj_cmd += ["-ax", ax]
         if isinstance(angs, range):
             xyzproj_cmd += ["-an"]
@@ -140,7 +137,6 @@ class TEM:
         elif mode == "real":
             xyzproj_cmd += ["-m", "2"]
 
-        # Command calling
         try:
             with open(self.__log_file, "a", encoding="utf-8") as file_log:
                 file_log.write(
@@ -150,7 +146,9 @@ class TEM:
                     + " ".join(xyzproj_cmd)
                     + "\n"
                 )
-                subprocess.call(xyzproj_cmd, stdout=file_log, stderr=file_log)
+                subprocess.check_call(
+                    xyzproj_cmd, stdout=file_log, stderr=file_log
+                )
             self.__save_tangs_file(angs)
         except subprocess.CalledProcessError:
             logger.error("Error calling the command: %s", xyzproj_cmd)
@@ -177,9 +175,9 @@ class TEM:
             ValueError: If snr <= 0.
         """
 
-        if not os.path.exists(self.__micgraphs_file):
+        if not self.__micgraphs_file.exists():
             raise FileNotFoundError(
-                f"Micrographs file not found: " f"{self.__micgraphs_file}"
+                f"Micrographs file not found: {self.__micgraphs_file}"
             )
         if snr <= 0:
             raise ValueError("snr must be greater than 0.")
@@ -195,7 +193,6 @@ class TEM:
             sg_fg = mn / snr
             mics[:, :, i] = mic + rng.normal(mn, sg_fg, mic.shape)
 
-        # Update micrographs file
         lio.write_mrc(mics, self.__micgraphs_file)
 
     def recon3D_imod(self, thick=None):
@@ -217,14 +214,11 @@ class TEM:
             IOError: If the log file cannot be written.
         """
 
-        # Call to IMOD binary (tilt)
-
-        # Building the command
         tilt_cmd = [IMOD_CMD_TILT]
         vol = lio.load_mrc(self.__vol_file, mmap=True, no_saxes=False)
-        tilt_cmd += ["-inp", self.__micgraphs_file]
-        tilt_cmd += ["-output", self.__rec3d_file]
-        tilt_cmd += ["-TILTFILE", self.__tangs_file]
+        tilt_cmd += ["-inp", str(self.__micgraphs_file)]
+        tilt_cmd += ["-output", str(self.__rec3d_file)]
+        tilt_cmd += ["-TILTFILE", str(self.__tangs_file)]
         if thick is None:
             tilt_cmd += ["-THICKNESS", str(vol.shape[0])]
         else:
@@ -232,7 +226,6 @@ class TEM:
                 raise ValueError("thick must be greater than 0.")
             tilt_cmd += ["-THICKNESS", str(thick)]
 
-        # Command calling
         try:
             with open(self.__log_file, "a", encoding="utf-8") as file_log:
                 file_log.write(
@@ -242,7 +235,9 @@ class TEM:
                     + " ".join(tilt_cmd)
                     + "\n"
                 )
-                subprocess.call(tilt_cmd, stdout=file_log, stderr=file_log)
+                subprocess.check_call(
+                    tilt_cmd, stdout=file_log, stderr=file_log
+                )
         except subprocess.CalledProcessError:
             logger.error("Error calling the command: %s", tilt_cmd)
             raise
@@ -281,17 +276,14 @@ class TEM:
             if not hasattr(origin, "__len__") or len(origin) != 3:
                 raise ValueError("origin must have exactly 3 elements.")
 
-        # Call to IMOD binary (tilt)
-
-        # Building the command
         aheader_cmd = [IMOD_CMD_AHEADER]
         if data == "mics":
             aheader_cmd += [
-                self.__micgraphs_file,
+                str(self.__micgraphs_file),
             ]
         else:
             aheader_cmd += [
-                self.__rec3d_file,
+                str(self.__rec3d_file),
             ]
         if p_size is not None:
             aheader_cmd += [
@@ -304,7 +296,6 @@ class TEM:
                 str(origin[0]) + "," + str(origin[1]) + "," + str(origin[2]),
             ]
 
-        # Command calling
         try:
             with open(self.__log_file, "a", encoding="utf-8") as file_log:
                 file_log.write(
@@ -314,7 +305,9 @@ class TEM:
                     + " ".join(aheader_cmd)
                     + "\n"
                 )
-                subprocess.call(aheader_cmd, stdout=file_log, stderr=file_log)
+                subprocess.check_call(
+                    aheader_cmd, stdout=file_log, stderr=file_log
+                )
         except subprocess.CalledProcessError:
             logger.error("Error calling the command: %s", aheader_cmd)
             raise
@@ -347,7 +340,6 @@ class TEM:
 
         rng = np.random.default_rng()
 
-        # Micrographs loop
         mics = lio.load_mrc(self.__micgraphs_file)
         angs = np.abs(np.radians(self.__load_tangs_file()))
         n_angs = len(angs)
@@ -373,7 +365,16 @@ class TEM:
         lio.write_mrc(mics, self.__micgraphs_file)
 
     def _resolve_snr(self, detector_snr):
-        """Resolve SNR value from config (scalar, range, or None)."""
+        """Resolve SNR value from config (scalar, range, or None).
+
+        Args:
+            detector_snr (float | list | tuple | None): SNR
+                specification — a scalar, a two-element
+                ``[lo, hi]`` range, or None to skip noise.
+
+        Returns:
+            float | None: Resolved SNR value, or None.
+        """
         if detector_snr is None:
             return None
         if isinstance(detector_snr, (list, tuple)) and len(detector_snr) >= 2:

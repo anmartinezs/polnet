@@ -6,4 +6,3 @@ MB_OVER_TOL = 0 # In percentage
 MB_DEN_CF_RG = (.3, .5)
 MB_MIN_AXIS = 75
 MB_MAX_ECC = .75
-MB_OCC = (0.001, 0.003) 

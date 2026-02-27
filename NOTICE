@@ -1,5 +1,5 @@
 PolNet
-Copyright 2023 Antonio Martinez-Sanchez
+Copyright 2023-2026 Antonio Martinez-Sanchez
 
 This product is licensed under the Apache License, Version 2.0.
 See LICENSE for the full license text.
@@ -15,7 +15,16 @@ curvatubes (cvtub)
   Upstream:  https://github.com/annasongmaths/curvatubes
 
   The full MIT license text is included at src/external/cvtub/LICENSE.
-  Each changed line from the original source is marked with a
-  "# polnet: relative import" comment.
+
+  Modifications from the upstream source:
+  1. Relative imports — absolute "from cvtub.xxx" converted to relative
+     "from .xxx".  Each changed line is marked with
+     "# polnet: relative import".
+  2. GPU VRAM cleanup (generator.py only) — a 7-step cleanup block added
+     at the end of _generate_shape() to prevent VRAM leaks.  Marked with
+     "# polnet: comprehensive GPU VRAM cleanup".
+  3. Code formatting — all .py files reformatted with black (line-length
+     79) on 2026-02-26 for consistency with the polnet codebase.
+     No functional changes.
 
 =========================================================================

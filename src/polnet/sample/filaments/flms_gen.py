@@ -110,7 +110,4 @@ class HxParamGenBranched(FlmsParamGen):
         Returns:
             bool: True if a branch should be created.
         """
-        if random.random() <= b_prob:
-            return True
-        else:
-            return False
+        return random.random() <= b_prob

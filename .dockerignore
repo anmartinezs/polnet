@@ -22,14 +22,13 @@ docs/build/
 
 # Generated output (not needed in image)
 results/
-data/data_generated/
-data/output/
 
 # Docker files (avoid recursive context)
 docker/
-!docker/imod_installer.sh
 
-# Development files
+# Development / documentation files
 tests/
 scripts/
+gui/
+docs/
 *.swp

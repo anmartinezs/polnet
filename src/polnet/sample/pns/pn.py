@@ -52,6 +52,22 @@ class Pn:
         pmer_l_max: float,
         pmer_occ: float,
     ):
+        """Store protein parameters and trigger structure build.
+
+        Args:
+            entity_id (int): Unique entity identifier.
+            mmer_id (str): Monomer identifier string.
+            mmer_svol (numpy.ndarray): Density sub-volume for the
+                monomer.
+            mmer_iso (float): Iso-threshold for surface extraction.
+            pmer_l (float): Nominal polymer length in Angstroms.
+            pmer_l_max (float): Maximum polymer length in Angstroms.
+            pmer_occ (float): Target occupancy percentage.
+
+        Raises:
+            NotImplementedError: Always; structure building is not
+                yet implemented.
+        """
         self.__entity_id = entity_id
         self.__mmer_id = mmer_id
         self.__mmer_svol = mmer_svol
@@ -108,6 +124,22 @@ class PnGen:
         pmer_occ_rg: tuple[float, float],
         pmer_over_tol: float = 0.0,
     ):
+        """Initialise the cytosolic protein generator.
+
+        Args:
+            surf_dec (float): Polygon decimation ratio for the
+                isosurface mesh.
+            mmer_id (str): Monomer identifier string.
+            model (numpy.ndarray): Raw density map to normalise
+                and process.
+            mmer_iso (float): Iso-threshold for surface extraction.
+            pmer_l (float): Nominal polymer length in Angstroms.
+            pmer_l_max (float): Maximum polymer length in Angstroms.
+            pmer_occ_rg (tuple[float, float]): Occupancy range
+                ``(lo, hi)`` in percent.
+            pmer_over_tol (float): Allowed surface overlap
+                fraction (default 0.0).
+        """
         self.__mmer_id = mmer_id
         self.__model = model
         self.__mmer_iso = mmer_iso
@@ -246,12 +278,12 @@ class PnGen:
 
         # Convert relative path to absolute path
         mmer_path = params["MMER_SVOL"]
-        if mmer_path.startswith("/"):
+        if Path(mmer_path).is_absolute():
             mmer_path = "." + mmer_path
         mmer_path = data_path / mmer_path
 
         # Check if PMER_OCC is a float or a tuple
-        if isinstance(params["PMER_OCC"], float):
+        if isinstance(params["PMER_OCC"], (int, float)):
             params["PMER_OCC"] = (params["PMER_OCC"], params["PMER_OCC"])
 
         try:
@@ -295,4 +327,9 @@ class PnError(Exception):
     """Custom exception for cytosolic protein generation errors."""
 
     def __init__(self, message: str):
+        """Initialise with a descriptive error message.
+
+        Args:
+            message (str): Human-readable error description.
+        """
         super().__init__(message)

@@ -24,10 +24,12 @@ class MbFile:
     """
 
     def __init__(self):
+        """Initialise an empty membrane configuration."""
         self.__params = {}
 
     @property
     def type(self):
+        """Return the membrane type string, or None if not loaded."""
         return self.__params.get("MB_TYPE", None)
 
     def load(self, in_file: Path) -> dict:

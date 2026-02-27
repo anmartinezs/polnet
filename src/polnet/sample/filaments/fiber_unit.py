@@ -37,11 +37,13 @@ class FiberUnit(ABC):
     @property
     @abstractmethod
     def vtp(self):
+        """VTK polygon surface of the structural unit."""
         raise NotImplementedError
 
     @property
     @abstractmethod
     def tomo(self):
+        """3-D density sub-volume of the structural unit."""
         raise NotImplementedError
 
 
@@ -76,22 +78,26 @@ class FiberUnitSDimer(FiberUnit):
 
     @property
     def vtp(self):
+        """VTK polygon surface of the sphere-dimer unit."""
         return self.__surf
 
     @property
     def tomo(self):
+        """3-D density sub-volume of the sphere-dimer unit."""
         return self.__tomo
 
     def __gen_sdimer(self):
-        """
-        Contains the procedure to generate the Dimer of spheres with the specified size by using logistic functions
+        """Generate a sphere-dimer density envelope using logistic functions.
+
+        Two overlapping spheres of radius ``sph_rad`` are placed
+        along the Y axis and blended via logistic fall-off.
+        The resulting density is normalised and an isosurface
+        extracted.
         """
 
-        # Input parsing
         sph_rad_v = self.__sph_rad / self.__v_size
         sph_rad_v2 = sph_rad_v * sph_rad_v * 0.5625  # (0.75*rad)^2
 
-        # Generating the grid
         self.__tomo = np.zeros(
             shape=(self.__size, self.__size, self.__size), dtype=np.float32
         )
@@ -122,12 +128,10 @@ class FiberUnitSDimer(FiberUnit):
 
         self.__tomo += 1.0 / (1.0 + np.exp(-R))
 
-        # Generate the second unit
         Yh = Y - sph_rad_v
         R = X * X + Yh * Yh + Z * Z - sph_rad_v2
         self.__tomo += 1.0 / (1.0 + np.exp(-R))
 
-        # Generating the surfaces
         self.__tomo = lin_map(self.__tomo, lb=1, ub=0)
         self.__surf = iso_surface(self.__tomo, 0.25)
         self.__surf = poly_scale(self.__surf, self.__v_size)
@@ -178,25 +182,29 @@ class MTUnit(FiberUnit):
 
     @property
     def vtp(self):
+        """VTK polygon surface of the microtubule unit."""
         return self.__surf
 
     @property
     def tomo(self):
+        """3-D density sub-volume of the microtubule unit."""
         return self.__tomo
 
     def __gen_sdimer(self):
-        """
-        Contains the procedure to generate the Dimer of spheres with the specified size by using logistic functions
+        """Generate a protofilament-ring density using logistic functions.
+
+        Places ``n_units`` spheres of radius ``sph_rad`` equally
+        spaced around a circle of radius ``mt_rad``, blending
+        each with a logistic fall-off.  The resulting density is
+        normalised and an isosurface extracted.
         """
 
-        # Input parsing
         sph_rad_v, mt_rad_v = (
             self.__sph_rad / self.__v_size,
             self.__mt_rad / self.__v_size,
         )
         sph_rad_v2 = sph_rad_v * sph_rad_v * 0.25  # (0.9*rad)^2
 
-        # Generating the grid
         self.__tomo = np.zeros(
             shape=(self.__size, self.__size, self.__size), dtype=np.float32
         )
@@ -222,12 +230,10 @@ class MTUnit(FiberUnit):
         Y += 0.5
         Z += 0.5
 
-        # Loop for generate the units
         Z2 = Z * Z
         ang_step = 2.0 * np.pi / self.__n_units
-        ang = ang_step
+        ang = 0
         while ang <= 2.0 * np.pi:
-            # Generate the unit
             x, y = mt_rad_v * math.cos(ang), mt_rad_v * math.sin(ang)
             Xh, Yh = X + x, Y + y
             R = Xh * Xh + Yh * Yh + Z2 - sph_rad_v2

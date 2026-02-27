@@ -33,6 +33,8 @@ dependencies = [
     "pandas>=2.1.4,<3",
     "scikit-image>=0.22.0,<1",
     "PyYAML>=6.0",
+    "torch>=2.0",
+    "nibabel>=5.0",
 ]
 
 [project.optional-dependencies]
@@ -42,10 +44,6 @@ gui = [
     "ipywidgets>=8.0",
     "tqdm>=4.0",
     "wget>=3.2",
-]
-curvatubes = [
-    "torch>=2.0",
-    "nibabel>=5.0",
 ]
 dev = [
     "black>=24.0",
@@ -57,7 +55,7 @@ docs = [
     "sphinx-rtd-theme>=2.0",
     "sphinx-autodoc-typehints>=2.0",
 ]
-all = ["polnet[gui,curvatubes,dev,docs]"]
+all = ["polnet[gui,dev,docs]"]
 
 [project.scripts]
 polnet = "polnet.cli:app"

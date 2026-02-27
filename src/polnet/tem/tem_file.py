@@ -23,12 +23,13 @@ class TEMFile:
     """
 
     def __init__(self):
+        """Initialise an empty TEM simulation configuration."""
         self.__params = {}
 
     @property
     def type(self):
-        """Return the membrane type string, or None if not loaded."""
-        return self.__params.get("MB_TYPE", None)
+        """Return the TEM configuration type, or None if not loaded."""
+        return self.__params.get("TEM_TYPE", None)
 
     def load(self, in_file: Path) -> dict:
         """Load TEM simulation parameters from a ``.tem`` file.

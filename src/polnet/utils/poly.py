@@ -28,12 +28,7 @@ from .utils import (
     trilin_interp,
 )
 
-# CONSTANTS
-
 GTRUTH_VTP_LBLS = "gt_labels"
-
-
-# FUNCTIONS
 
 
 def find_point_on_poly(point, poly):
@@ -125,7 +120,6 @@ def gen_uni_s2_sample_on_poly(center, rad, thick, poly):
     pids = vtk.vtkIdList()
     kdtree.FindPointsWithinRadius(rad + 0.5 * thick, center, pids)
 
-    # Get a points randomly un util a point is found in the intersection
     min_dst, n_pts = rad - 0.5 * thick, pids.GetNumberOfIds()
     for i in np.random.randint(0, n_pts, n_pts):
         pt = poly.GetPoint(pids.GetId(i))
@@ -237,7 +231,6 @@ def add_sfield_to_poly(
     cast = int if dtype == "int" else float
 
     if mode == "points":
-        # Creating and adding the new property as a new array for PointData
         n_points = poly.GetNumberOfPoints()
         if dtype == "int":
             arr = vtk.vtkIntArray()
@@ -251,7 +244,6 @@ def add_sfield_to_poly(
             arr.SetValue(i, cast(interp_func(x, y, z, sfield)))
         poly.GetPointData().AddArray(arr)
     else:
-        # Creating and adding the new property as a new array for CellData
         if dtype == "int":
             arr = vtk.vtkIntArray()
         else:
@@ -479,7 +471,7 @@ def poly_diam(vtp):
             hold_mx = points_distance(ref_p, hold_p)
             if hold_mx > mx:
                 mx = hold_mx
-        return mx
+        return 2.0 * mx
 
 
 def poly_point_min_dst(poly, point, chull=False):

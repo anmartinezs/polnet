@@ -25,6 +25,12 @@ Python package for generating synthetic datasets of the cellular context for Cry
     - [Examples](#examples)
   - [Output](#output)
   - [Docker](#docker)
+    - [Prerequisites](#prerequisites)
+    - [Building the image](#building-the-image)
+    - [Running a container](#running-a-container)
+    - [Using the built-in example](#using-the-built-in-example)
+    - [Cross-platform support](#cross-platform-support)
+    - [Notes](#notes)
   - [Package description](#package-description)
   - [Third-party code](#third-party-code)
     - [Curvatubes performance notes](#curvatubes-performance-notes)
@@ -36,7 +42,7 @@ Python package for generating synthetic datasets of the cellular context for Cry
 PolNet simulates the cellular context found in cryo-electron tomograms. The pipeline is split into two main stages:
 
 1. **Sample simulation** — generates a synthetic 3-D volume of interest (VOI) populated with membranes, filaments, cytosolic proteins, and membrane-bound proteins.
-2. **Microscope simulation & tomogram reconstruction** — applies a TEM acquisition model (tilt-series projection, CTF, noise) and reconstructs the final tomogram using IMOD tools.
+2. **Microscope simulation & tomogram reconstruction** — applies a TEM acquisition model (tilt-series projection, detector noise, misalignment) and reconstructs the final tomogram using IMOD tools.
 
 All simulation parameters are controlled through a single YAML configuration file. The `polnet` CLI is the main entry point.
 
@@ -60,6 +66,11 @@ conda activate polnet
 
 pip install .
 ```
+
+> **Note:** PyTorch and nibabel (required by the curvatubes membrane generator) are
+> core dependencies and installed automatically. If you have a CUDA-capable GPU,
+> make sure the PyTorch version matches your CUDA driver. See
+> [pytorch.org/get-started](https://pytorch.org/get-started/locally/) for details.
 
 ### Using venv
 
@@ -97,8 +108,7 @@ pip install -e ".[all]"        # dev + docs + gui
 | `dev` | black, pylint, pre-commit |
 | `docs` | sphinx, sphinx-rtd-theme, sphinx-autodoc-typehints |
 | `gui` | jupyter, ipyfilechooser, ipywidgets, tqdm, wget |
-| `curvatubes` | torch, nibabel (GPU-accelerated phase-field membranes) |
-| `all` | All of the above |
+| `all` | dev + docs + gui |
 
 #### Code style
 
@@ -170,12 +180,12 @@ After running `polnet config.yaml`, the output directory (set by `folders.output
 ```
 results/                              # folders.output
 ├── labels_table.csv                  # Global mapping: model file → integer label
-└── tomo_001/                         # Per-tomogram directory (tomo_001, tomo_002, …)
+└── Tomo001/                          # Per-tomogram directory (Tomo001, Tomo002, …)
     ├── tomo_001_den.mrc              # Ground-truth density volume
     ├── tomo_001_lbl.mrc              # Integer label volume (segmentation ground truth)
     ├── tomo_001_poly_den.vtp         # VTK PolyData surfaces of all placed objects
     ├── tomo_001_poly_skel.vtp        # VTK PolyData skeleton / centrelines
-    ├── tomo_001_motif_list.csv       # Per-monomer ground truth (TSV)
+    ├── tomo_001_motif_list.csv       # Per-monomer ground truth (CSV)
     ├── tomo_001_mics_snr<X>.mrc      # Simulated tilt-series micrographs (if TEM enabled)
     ├── tomo_001_rec_snr<X>.mrc       # Reconstructed tomogram (if TEM enabled)
     └── tem/                          # TEM working directory (intermediate files)
@@ -194,16 +204,83 @@ results/                              # folders.output
 
 ## Docker
 
-> ⚠️ **Docker support is not yet available.**
->
-> Packaging IMOD inside a container is blocked by a bug in the IMOD 5.x
-> self-extracting installer (hard-coded internal archive paths) combined with the
-> end-of-life status of the Debian Buster base image where the 4.x installer was
-> known to work. Docker support will be added in a future release once a reliable
-> installation path for IMOD in a container is available.
->
-> In the meantime, please follow the [installation instructions](#installation)
-> above to run polnet directly on your host.
+The Docker image packages polnet and IMOD into a self-contained container so you can generate tomograms without installing either on your host.
+
+### Prerequisites
+
+- **Docker** must be installed and running.
+- Internet access during build (IMOD 4.11.25 is downloaded automatically).
+
+### Building the image
+
+From the project root:
+
+```console
+./docker/create_docker.sh
+```
+
+This builds the `polnet_docker` image with IMOD 4.11.25 and all bundled data.
+
+### Running a container
+
+Use the helper script:
+
+```console
+./docker/run_docker.sh \
+    --config config/all_features.yaml \
+    --out_dir ./results
+```
+
+| Flag | Description |
+|------|-------------|
+| `--config <yaml>` | **Required.** Path to your YAML configuration file. |
+| `--out_dir <dir>` | **Required.** Host directory where output will be written. |
+| `--data_dir <dir>` | Optional. Host directory with input model files (`.mbs`, `.pns`, etc.). Mounted read-only at `/app/data` inside the container, overriding the built-in data. |
+| `--gpus` | Optional. Pass `--gpus all` to Docker for GPU support (curvatubes membranes). |
+| `-- <args>` | Optional. Everything after `--` is forwarded to the `polnet` CLI inside the container. |
+
+The container runs as your current user (`uid:gid`) so output files are owned by you.
+
+**Forwarding polnet CLI flags:**
+
+```console
+# Verbose output (INFO)
+./docker/run_docker.sh --config config/all_features.yaml --out_dir ./results -- -v
+
+# Debug output + custom seed + 5 tomograms
+./docker/run_docker.sh --config config/all_features.yaml --out_dir ./results -- -vv -s 12345 -n 5
+
+# GPU-accelerated curvatubes membranes
+./docker/run_docker.sh --config config/all_features.yaml --out_dir ./results --gpus -- -v
+```
+
+### Using the built-in example
+
+The image ships with `config/all_features.yaml` and all required input data. To run it directly:
+
+```console
+mkdir -p results
+docker run --rm \
+    -v "$(pwd)/results":/app/outdir \
+    --user "$(id -u):$(id -g)" \
+    polnet_docker
+```
+
+### Cross-platform support
+
+The Docker **image** is Linux-based and works on all platforms via [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Linux, macOS, Windows with WSL 2).
+
+The helper **scripts** (`create_docker.sh`, `run_docker.sh`) require a Bash shell. On Windows you can run them from:
+- **WSL 2** (recommended) — the scripts work as-is.
+- **Git Bash** — ships with [Git for Windows](https://gitforwindows.org/).
+
+Alternatively, run the `docker build` and `docker run` commands shown above directly from PowerShell or Command Prompt.
+
+### Notes
+
+- The IMOD self-extracting `.sh` installer derives its version from its own filename (via a `sed` on `imod_[0-9.]*`). The Dockerfile preserves the original filename during download; renaming it would break the version extraction and cause a tar path mismatch at install time.
+- The build verifies that the three required IMOD binaries (`xyzproj`, `tilt`, `alterheader`) are present and executable before finalising the image.
+- PyTorch and nibabel (required by curvatubes membranes) are installed by default. To use GPU-accelerated membrane generation, pass `--gpus` to `run_docker.sh` (requires [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) on the host).
 
 ## Package description
 
@@ -222,7 +299,7 @@ polnet/                     Project root
 │   │   ├── pns/            Cytosolic protein generators
 │   │   └── pms/            Membrane-bound protein generators
 │   ├── tem/                TEM simulation and reconstruction
-│   │   ├── tem.py          TEM acquisition model (projection, CTF, noise)
+│   │   ├── tem.py          TEM acquisition model (projection, noise, reconstruction)
 │   │   └── tem_file.py     TEM parameter file parser
 │   └── utils/              Shared utilities
 │       ├── affine.py       Affine transformations and rotation utilities
@@ -259,6 +336,7 @@ The full license text for each vendored package is included in its directory (e.
 
 1. **Relative imports** — absolute `from cvtub.xxx` imports converted to relative `from .xxx` so the package works within the PolNet `src/` layout. Each changed line is marked with a `# polnet: relative import` comment.
 2. **GPU VRAM cleanup** (`generator.py` only) — a comprehensive 7-step cleanup block was added at the end of `_generate_shape()` to prevent VRAM leaks when generating multiple surfaces in sequence. The block is marked with `# polnet: comprehensive GPU VRAM cleanup`.
+3. **Code formatting** — all `.py` files reformatted with `black` (line-length 79) for consistency with the rest of the polnet codebase. No functional changes.
 
 ### Curvatubes performance notes
 
@@ -313,4 +391,4 @@ Realistic membranes extension:
 
 Curvatubes article (third party code):
 
- - Song, A (2022). Generation of Tubular and Membranous Shape Textures with Curvature Functionals. *Journal of Mathematical Imaging and Vision* 64, 17–40. [10.1007/s10851-021-01049-9](doi:10.1007/s10851-021-01049-9)
+ - Song, A. (2022). Generation of Tubular and Membranous Shape Textures with Curvature Functionals. *Journal of Mathematical Imaging and Vision* 64, 17–40. [10.1007/s10851-021-01049-9](https://doi.org/10.1007/s10851-021-01049-9)

@@ -1,0 +1,19 @@
+# Force LF line endings for shell scripts (critical for Docker builds
+# and execution on Linux/macOS).  Windows users cloning the repo will
+# get LF endings regardless of core.autocrlf.
+*.sh text eol=lf
+
+# Mark Markdown and YAML as text (normalise line endings on commit).
+*.md text diff=markdown
+*.yaml text
+*.yml text
+*.toml text
+
+# Binary data files — do not diff or merge.
+*.mrc binary
+*.pns binary
+*.pms binary
+*.mbs binary
+*.flms binary
+*.hns binary
+*.tem binary

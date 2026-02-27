@@ -181,10 +181,10 @@ class PmGen:
 
     @property
     def surf_diam(self) -> float:
-        """Get the surface diameter of the cytosolic protein model.
+        """Get the surface diameter of the membrane-bound protein model.
 
         Returns:
-            float: Surface diameter of the cytosolic protein model.
+            float: Surface diameter of the membrane-bound protein model.
         """
         return poly_diam(self.__model_surf)
 
@@ -207,28 +207,28 @@ class PmGen:
 
     @property
     def surf(self):
-        """Get the surface representation of the cytosolic protein model.
+        """Get the surface representation of the membrane-bound protein model.
 
         Returns:
-            vtk.vtkPolyData: Surface representation of the cytosolic protein model.
+            vtk.vtkPolyData: Surface representation of the membrane-bound protein model.
         """
         return self.__model_surf
 
     @property
     def model(self) -> np.ndarray:
-        """Get the volumetric model of the cytosolic protein.
+        """Get the volumetric model of the membrane-bound protein.
 
         Returns:
-            np.ndarray: Volumetric model of the cytosolic protein.
+            np.ndarray: Volumetric model of the membrane-bound protein.
         """
         return self.__model
 
     @property
     def mask(self) -> np.ndarray:
-        """Get the mask of the cytosolic protein model.
+        """Get the mask of the membrane-bound protein model.
 
         Returns:
-            np.ndarray: Mask of the cytosolic protein model.
+            np.ndarray: Mask of the membrane-bound protein model.
         """
         return self.__model_mask
 
@@ -255,7 +255,7 @@ class PmGen:
 
         # Convert relative path to absolute path
         mmer_path = params["MMER_SVOL"]
-        if mmer_path.startswith("/"):
+        if Path(mmer_path).is_absolute():
             mmer_path = "." + mmer_path
         mmer_path = data_path / mmer_path
 

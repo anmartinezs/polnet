@@ -375,7 +375,6 @@ class Monomer:
             bool: True if the overlap fraction exceeds
                 over_tolerance.
         """
-        # Initialization
         selector = vtk.vtkSelectEnclosedPoints()
         selector.SetTolerance(VTK_RAY_TOLERANCE)
         selector.Initialize(self.vtp)

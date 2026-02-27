@@ -32,10 +32,6 @@ from ...utils.utils import (
     insert_svol_tomo,
 )
 
-# ---------------------------------------------------------------------------
-# Mb — concrete membrane data holder
-# ---------------------------------------------------------------------------
-
 
 class Mb:
     """A single membrane: density volume, binary mask, and VTK surface.

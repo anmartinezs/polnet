@@ -37,7 +37,7 @@ class NetSAWLCPoly(NetSAWLC):
     ):
         if poly is None:
             raise ValueError("NetSAWLCPoly requires a membrane poly surface.")
-        if not reverse_normals:
+        if reverse_normals:
             poly = poly_reverse_normals(poly)
         super().__init__(
             voi=voi,

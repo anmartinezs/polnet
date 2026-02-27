@@ -1,7 +1,7 @@
 """Factory and registry for membrane generator classes.
 
 :class:`MbFactory` maps string type names (``"sphere"``,
-``"ellipsoid"``, ``"toroid"``) to generator classes via a
+``"ellipsoid"``, ``"toroid"``, ``"curvatubes"``) to generator classes via a
 class-level registry populated by the
 :meth:`MbFactory.register` decorator.
 
@@ -13,7 +13,6 @@ class-level registry populated by the
 class MbFactory:
     """Factory class to create membrane generator instances."""
 
-    # Registry mapping type-name strings to generator classes.
     __registry = {}
 
     @classmethod
@@ -45,7 +44,14 @@ class MbFactory:
             MbGen: An instance of the requested membrane generator.
         """
         if mb_type not in cls.__registry:
+            hint = ""
+            if mb_type == "curvatubes":
+                hint = (
+                    " The curvatubes generator requires the "
+                    "'curvatubes' extra: pip install polnet[curvatubes]"
+                )
             raise ValueError(
-                f"Membrane type '{mb_type}' is not registered. Available types: {list(cls.__registry.keys())}"
+                f"Membrane type '{mb_type}' is not registered. "
+                f"Available types: {list(cls.__registry.keys())}.{hint}"
             )
         return cls.__registry[mb_type].from_params(params)

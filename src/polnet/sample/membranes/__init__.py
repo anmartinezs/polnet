@@ -21,6 +21,10 @@ from .mb_file import MbFile
 from .mb_ellipsoid import EllipGen
 from .mb_sphere import SphGen
 from .mb_toroid import TorGen
-from .mb_curvatubes import CurvatubesGen
+
+try:
+    from .mb_curvatubes import CurvatubesGen  # requires external/cvtub
+except ImportError:
+    CurvatubesGen = None  # type: ignore[assignment,misc]
 
 __all__ = ["Mb", "MbGen", "MbSetResult", "MbFactory", "MbFile"]

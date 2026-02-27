@@ -133,6 +133,14 @@ class TorGen(MbGen):
         rad_a_v = major_radius / v_size
         rad_b_v = minor_radius / v_size
         bo_v, bi_v = rad_b_v + t_v, rad_b_v - t_v
+
+        if bi_v <= 0:
+            raise MbError(
+                f"Inner tube radius bi_v={bi_v:.2f} vx is non-positive "
+                f"(minor_radius={minor_radius:.1f} A, thick={thick:.1f} A, "
+                f"v_size={v_size:.1f} A). Minor radius must exceed half "
+                "the bilayer thickness."
+            )
         bo_v_p1, bo_v_m1 = bo_v + 1, bo_v - 1
         bi_v_p1, bi_v_m1 = bi_v + 1, bi_v - 1
         p0_v = center / v_size
@@ -159,7 +167,6 @@ class TorGen(MbGen):
             indexing="ij",
         )
 
-        # Mask
         R_o = (
             (rad_a_v - np.sqrt((X - p0_v[0]) ** 2 + (Y - p0_v[1]) ** 2)) ** 2
             + (Z - p0_v[2]) ** 2
@@ -175,7 +182,6 @@ class TorGen(MbGen):
         if mask.sum() == 0:
             raise MbError("Generated membrane has zero volume.")
 
-        # Surface
         R_i = (
             (rad_a_v - np.sqrt((X - p0_v[0]) ** 2 + (Y - p0_v[1]) ** 2)) ** 2
             + (Z - p0_v[2]) ** 2

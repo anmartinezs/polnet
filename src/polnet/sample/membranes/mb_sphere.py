@@ -17,6 +17,7 @@ from scipy.ndimage import gaussian_filter
 
 from .mb import (
     Mb,
+    MbError,
     MbGen,
 )
 from .mb_factory import MbFactory
@@ -120,6 +121,14 @@ class SphGen(MbGen):
         rad_v = radius / v_size
         ao_v = rad_v + t_v
         ai_v = rad_v - t_v
+
+        if ai_v <= 0:
+            raise MbError(
+                f"Inner radius ai_v={ai_v:.2f} vx is non-positive "
+                f"(radius={radius:.1f} A, thick={thick:.1f} A, "
+                f"v_size={v_size:.1f} A). Radius must exceed half "
+                "the bilayer thickness."
+            )
         ao_v_p1, ao_v_m1 = ao_v + 1, ao_v - 1
         ai_v_p1, ai_v_m1 = ai_v + 1, ai_v - 1
         p0_v = center / v_size
@@ -146,7 +155,6 @@ class SphGen(MbGen):
             indexing="ij",
         )
 
-        # Mask
         R_o = (
             ((X - p0_v[0]) / ao_v) ** 2
             + ((Y - p0_v[1]) / ao_v) ** 2
@@ -159,7 +167,6 @@ class SphGen(MbGen):
         )
         mask = np.logical_and(R_i >= 1, R_o <= 1)
 
-        # Surface
         R_i = (
             ((X - p0_v[0]) / rad_v) ** 2
             + ((Y - p0_v[1]) / rad_v) ** 2
@@ -197,7 +204,6 @@ class SphGen(MbGen):
         )
         G += np.logical_and(R_i >= 1, R_o <= 1)
 
-        # Smoothing and normalization
         density = lin_map(
             density_norm(gaussian_filter(G.astype(float), s_v), inv=True),
             ub=0,

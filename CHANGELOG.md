@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Sphinx API documentation** — full autodoc RST coverage for all modules with Google-style docstring support via Napoleon.
 - **Vendored `cvtub` package** under `src/external/cvtub/` with MIT license preserved. Header comments in every file identify the origin and license.
 - **NOTICE file** for Apache-2.0 third-party attribution compliance.
-- **Docker workflow** — rewritten `create_docker.sh` and `run_docker.sh` with volume-mount support for config, data, and output directories.
+- **Docker workflow** — rewritten `create_docker.sh` and `run_docker.sh` with volume-mount support for config, data, and output directories. IMOD 4.11.25 is downloaded automatically at build time.
 
 ### Changed
 
@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`SyntheticSample`** now tracks entity IDs, label registry, motifs, and per-type structure/voxel counts.
 - **Config file parsers** (`MbFile`, `FlmsFile`, `PnFile`, `PmFile`, `TEMFile`) use `ast.literal_eval` for safe value parsing.
 - **Getter methods → `@property`** throughout the codebase.
-- **Docker image** rebuilt on Python 3.11 slim base with IMOD 4.12.
+- **Docker image** rebuilt on `python:3.11-bookworm` (Debian 12) with IMOD 4.11.25 (downloaded at build time). Uses entrypoint wrapper to source IMOD environment. The IMOD installer filename is preserved during download (it derives its version from its own name).
 
 ### Fixed
 
@@ -40,6 +40,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Comprehensive GPU VRAM cleanup** in curvatubes integration — 9 leak sources identified and fixed (nn.Modules, optimizer state, global tensors, autograd graph, closure reference cycles).
 - MRC files opened in read-only mode where appropriate.
 - Import organisation standardised (stdlib → third-party → local).
+
+### Not Yet Migrated
+
+- **Legacy scripts** (`scripts/`) — the v1.0.0 Python scripts have not been updated to use the new v1.1.0 API and YAML configuration system. They will be adapted in a future release.
+- **Jupyter notebooks** (`gui/`) — the interactive notebooks for dataset generation, membrane alignment, model creation, and atomic-to-density conversion still depend on the v1.0.0 flat module layout and will not work with the current package structure. Updated notebooks will be provided in a future release.
 
 ## [1.0.0] - 2025-07-29
 

@@ -121,11 +121,9 @@ class NetHelixFiber(Network):
         MAX_TRIES = 1000
         tries_count = 0
 
-        # Network loop
         while self._pl_occ < self.__occ and tries_count < MAX_TRIES:
             tries_count += 1
 
-            # Polymer initialization
             p0 = np.asarray(
                 (
                     self._voi.shape[0] * self._v_size * random.random(),
@@ -155,7 +153,6 @@ class NetHelixFiber(Network):
                 p0,
             )
 
-            # Polymer loop
             not_finished = True
             while (hold_polymer.total_len < max_length) and not_finished:
                 monomer_data = hold_polymer.gen_new_monomer(
@@ -209,6 +206,7 @@ class NetHelixFiberB(Network):
         b_prop,
         max_p_branch=0,
         over_tolerance=0,
+        unit_diam=None,
     ):
         """Initialise the branched helical fiber network.
 
@@ -232,6 +230,9 @@ class NetHelixFiberB(Network):
                 0 disables branching (default 0).
             over_tolerance (float): Allowed surface overlap
                 fraction in [0, 1) (default 0).
+            unit_diam (float, optional): Structural unit diameter
+                for collision tests; None uses the monomer
+                diameter.
 
         Raises:
             ValueError: If any parameter is out of range.
@@ -271,6 +272,7 @@ class NetHelixFiberB(Network):
             list(),
             b_prop,
         )
+        self.__unit_diam = unit_diam
 
     def build_network(self):
         """Grow branched helix fibers until the occupancy target is met.
@@ -284,11 +286,9 @@ class NetHelixFiberB(Network):
         MAX_TRIES = 1000
         tries_count = 0
 
-        # Network loop
         while self._pl_occ < self.__occ and tries_count < MAX_TRIES:
             tries_count += 1
 
-            # Polymer initialization
             max_length = (
                 math.sqrt(
                     self._voi.shape[0] ** 2
@@ -326,13 +326,14 @@ class NetHelixFiberB(Network):
                 p0,
             )
 
-            # Polymer loop
             not_finished = True
             while (hold_polymer.total_len < max_length) and not_finished:
                 monomer_data = hold_polymer.gen_new_monomer(
                     self.__over_tolerance,
                     self._voi,
                     self._v_size,
+                    net=self,
+                    max_dist=self.__unit_diam,
                 )
                 if monomer_data is None:
                     not_finished = False
@@ -373,11 +374,16 @@ class NetHelixFiberB(Network):
                 hold_list.append(b)
         return hold_list
 
-    def get_skel(self):
+    def get_skel(self, add_verts=True, add_lines=True, verts_rad=0):
         """Build a vtkPolyData skeleton including polymer lines and branch points.
 
         Polymer lines are annotated with NET_TYPE_STR = 1;
         branch vertices are annotated with NET_TYPE_STR = 2.
+
+        Args:
+            add_verts (bool): Include vertex glyphs (default True).
+            add_lines (bool): Include connecting lines (default True).
+            verts_rad (float): Sphere radius for vertex glyphs (default 0).
 
         Returns:
             vtk.vtkPolyData: Combined skeleton dataset.
@@ -385,26 +391,25 @@ class NetHelixFiberB(Network):
         if len(self._pl) == 0:
             return vtk.vtkPolyData()
 
-        # Initialization
         app_flt_l, app_flt_v, app_flt = (
             vtk.vtkAppendPolyData(),
             vtk.vtkAppendPolyData(),
             vtk.vtkAppendPolyData(),
         )
 
-        # Polymers loop
         p_type_l = vtk.vtkIntArray()
         p_type_l.SetName(NET_TYPE_STR)
         p_type_l.SetNumberOfComponents(1)
         for pol in self._pl:
-            app_flt_l.AddInputData(pol.get_skel())
+            app_flt_l.AddInputData(
+                pol.get_skel(add_verts, add_lines, verts_rad)
+            )
         app_flt_l.Update()
         out_vtp_l = app_flt_l.GetOutput()
         for _ in range(out_vtp_l.GetNumberOfCells()):
             p_type_l.InsertNextTuple((1,))
         out_vtp_l.GetCellData().AddArray(p_type_l)
 
-        # Branches loop
         p_type_v = vtk.vtkIntArray()
         p_type_v.SetName(NET_TYPE_STR)
         p_type_v.SetNumberOfComponents(1)
@@ -416,7 +421,6 @@ class NetHelixFiberB(Network):
             p_type_v.InsertNextTuple((2,))
         out_vtp_v.GetCellData().AddArray(p_type_v)
 
-        # Merging branches and polymers
         app_flt.AddInputData(out_vtp_l)
         app_flt.AddInputData(out_vtp_v)
         app_flt.Update()
@@ -435,21 +439,10 @@ class NetHelixFiberB(Network):
             vtk.vtkPolyData: Dataset with branch glyphs.
         """
 
-        # Initialization
-        _, app_flt_v, app_flt = (
-            vtk.vtkAppendPolyData(),
-            vtk.vtkAppendPolyData(),
-            vtk.vtkAppendPolyData(),
-        )
+        app_flt = vtk.vtkAppendPolyData()
 
-        # Branches loop
-        for _, branch in enumerate(self.branch_list):
-            app_flt_v.AddInputData(branch.get_vtp(shape_vtp))
-        app_flt_v.Update()
-        out_vtp_v = app_flt_v.GetOutput()
-
-        # Merging branches and polymers
-        app_flt.AddInputData(out_vtp_v)
+        for branch in self.branch_list:
+            app_flt.AddInputData(branch.get_vtp(shape_vtp))
         app_flt.Update()
 
         return app_flt.GetOutput()
@@ -466,7 +459,6 @@ class NetHelixFiberB(Network):
             Branch | None: New branch object, or None.
         """
 
-        # Loop for polymers
         count, branch = 0, None
         while (count < len(self._pl)) and (branch is None):
             hold_pid = random.choices(

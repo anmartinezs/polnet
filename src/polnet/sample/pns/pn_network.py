@@ -113,7 +113,6 @@ class NetSAWLC(Network):
         self.__poly = poly
         self.__tries_mmer = int(tries_mmer)
         self.__tries_pmer = int(tries_pmer)
-        self.__poly_area = None
         if self.__poly is not None:
             self._poly_area = poly_surface_area(self.__poly)
 
@@ -131,10 +130,8 @@ class NetSAWLC(Network):
         if self.__rots is not None:
             rot_id = self.__rot_id
 
-        # Network loop
         while (c_try <= self.__tries_pmer) and (self._pl_occ < self.__occ):
 
-            # Polymer initialization
             c_try += 1
             if self.__poly:
                 p0 = np.asarray(
@@ -180,7 +177,6 @@ class NetSAWLC(Network):
                 else:
                     rot_id += 1
 
-            # Polymer loop
             cont_pol = 1
             not_finished = True
             while (hold_polymer.total_len < max_length) and not_finished:
@@ -202,8 +198,6 @@ class NetSAWLC(Network):
                 if monomer_data is None:
                     if cont_pol >= self.__tries_mmer:
                         not_finished = False
-                    else:
-                        c_try += 1
                 else:
                     new_len = points_distance(
                         monomer_data[0], hold_polymer.tail_point

@@ -86,10 +86,9 @@ def gen_tomos(config: dict) -> None:
 
     logger.info("Parsing configuration and validating input paths.")
 
-    # Validate input and output paths from config
     if "folders" not in config:
         raise KeyError("Config missing 'folders' section.")
-    root_dir = Path(config["folders"].get("root") or Path(__file__).parents[2])
+    root_dir = Path(config["folders"].get("root") or Path.cwd())
 
     data_rpath = config["folders"].get("input", None)
     if data_rpath is None:
@@ -110,7 +109,6 @@ def gen_tomos(config: dict) -> None:
     if n_tomos is None:
         raise KeyError("Config missing 'ntomos' in 'global' section.")
 
-    # Read and validate sample parameters from config
     voi_shape = config["sample"].get("voi_shape", None)
     if voi_shape is None:
         raise KeyError("Config missing 'voi_shape' in 'sample' section.")
@@ -128,13 +126,11 @@ def gen_tomos(config: dict) -> None:
     proteins = config["sample"].get("pns", [])
     mb_proteins = config["sample"].get("pms", [])
 
-    # Read and validate TEM parameters from config
     tem_file_rpath = config.get("tem", {}).get("config", None)
     tem_apath = data_apath / tem_file_rpath if tem_file_rpath else None
     if tem_apath is not None and not tem_apath.exists():
         raise FileNotFoundError(f"TEM config file {tem_apath} does not exist.")
 
-    # Set random seed for reproducibility
     logger.info("Setting random seed to %s for reproducibility.", seed)
     random.seed(seed)
     np.random.seed(seed)
@@ -148,7 +144,6 @@ def gen_tomos(config: dict) -> None:
         voi_offs,
         v_size,
     )
-    # Write global labels table (shared across all tomograms)
     _save_labels_table(out_apath, membranes, filaments, proteins, mb_proteins)
 
     for tomo_id in range(n_tomos):

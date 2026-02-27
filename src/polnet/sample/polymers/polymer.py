@@ -74,8 +74,6 @@ class Polymer(ABC):
         self._ids = list()
         self._codes = list()
 
-    # ── public query methods ──────────────────────────────────────
-
     @property
     def num_monomers(self):
         """Return the number of monomers in the polymer."""
@@ -208,8 +206,6 @@ class Polymer(ABC):
         """
         return self._r[-1]
 
-    # ── VTK output ────────────────────────────────────────────────
-
     @property
     def vtp(self):
         """Build a labelled vtkPolyData merging all monomer surfaces.
@@ -223,7 +219,6 @@ class Polymer(ABC):
 
         app_flt = vtk.vtkAppendPolyData()
 
-        # Polymers loop
         for m_id in range(len(self._m)):
             m_poly = self._m[m_id].vtp
             add_label_to_poly(m_poly, self._ids[m_id], GTRUTH_VTP_LBLS)
@@ -249,12 +244,10 @@ class Polymer(ABC):
             vtk.vtkPolyData: Skeleton polygon dataset.
         """
 
-        # Initialization
         poly, points = vtk.vtkPolyData(), vtk.vtkPoints()
         verts, lines = vtk.vtkCellArray(), vtk.vtkCellArray()
         sph_points = list()
 
-        # Monomers loop
         if len(self._r) == 1:
             sph_points.append(self._r[0])
             id_p0 = points.InsertNextPoint(self._r[0])
@@ -262,18 +255,24 @@ class Polymer(ABC):
                 verts.InsertNextCell(1)
                 verts.InsertCellPoint(id_p0)
         else:
+            # Insert first point for sphere glyphs and lines
+            sph_points.append(self._r[0])
+            prev_id = points.InsertNextPoint(self._r[0])
+            if add_verts and (verts_rad <= 0):
+                verts.InsertNextCell(1)
+                verts.InsertCellPoint(prev_id)
+            # Connect subsequent points
             for i in range(1, len(self._r)):
                 sph_points.append(self._r[i])
-                id_p0, id_p1 = points.InsertNextPoint(
-                    self._r[i - 1]
-                ), points.InsertNextPoint(self._r[i])
+                curr_id = points.InsertNextPoint(self._r[i])
                 if add_verts and (verts_rad <= 0):
                     verts.InsertNextCell(1)
-                    verts.InsertCellPoint(id_p0)
+                    verts.InsertCellPoint(curr_id)
                 if add_lines:
                     lines.InsertNextCell(2)
-                    lines.InsertCellPoint(id_p0)
-                    lines.InsertCellPoint(id_p1)
+                    lines.InsertCellPoint(prev_id)
+                    lines.InsertCellPoint(curr_id)
+                prev_id = curr_id
 
         # Construct poly
         poly.SetPoints(points)
@@ -288,8 +287,6 @@ class Polymer(ABC):
             poly = merge_polys(sph_vtp, poly)
 
         return poly
-
-    # ── mutation ──────────────────────────────────────────────────
 
     def add_monomer(self, r, t, q, m, mmer_id=0, code=""):
         """Append a pre-transformed monomer to the polymer chain.
@@ -329,7 +326,6 @@ class Polymer(ABC):
         self._m.append(m)
         self._ids.append(mmer_id)
         self._codes.append(code)
-        # Update total length
         if self.num_monomers <= 1:
             self._t_length = 0
         else:
@@ -360,17 +356,15 @@ class Polymer(ABC):
                 m_svol[mmer_id], tomo, v_size, merge=merge, off_svol=off_svol
             )
 
-    # ── abstract interface ────────────────────────────────────────
-
     @abstractmethod
     def set_reference(self):
+        """Set the reference monomer for this polymer."""
         raise NotImplementedError
 
     @abstractmethod
     def gen_new_monomer(self):
+        """Generate a new monomer and return its placement data."""
         raise NotImplementedError
-
-    # ── collision detection ───────────────────────────────────────
 
     def overlap_polymer(self, monomer, over_tolerance=0):
         """Test whether a monomer overlaps any monomer in this polymer.
@@ -389,22 +383,21 @@ class Polymer(ABC):
                 found.
         """
 
-        # Initialization
         selector = vtk.vtkSelectEnclosedPoints()
         selector.SetTolerance(VTK_RAY_TOLERANCE)
         selector.Initialize(monomer.vtp)
 
         # Polymer loop, no need to process monomer beyond diameter distance
         diam, center = monomer.diameter, monomer.center_mass
-        for i in range(len(self._m) - 1, 0, -1):
+        for i in range(len(self._m) - 1, -1, -1):
             hold_monomer = self._m[i]
             dist = points_distance(center, hold_monomer.center_mass)
             if dist <= diam:
                 poly_b = hold_monomer.vtp
                 count, n_points = 0.0, poly_b.GetNumberOfPoints()
                 n_points_if = 1.0 / float(n_points)
-                for i in range(n_points):
-                    if selector.IsInsideSurface(poly_b.GetPoint(i)) > 0:
+                for j in range(n_points):
+                    if selector.IsInsideSurface(poly_b.GetPoint(j)) > 0:
                         count += 1
                         over = count * n_points_if
                         if over > over_tolerance:

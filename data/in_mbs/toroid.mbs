@@ -6,4 +6,3 @@ MB_OCC_RG = (0.001, 0.003)
 MB_OVER_TOL = 0 # In percentage
 MB_MIN_RAD = 75
 MB_DEN_CF_RG = (.3, .5)
-MB_OCC = (0.001, 0.003) 

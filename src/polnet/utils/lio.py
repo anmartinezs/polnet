@@ -31,12 +31,14 @@ def load_mrc(fname, mmap=False, no_saxes=True):
             True.
     """
     if mmap:
-        mrc = mrcfile.mmap(fname, permissive=True, mode="r+")
+        with mrcfile.mmap(str(fname), permissive=True, mode="r") as mrc:
+            data = mrc.data.copy()
     else:
-        mrc = mrcfile.open(fname, permissive=True, mode="r+")
+        with mrcfile.open(str(fname), permissive=True, mode="r") as mrc:
+            data = mrc.data.copy()
     if no_saxes:
-        return np.swapaxes(mrc.data, 0, 2)
-    return mrc.data
+        return np.swapaxes(data, 0, 2)
+    return data
 
 
 def write_mrc(tomo, fname, v_size=1, dtype=None, no_saxes=True):
@@ -52,7 +54,7 @@ def write_mrc(tomo, fname, v_size=1, dtype=None, no_saxes=True):
         no_saxes (bool): If True (default), swaps axes 0 and 2
             before writing to cancel the X/Y swap.
     """
-    with mrcfile.new(fname, overwrite=True) as mrc:
+    with mrcfile.new(str(fname), overwrite=True) as mrc:
         if dtype is None:
             if no_saxes:
                 mrc.set_data(np.swapaxes(tomo, 0, 2))
@@ -78,7 +80,7 @@ def read_mrc_v_size(fname):
         tuple[float, float, float]: Voxel size in Angstroms as
             (x, y, z).
     """
-    with mrcfile.mmap(fname) as mrc:
+    with mrcfile.mmap(str(fname)) as mrc:
         return (mrc.voxel_size["x"], mrc.voxel_size["y"], mrc.voxel_size["z"])
 
 
@@ -94,7 +96,7 @@ def save_vtp(poly, fname):
     """
 
     writer = vtk.vtkXMLPolyDataWriter()
-    writer.SetFileName(fname)
+    writer.SetFileName(str(fname))
     writer.SetInputData(poly)
     if writer.Write() != 1:
         raise IOError
@@ -112,7 +114,7 @@ def save_vti(image, fname):
     """
 
     writer = vtk.vtkXMLImageDataWriter()
-    writer.SetFileName(fname)
+    writer.SetFileName(str(fname))
     writer.SetInputData(image)
     if writer.Write() != 1:
         raise IOError
@@ -129,7 +131,7 @@ def load_poly(fname):
     """
 
     reader = vtk.vtkXMLPolyDataReader()
-    reader.SetFileName(fname)
+    reader.SetFileName(str(fname))
     reader.Update()
 
     return reader.GetOutput()

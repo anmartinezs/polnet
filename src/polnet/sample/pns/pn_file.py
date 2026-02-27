@@ -24,6 +24,7 @@ class PnFile:
     """
 
     def __init__(self):
+        """Initialise an empty cytosolic protein configuration."""
         self.__params = {}
 
     @property

@@ -107,11 +107,10 @@ class SAWLC(Polymer):
         ext_surf=None,
         rot=None,
     ):
-        """Try to place the next surface-constrained monomer.
+        """Try to place the next monomer in free 3-D space.
 
-        Samples a point on the membrane within a hollow shell
-        around the current tail and orients the monomer along the
-        local normal.
+        Samples a random point within a hollow shell around the
+        current polymer tail and applies a random rotation.
 
         Args:
             over_tolerance (float): Allowed overlap fraction
@@ -131,7 +130,6 @@ class SAWLC(Polymer):
                 or None if placement failed.
         """
 
-        # Translation
         if fix_dst is None:
             hold_l = self.__l
         else:
@@ -139,13 +137,11 @@ class SAWLC(Polymer):
         t = gen_uni_s2_sample(np.asarray((0.0, 0.0, 0.0)), hold_l)
         r = self._r[-1] + t
 
-        # Rotation
         if rot is None:
             q = gen_rand_unit_quaternion()
         else:
             q = rot
 
-        # Monomer
         if ext_surf is None:
             hold_m = Monomer(self._m_surf, self._m_diam)
         else:
@@ -153,7 +149,6 @@ class SAWLC(Polymer):
         hold_m.rotate_q(q)
         hold_m.translate(r)
 
-        # Check self-avoiding and forbidden regions
         if self.overlap_polymer(hold_m, over_tolerance=over_tolerance):
             return None
         elif voi is not None:
@@ -276,7 +271,6 @@ class SAWLCPoly(Polymer):
                 or None if placement failed.
         """
 
-        # Translation
         if fix_dst is None:
             hold_l = self.__l
         else:
@@ -287,14 +281,12 @@ class SAWLCPoly(Polymer):
         r = np.asarray(r)
         t = r - self._r[-1]
 
-        # Rotation
         if rot is None:
             hold_n = find_point_on_poly(r, self.__poly)[1]
             q = gen_rand_quaternion_on_vector(hold_n)
         else:
             q = rot
 
-        # Monomer
         if ext_surf is None:
             hold_m = Monomer(self._m_surf, self._m_diam)
         else:
@@ -302,7 +294,6 @@ class SAWLCPoly(Polymer):
         hold_m.rotate_q(q)
         hold_m.translate(r)
 
-        # Check self-avoiding and forbidden regions
         if self.overlap_polymer(hold_m, over_tolerance=over_tolerance):
             return None
         elif voi is not None:

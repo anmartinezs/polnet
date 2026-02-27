@@ -10,8 +10,8 @@ metadata:
     date: "2025-11-06"
 
 folders:
-    root: null                          # Project root; null = auto-detected
-                                        # (parent of this config file).
+    root: null                          # Project root; null = current working
+                                        # directory when polnet is invoked.
     input: "data"                       # Directory containing input model files.
     output: "results"                   # Directory where tomograms are written.
 

@@ -71,8 +71,6 @@ class Network(ABC):
         self._poly_area = 0
         self._pmer_fails = 0
 
-    # ── configuration ─────────────────────────────────────────────
-
     def set_min_nmmer(self, min_nmmer):
         """Set the minimum monomer count for a polymer to be kept.
 
@@ -96,8 +94,6 @@ class Network(ABC):
             self._voi = voi > 0
         else:
             self._voi = voi
-
-    # ── public query methods ──────────────────────────────────────
 
     @property
     def pmer_fails(self):
@@ -144,8 +140,6 @@ class Network(ABC):
         """
         return self._voi
 
-    # ── mutation ──────────────────────────────────────────────────
-
     def add_polymer(self, polymer, occ_mode="volume"):
         """Register a polymer chain and update occupancy tracking.
 
@@ -168,8 +162,6 @@ class Network(ABC):
         else:
             self._pl_occ += 100.0 * (polymer.get_area() / self._poly_area)
 
-    # ── abstract interface ────────────────────────────────────────
-
     @abstractmethod
     def build_network(self):
         """Populate the network with polymers up to the target occupancy.
@@ -185,8 +177,6 @@ class Network(ABC):
         raise NotImplementedError(
             "Subclasses must implement build_network method."
         )
-
-    # ── VTK output ────────────────────────────────────────────────
 
     @property
     def vtp(self):
@@ -271,8 +261,6 @@ class Network(ABC):
                 hold_tomo[x, y, z] = True
         return hold_tomo
 
-    # ── density stamping ──────────────────────────────────────────
-
     def insert_density_svol(
         self, m_svol, tomo, v_size=1, merge="max", off_svol=None
     ):
@@ -349,8 +337,6 @@ class Network(ABC):
                     prefilter=False,
                 )
         insert_svol_tomo(hold_svol, self._voi, tot_v, merge="min")
-
-    # ── statistics ────────────────────────────────────────────────
 
     def count_proteins(self):
         """Collect per-ID monomer count statistics for this network.
