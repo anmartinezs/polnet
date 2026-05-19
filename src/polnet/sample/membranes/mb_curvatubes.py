@@ -428,13 +428,14 @@ class CurvatubesGen(MbGen):
 
         # Random initialisation
         if self._flow_type == "cons":
-            v0 = torch.stack(
-                [
-                    _cvtub_utils.random_init(voi_shape, prop=self._init_prop),
-                    _cvtub_utils.random_init(voi_shape, prop=self._init_prop),
-                    _cvtub_utils.random_init(voi_shape, prop=self._init_prop),
-                ]
-            )
+            K = 40.0                        # upstream Exp 4 default
+            Z, X, Y = voi_shape
+            # np.random.rand uses polnet's globally-seeded RNG
+            # (np.random.seed in pipeline.py); np.random.default_rng()
+            # would not see that seed.
+            A0_np = (K * self._delta_x *
+                        np.random.rand(3, Z, X, Y).astype(np.float32))
+            v0 = torch.from_numpy(A0_np).type(_cvtub_utils.dtype)
         else:
             v0 = _cvtub_utils.random_init(voi_shape, prop=self._init_prop)
 
