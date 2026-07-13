@@ -320,19 +320,29 @@ class TEM:
         mics = lio.load_mrc(self.__micgraphs_file)
         lio.write_mrc(-1 * mics, self.__micgraphs_file)
 
-    def add_mics_misalignment(self, mn, mx, n_sigma=0):
-        """Add sinusoidal X/Y misalignment to each micrograph.
+    def add_mics_misalignment(self, mn, mx, n_sigma_divider=1.28):
+        """Introduces random, angle-dependent spatial misalignments to a stack of micrographs.
 
-        The misalignment magnitude follows the model:
-        ``f(θ) = mn + mx * sin(θ) / sin(θ_max)``
-        with optional Gaussian noise on top.
+        This method calculates a shift magnitude for each micrograph that scales
+        proportionally with its tilt angle, adds Gaussian noise, and enforces a
+        strict minimum shift. The final shift is applied in a completely random
+        2D direction (randomizing both positive and negative X and Y
+        translations) before saving the modified micrographs back to disk.
 
         Args:
-            mn (float): Misalignment at zero tilt.
-            mx (float): Misalignment at maximum tilt;
-                must be >= mn.
-            n_sigma (float): Standard deviation of additional
-                Gaussian noise on the shifts (default 0).
+            mn (float): The absolute minimum shift magnitude to apply to any
+                micrograph.
+            mx (float): The maximum expected base shift magnitude (applied at
+                the maximum tilt angle) before random noise is added.
+            n_sigma_divider (float, optional): Divisor used to calculate
+                the standard deviation of the Gaussian noise added to the
+                shifts. The standard deviation is evaluated as (mx / n_sigma_divider).
+                Defaults to 1.28. Gives 90% of the values under 10% of the maximum
+                shift, which is a reasonable assumption for misalignment.
+
+        Raises:
+            ValueError: If the maximum shift `mx` is strictly less than the
+            minimum shift `mn`.
         """
 
         if mx < mn:
@@ -343,22 +353,26 @@ class TEM:
         mics = lio.load_mrc(self.__micgraphs_file)
         angs = np.abs(np.radians(self.__load_tangs_file()))
         n_angs = len(angs)
+
         shifts = (
             mn
-            + np.sin(angs) / np.sin(angs.max())
-            + rng.normal(0, n_sigma, n_angs)
+            + (mx - mn) * np.sin(angs) / np.sin(angs.max())
+            + rng.normal(0, mx / n_sigma_divider, n_angs)
         )
-        split_fs = rng.uniform(0, 1, n_angs)
-        for i, shift, split_f in zip(range(n_angs), shifts, split_fs):
-            shift_x = shift / math.sqrt(split_f + 1)
-            shift_y = split_f * shift_x
+
+        shifts = np.clip(shifts, a_min=mn, a_max=None)
+        thetas = rng.uniform(0, 2 * np.pi, n_angs)
+
+        for i, (shift, theta) in enumerate(zip(shifts, thetas)):
+            shift_x = shift * np.cos(theta)
+            shift_y = shift * np.sin(theta)
+
             mics[:, :, i] = sp_shift(
                 mics[:, :, i],
                 (shift_x, shift_y),
                 output=None,
                 order=3,
-                mode="constant",
-                cval=0.0,
+                mode="nearest",
                 prefilter=True,
             )
 
