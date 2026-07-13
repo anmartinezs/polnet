@@ -5,11 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.1] - 2026-07-13
+## [1.1.2] - 2026-07-13
 
 ### Fixed
 
-- **Micrograph misalignment artifact** — shifted micrographs no longer zero-fill the vacated edges (`mode="nearest"` instead of `mode="constant"`), removing the black-border artifact that back-projected into reconstructed tomograms. The shift magnitude formula is also corrected to scale with `(mx - mn)` across tilt angle, apply Gaussian noise with standard deviation `mx / n_sigma_divider`, clip to a strict minimum, and displace in a uniformly random 2D direction. The `default.tem` template's `MALIGN_SG` default is updated to `1.28` to match the new `n_sigma_divider` parameter.
+- **Micrograph misalignment artifact** — shifted micrographs no longer zero-fill the vacated edges (`mode="nearest"` instead of `mode="constant"`), removing the black-border artifact that back-projected into reconstructed tomograms. The shift magnitude formula is also corrected to scale with `(mx - mn)` across tilt angle, apply Gaussian noise with standard deviation `mx / n_sigma_divider`, clip to a strict minimum, and displace in a uniformly random 2D direction. The `default.tem` template's `MALIGN_SG` default is updated to `6.4` to match the new `n_sigma_divider` parameter.
 
 ## [1.1.0] - 2026-02-25
 
