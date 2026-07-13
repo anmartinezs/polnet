@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "polnet"
-version = "1.1.1"
+version = "1.1.2"
 description = "Python package for generating synthetic datasets of the cellular context for Cryo-Electron Tomography."
 readme = "README.md"
 license = {text = "Apache-2.0"}

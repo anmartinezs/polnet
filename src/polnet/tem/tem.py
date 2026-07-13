@@ -320,7 +320,7 @@ class TEM:
         mics = lio.load_mrc(self.__micgraphs_file)
         lio.write_mrc(-1 * mics, self.__micgraphs_file)
 
-    def add_mics_misalignment(self, mn, mx, n_sigma_divider=1.28):
+    def add_mics_misalignment(self, mn, mx, n_sigma_divider=6.4):
         """Introduces random, angle-dependent spatial misalignments to a stack of micrographs.
 
         This method calculates a shift magnitude for each micrograph that scales
@@ -337,7 +337,7 @@ class TEM:
             n_sigma_divider (float, optional): Divisor used to calculate
                 the standard deviation of the Gaussian noise added to the
                 shifts. The standard deviation is evaluated as (mx / n_sigma_divider).
-                Defaults to 1.28. Gives 90% of the values under 10% of the maximum
+                Defaults to 6.4. Gives 90% of the values under 20% of the maximum
                 shift, which is a reasonable assumption for misalignment.
 
         Raises:
