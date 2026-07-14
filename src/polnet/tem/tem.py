@@ -414,7 +414,7 @@ class TEM:
         """
         tilt_rg = tem_params["TILT_ANGS_RG"]
         tilt_step = tem_params["TILT_ANGS_STEP"]
-        tilt_angs = np.arange(tilt_rg[0], tilt_rg[1], tilt_step)
+        tilt_angs = np.arange(tilt_rg[0], tilt_rg[1] + 1, tilt_step)
 
         logger.debug("Generating tilt series.")
         self.gen_tilt_series_imod(density, tilt_angs, ax="Y")
